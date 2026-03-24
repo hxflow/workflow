@@ -1,0 +1,51 @@
+# Android Platform Override
+platform: android
+label: Android
+language: Kotlin
+ui_framework: Jetpack Compose
+min_version: "API 26 (Android 8.0)"
+
+# ── 路径映射 ──
+paths:
+  platform_src: "android/app/src/main/java/com/{package}"
+  platform_test: "android/app/src/test/java/com/{package}"
+  project_file: "android/build.gradle.kts"
+
+# ── 任务 ID 前缀覆盖 ──
+task_prefix: TASK-AND
+
+# ── 架构层级路径特化 ──
+layer_paths:
+  domain: "android/app/src/main/java/com/{package}/domain/"
+  data: "android/app/src/main/java/com/{package}/data/"
+  presentation: "android/app/src/main/java/com/{package}/presentation/"
+  ui: "android/app/src/main/java/com/{package}/ui/"
+
+# ── 语言特定约束 ──
+constraints:
+  - 使用 Kotlin Coroutines + Flow，禁止裸 Thread/Handler
+  - 网络请求使用 Retrofit + kotlinx.serialization
+  - UI 层使用 Jetpack Compose，传统 View 仅用于不可替代的场景
+  - ViewModel 继承 androidx.lifecycle.ViewModel，使用 StateFlow 暴露状态
+  - 依赖注入使用 Hilt（@Inject, @HiltViewModel）
+  - 禁止 !! 非空断言，使用 ?.let / requireNotNull（带错误信息）
+
+# ── 审查追加项 ──
+review_extra:
+  - Compose 是否有不必要的重组（recomposition）：检查 @Stable / remember 使用
+  - Coroutine scope 是否与生命周期绑定（viewModelScope / lifecycleScope）
+  - 是否正确处理 Configuration Change（屏幕旋转、语言切换）
+  - ProGuard/R8 混淆规则是否更新
+
+# ── 门控命令 ──
+gate_commands:
+  lint: "cd android && ./gradlew lintDebug"
+  build: "cd android && ./gradlew assembleDebug"
+  test: "cd android && ./gradlew testDebugUnitTest"
+
+# ── QA 追加项 ──
+qa_extra:
+  - 在 Pixel 4a（小屏）和 Pixel 8 Pro（大屏）各测一次
+  - Dark Mode + 大字体（Display size: largest）下验证
+  - LeakCanary 检查内存泄漏
+  - StrictMode 开启状态下无违规日志

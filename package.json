@@ -1,0 +1,111 @@
+{
+  "name": "qiyuan-harness-scaffold",
+  "version": "1.0.0",
+  "description": "Profile-driven harness workflow scaffold with an interactive installer for existing projects.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "qiyuan-harness-scaffold": "scripts/hx-install.cjs"
+  },
+  "files": [
+    "AGENTS.md",
+    "README.md",
+    "docs/**/*.md",
+    "profiles/**/*.md",
+    "profiles/**/*.yaml",
+    "scripts/hx-agent-fix.js",
+    "scripts/hx-agent-run.js",
+    "scripts/hx-arch-test.js",
+    "scripts/hx-check.js",
+    "scripts/hx-ctx-check.js",
+    "scripts/hx-doc-freshness.js",
+    "scripts/hx-entropy-scan.js",
+    "scripts/hx-gate.js",
+    "scripts/hx-install.cjs",
+    "scripts/hx-install.js",
+    "scripts/hx-new-doc.js",
+    "scripts/hx-new-plan.js",
+    "scripts/hx-review-checklist.js",
+    "scripts/hx-task-done.js",
+    "scripts/hx-vitest.cjs",
+    "scripts/lib/install-utils.js",
+    "scripts/lib/plan-utils.js",
+    "scripts/lib/profile-utils.js",
+    ".claude/commands/**/*.md",
+    ".claude/skills/**/*",
+    ".husky/*",
+    "eslint.config.js",
+    "setup.sh",
+    "tsconfig.json",
+    "vitest.config.ts"
+  ],
+  "keywords": [
+    "workflow",
+    "scaffold",
+    "harness",
+    "cli",
+    "engineering"
+  ],
+  "scripts": {
+    "// ── 文档工具 ──────────────────────────────────": "",
+    "hx:install": "node scripts/hx-install.cjs",
+    "hx:doc": "node scripts/hx-new-doc.js",
+    "hx:plan": "node scripts/hx-new-plan.js",
+    "hx:ctx": "node scripts/hx-ctx-check.js",
+    "// ── 代码质量 ──────────────────────────────────": "",
+    "hx:lint": "eslint . --max-warnings 0",
+    "hx:lint:fix": "eslint . --fix",
+    "hx:type": "tsc --noEmit",
+    "hx:test": "node scripts/hx-vitest.cjs run --reporter=verbose",
+    "hx:test:unit": "node scripts/hx-vitest.cjs run tests/unit --reporter=verbose",
+    "hx:test:integration": "node scripts/hx-vitest.cjs run tests/integration --reporter=verbose",
+    "hx:test:w": "node scripts/hx-vitest.cjs --watch",
+    "hx:test:cov": "node scripts/hx-vitest.cjs run --coverage",
+    "// ── 门控（顺序执行，任一失败即停）──────────────": "",
+    "hx:gate": "node scripts/hx-gate.js",
+    "hx:check": "node scripts/hx-check.js",
+    "// ── Agent 执行 ────────────────────────────────": "",
+    "hx:run": "node scripts/hx-agent-run.js",
+    "hx:fix": "node scripts/hx-agent-fix.js",
+    "// ── 工作流辅助 ────────────────────────────────": "",
+    "hx:review": "node scripts/hx-review-checklist.js",
+    "hx:done": "node scripts/hx-task-done.js",
+    "// ── 熵管理 ────────────────────────────────────": "",
+    "hx:entropy": "node scripts/hx-entropy-scan.js",
+    "hx:clean": "node scripts/hx-doc-freshness.js",
+    "// ── 架构合规（CI 专用）────────────────────────": "",
+    "hx:arch": "node scripts/hx-arch-test.js",
+    "ci": "npm run hx:lint && npm run hx:type && npm run hx:test && npm run hx:arch && npm run hx:ctx",
+    "pack:dry-run": "npm pack --dry-run",
+    "release:pack": "npm pack"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix --max-warnings 0",
+      "bash -c 'tsc --noEmit'"
+    ],
+    "src/**/*.{css,scss}": [
+      "prettier --write"
+    ],
+    "docs/**/*.md": [
+      "prettier --write --prose-wrap always"
+    ],
+    "docs/plans/*.json": [
+      "node -e \"const f=process.argv[1]; try{JSON.parse(require('fs').readFileSync(f,'utf8'));console.log('✓',f)}catch(e){console.error('✗ JSON invalid:',f);process.exit(1)}\" --"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^8.0.0",
+    "husky": "^9.0.0",
+    "ink": "^5.1.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.0.0",
+    "react": "^18.3.1",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

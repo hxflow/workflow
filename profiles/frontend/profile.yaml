@@ -1,0 +1,106 @@
+# Frontend Team Profile
+name: frontend
+label: 前端
+task_prefix: TASK-FE
+
+# ── 架构层级 ──
+architecture:
+  layers:
+    - id: types
+      label: Types
+      path: src/types/
+      description: 共享类型定义（与后端对齐的 API 契约类型）
+      can_import: []
+
+    - id: services
+      label: API Services
+      path: src/services/
+      description: API 调用封装，返回类型化数据，禁止 UI 逻辑
+      can_import: [types]
+
+    - id: stores
+      label: Stores
+      path: src/stores/
+      description: 全局状态管理（Zustand/Redux/Context），禁止 UI 渲染逻辑
+      can_import: [types, services]
+
+    - id: hooks
+      label: Hooks
+      path: src/hooks/
+      description: 自定义 Hook，封装数据获取和状态逻辑，禁止直接 fetch
+      can_import: [types, services, stores]
+
+    - id: components
+      label: Components
+      path: src/components/
+      description: 纯展示组件（Presentational），通过 Props 接收数据
+      can_import: [types]
+
+    - id: pages
+      label: Pages
+      path: src/pages/
+      description: 页面容器，组合 Components + Hooks，处理路由
+      can_import: [types, services, stores, hooks, components]
+
+  cross_cutting:
+    - AuthContext（鉴权状态 Provider）
+    - ThemeProvider（设计系统 token）
+    - ErrorBoundary（全局错误边界）
+
+# ── 任务拆分规则 ──
+task_split:
+  strategy: component_first  # 先组件再集成
+  order: [types, component, hook, page, test]
+  template:
+    - id: "{PREFIX}-01"
+      name: Types 层
+      output: "src/types/{feature}.ts"
+      description: API 请求/响应类型，与后端契约对齐
+
+    - id: "{PREFIX}-02"
+      name: 组件
+      output: "src/components/{domain}/{ComponentName}.tsx"
+      description: 纯展示组件，Props 接口在需求文档中定义
+
+    - id: "{PREFIX}-03"
+      name: Hook
+      output: "src/hooks/use{Feature}.ts"
+      description: 调用 API，管理 loading/error 状态
+
+    - id: "{PREFIX}-04"
+      name: 页面集成
+      output: "src/pages/{PageName}.tsx"
+      description: 组合组件 + Hook，处理路由跳转
+
+    - id: "{PREFIX}-05"
+      name: 单元测试
+      output: "src/components/{domain}/{ComponentName}.test.tsx"
+      description: 组件渲染测试 + Hook 逻辑测试
+
+# ── 代码审查重点 ──
+review_focus:
+  must:
+    - Props 接口是否和需求文档一致
+    - 是否绕过了现有 UI 组件库（src/components/ui/）
+    - 状态管理是否符合约定（全局 Store vs 本地 state）
+    - 组件内是否直接调用 fetch/axios（GP-005）
+  recommend:
+    - 过度抽象检查（只用一次的逻辑被提取为 Hook/HOC）
+    - 无障碍（a11y）：label、alt、键盘操作
+    - 响应式检查：375px ~ 1440px 布局无破损
+
+# ── 门控命令 ──
+gate_commands:
+  lint: "npm run hx:lint"
+  type: "npm run hx:type"
+  test: "npm run hx:test"
+  arch: "npm run hx:arch"
+
+# ── QA 验收要求 ──
+qa:
+  must:
+    - 逐条验证 AC
+    - Chrome DevTools 确认 API 请求/响应与契约一致
+    - 移动端 375px 和桌面端 1440px 各验证一次
+  recommend:
+    - Playwright/Cypress 生成 E2E 脚本覆盖主流程

@@ -1,0 +1,705 @@
+#!/bin/bash
+
+# GitLab CLI 工具
+# 用于创建 MR、查看项目等操作
+
+set -euo pipefail
+
+GITLAB_URL="${GITLAB_URL:-https://gitlab.cdfsunrise.com}"
+API_BASE="${GITLAB_URL}/api/v4"
+
+# 显示帮助
+show_help() {
+  cat << EOF
+GitLab CLI 工具
+
+Usage: gitlab <command> [options]
+
+Commands:
+  mr create         创建 Merge Request
+  mr list           列出 Merge Requests
+  mr view           查看 Merge Request 详情
+  mr note           给 Merge Request 添加评论
+  mr checks         查看 MR 检查状态（CI/可合并/讨论）
+  mr watch          轮询 MR 检查状态直到结束
+  mr watch-stop     停止后台监控
+  mr watch-log      查看后台监控日志
+  mr delegate-watch 生成子代理监控任务模板
+  project info      显示项目信息
+  help              显示帮助
+
+MR Create 选项:
+  --source, -s      源分支 (必填)
+  --target, -t      目标分支 (默认: main)
+  --title           标题 (必填)
+  --description, -d 描述 (可选，支持从文件读取 @file.md)
+  --project, -p     项目路径 (如: lehu/bffservice)
+
+MR View 选项:
+  --project, -p     项目路径 (必填)
+  --iid, -i         MR IID (必填)
+
+MR Note 选项:
+  --project, -p     项目路径 (必填)
+  --iid, -i         MR IID (必填)
+  --body, -b        评论内容 (必填，支持 @file.md)
+
+MR Checks 选项:
+  --project, -p     项目路径 (必填)
+  --iid, -i         MR IID (必填)
+
+MR Watch 选项:
+  --project, -p       项目路径 (必填)
+  --iid, -i           MR IID (必填)
+  --interval, -n      轮询间隔秒数 (默认: 30)
+  --max-tries, -m     最大轮询次数 (默认: 120)
+  --background, -B    后台运行
+  --log-file, -l      后台日志路径（默认: /tmp/gitlab-mr-watch-<project>-<iid>.log）
+
+MR Watch-Stop 选项:
+  --project, -p       项目路径 (必填)
+  --iid, -i           MR IID (必填)
+
+MR Watch-Log 选项:
+  --project, -p       项目路径 (必填)
+  --iid, -i           MR IID (必填)
+  --lines             查看最后 N 行（默认: 50）
+
+MR Delegate-Watch 选项:
+  --project, -p       项目路径 (必填)
+  --iid, -i           MR IID (必填)
+  --interval, -n      检查间隔秒数（默认: 30）
+  --hours             最长监控小时数（默认: 3）
+
+环境变量:
+  GITLAB_TOKEN      GitLab Personal Access Token (必填)
+  GITLAB_URL        GitLab 地址 (默认: https://gitlab.cdfsunrise.com)
+
+Examples:
+  gitlab mr create -s feature/test -t main --title "测试MR" -p lehu/bffservice
+  gitlab mr create -s feature/test --title "测试MR" -d @description.md
+  gitlab mr list -p lehu/bffservice
+  gitlab mr view -p lehu/bffservice -i 123
+  gitlab mr note -p lehu/bffservice -i 123 -b "请补一下测试说明"
+  gitlab mr note -p lehu/bffservice -i 123 -b @note.md
+  gitlab mr checks -p lehu/bffservice -i 123
+  gitlab mr watch -p lehu/bffservice -i 123 -n 20 -m 180
+  gitlab mr watch -p lehu/bffservice -i 123 -B
+  gitlab mr watch-log -p lehu/bffservice -i 123 --lines 80
+  gitlab mr watch-stop -p lehu/bffservice -i 123
+  gitlab mr delegate-watch -p lehu/bffservice -i 123
+  gitlab project info -p lehu/bffservice
+EOF
+}
+
+# 检查依赖
+check_deps() {
+  command -v curl >/dev/null 2>&1 || { echo "错误: 缺少依赖 curl"; exit 1; }
+  command -v jq >/dev/null 2>&1 || { echo "错误: 缺少依赖 jq"; exit 1; }
+}
+
+# 检查认证
+check_auth() {
+  if [[ -z "${GITLAB_TOKEN:-}" ]]; then
+    echo "错误: 未设置 GITLAB_TOKEN 环境变量"
+    echo "请在 GitLab 设置中创建 Personal Access Token，然后设置:"
+    echo "  export GITLAB_TOKEN=\"your_token\""
+    exit 1
+  fi
+}
+
+# URL encode
+url_encode() {
+  local string="$1"
+  local encoded=""
+  local pos c o
+
+  for (( pos=0; pos<${#string}; pos++ )); do
+    c=${string:$pos:1}
+    case "$c" in
+      [-_.~a-zA-Z0-9]) encoded+="$c" ;;
+      *) printf -v o '%%%02x' "'$c"; encoded+="$o" ;;
+    esac
+  done
+  echo "$encoded"
+}
+
+# API 请求
+api_request() {
+  local method="$1"
+  local path="$2"
+  local body="${3:-}"
+
+  local url="${API_BASE}${path}"
+
+  if [[ "$method" == "GET" ]]; then
+    curl -s --noproxy '*' "$url" \
+      -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+      -H "Content-Type: application/json"
+  else
+    curl -s --noproxy '*' -X "$method" "$url" \
+      -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+      -H "Content-Type: application/json" \
+      -d "$body"
+  fi
+}
+
+# 创建 MR
+cmd_mr_create() {
+  local source_branch=""
+  local target_branch="main"
+  local title=""
+  local description=""
+  local project=""
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --source|-s) source_branch="$2"; shift 2 ;;
+      --target|-t) target_branch="$2"; shift 2 ;;
+      --title) title="$2"; shift 2 ;;
+      --description|-d)
+        if [[ "$2" == @* ]]; then
+          description=$(cat "${2#@}")
+        else
+          description="$2"
+        fi
+        shift 2
+        ;;
+      --project|-p) project="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  check_deps
+  check_auth
+
+  if [[ -z "$source_branch" ]]; then
+    echo "错误: 请指定源分支 (--source)"
+    exit 1
+  fi
+
+  if [[ -z "$title" ]]; then
+    echo "错误: 请指定标题 (--title)"
+    exit 1
+  fi
+
+  if [[ -z "$project" ]]; then
+    # 尝试从 git remote 获取
+    if git rev-parse --git-dir > /dev/null 2>&1; then
+      local remote_url=$(git remote get-url origin 2>/dev/null || echo "")
+      if [[ "$remote_url" =~ gitlab.cdfsunrise.com:58422/(.+)\.git ]]; then
+        project="${BASH_REMATCH[1]}"
+      elif [[ "$remote_url" =~ gitlab.cdfsunrise.com/(.+)\.git ]]; then
+        project="${BASH_REMATCH[1]}"
+      fi
+    fi
+  fi
+
+  if [[ -z "$project" ]]; then
+    echo "错误: 请指定项目路径 (--project)，如: lehu/bffservice"
+    exit 1
+  fi
+
+  echo "正在创建 Merge Request..."
+  echo "  项目: $project"
+  echo "  源分支: $source_branch"
+  echo "  目标分支: $target_branch"
+  echo "  标题: $title"
+  echo ""
+
+  local project_encoded=$(url_encode "$project")
+  local body=$(jq -n \
+    --arg source "$source_branch" \
+    --arg target "$target_branch" \
+    --arg title "$title" \
+    --arg desc "$description" \
+    '{source_branch: $source, target_branch: $target, title: $title, description: $desc}')
+
+  local response=$(api_request "POST" "/projects/${project_encoded}/merge_requests" "$body")
+
+  local mr_url=$(echo "$response" | jq -r '.web_url // empty')
+  local error_msg=$(echo "$response" | jq -r '.message // empty')
+
+  if [[ -n "$mr_url" && "$mr_url" != "null" ]]; then
+    echo "✅ Merge Request 创建成功！"
+    echo ""
+    echo "链接: $mr_url"
+    echo ""
+    echo "MR 信息:"
+    echo "$response" | jq -r '"  ID: \(.iid)\n  标题: \(.title)\n  作者: \(.author.name)\n  状态: \(.state)"'
+  else
+    echo "❌ 创建失败"
+    if [[ -n "$error_msg" && "$error_msg" != "null" ]]; then
+      echo "错误: $error_msg"
+    else
+      echo "$response" | jq '.' 2>/dev/null || echo "$response"
+    fi
+    exit 1
+  fi
+}
+
+# 列出 MR
+cmd_mr_list() {
+  local project=""
+  local state="opened"
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --project|-p) project="$2"; shift 2 ;;
+      --state) state="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  check_deps
+  check_auth
+
+  if [[ -z "$project" ]]; then
+    echo "错误: 请指定项目路径 (--project)"
+    exit 1
+  fi
+
+  local project_encoded=$(url_encode "$project")
+  local response=$(api_request "GET" "/projects/${project_encoded}/merge_requests?state=${state}")
+
+  echo "$response" | jq -r '.[] | "!\(.iid): \(.title) [\(.source_branch) → \(.target_branch)]"'
+}
+
+# 查看 MR 详情
+cmd_mr_view() {
+  local project=""
+  local iid=""
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --project|-p) project="$2"; shift 2 ;;
+      --iid|-i) iid="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  check_deps
+  check_auth
+
+  if [[ -z "$project" ]]; then
+    echo "错误: 请指定项目路径 (--project)"
+    exit 1
+  fi
+
+  if [[ -z "$iid" ]]; then
+    echo "错误: 请指定 MR IID (--iid)"
+    exit 1
+  fi
+
+  local project_encoded
+  project_encoded=$(url_encode "$project")
+  local response
+  response=$(api_request "GET" "/projects/${project_encoded}/merge_requests/${iid}")
+
+  local r_iid
+  r_iid=$(echo "$response" | jq -r '.iid // empty')
+  if [[ -z "$r_iid" || "$r_iid" == "null" ]]; then
+    echo "❌ 查询 MR 失败"
+    echo "$response" | jq '.' 2>/dev/null || echo "$response"
+    exit 1
+  fi
+
+  echo "$response" | jq -r '"IID: !\(.iid)\n标题: \(.title)\n状态: \(.state)\n源分支: \(.source_branch)\n目标分支: \(.target_branch)\n作者: \(.author.name)\nWeb: \(.web_url)"'
+}
+
+# 给 MR 添加评论
+cmd_mr_note() {
+  local project=""
+  local iid=""
+  local body=""
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --project|-p) project="$2"; shift 2 ;;
+      --iid|-i) iid="$2"; shift 2 ;;
+      --body|-b)
+        if [[ "$2" == @* ]]; then
+          body=$(cat "${2#@}")
+        else
+          body="$2"
+        fi
+        shift 2
+        ;;
+      *) shift ;;
+    esac
+  done
+
+  check_deps
+  check_auth
+
+  if [[ -z "$project" ]]; then
+    echo "错误: 请指定项目路径 (--project)"
+    exit 1
+  fi
+
+  if [[ -z "$iid" ]]; then
+    echo "错误: 请指定 MR IID (--iid)"
+    exit 1
+  fi
+
+  if [[ -z "$body" ]]; then
+    echo "错误: 请指定评论内容 (--body)"
+    exit 1
+  fi
+
+  local project_encoded
+  project_encoded=$(url_encode "$project")
+  local payload
+  payload=$(jq -n --arg body "$body" '{body: $body}')
+
+  local response
+  response=$(api_request "POST" "/projects/${project_encoded}/merge_requests/${iid}/notes" "$payload")
+
+  local note_id
+  note_id=$(echo "$response" | jq -r '.id // empty')
+  if [[ -z "$note_id" || "$note_id" == "null" ]]; then
+    echo "❌ 评论失败"
+    echo "$response" | jq '.' 2>/dev/null || echo "$response"
+    exit 1
+  fi
+
+  echo "✅ 评论成功"
+  echo "$response" | jq -r '"Note ID: \(.id)\n作者: \(.author.name)\n内容: \(.body)"'
+}
+
+# 查看 MR 检查状态
+cmd_mr_checks() {
+  local project=""
+  local iid=""
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --project|-p) project="$2"; shift 2 ;;
+      --iid|-i) iid="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  check_deps
+  check_auth
+
+  if [[ -z "$project" ]]; then
+    echo "错误: 请指定项目路径 (--project)"
+    exit 1
+  fi
+
+  if [[ -z "$iid" ]]; then
+    echo "错误: 请指定 MR IID (--iid)"
+    exit 1
+  fi
+
+  local project_encoded
+  project_encoded=$(url_encode "$project")
+
+  local mr
+  mr=$(api_request "GET" "/projects/${project_encoded}/merge_requests/${iid}")
+
+  local mr_iid
+  mr_iid=$(echo "$mr" | jq -r '.iid // empty')
+  if [[ -z "$mr_iid" || "$mr_iid" == "null" ]]; then
+    echo "❌ 查询 MR 失败"
+    echo "$mr" | jq '.' 2>/dev/null || echo "$mr"
+    exit 1
+  fi
+
+  local notes
+  notes=$(api_request "GET" "/projects/${project_encoded}/merge_requests/${iid}/notes?per_page=100")
+  local unresolved_count
+  unresolved_count=$(echo "$notes" | jq '[.[] | select(.resolvable == true and .resolved == false)] | length' 2>/dev/null || echo "0")
+
+  echo "$mr" | jq -r --arg unresolved "$unresolved_count" '
+"IID: !\(.iid)\n标题: \(.title)\n状态: \(.state)\n可合并状态: \(.detailed_merge_status // .merge_status // "unknown")\nCI状态: \(.head_pipeline.status // "no_pipeline")\nPipeline: \(.head_pipeline.web_url // "-")\n未解决讨论: \($unresolved)"'
+}
+
+watch_log_path() {
+  local project="$1"
+  local iid="$2"
+  local safe_project
+  safe_project=$(echo "$project" | tr '/ ' '__')
+  echo "/tmp/gitlab-mr-watch-${safe_project}-${iid}.log"
+}
+
+watch_pid_path() {
+  local project="$1"
+  local iid="$2"
+  local safe_project
+  safe_project=$(echo "$project" | tr '/ ' '__')
+  echo "/tmp/gitlab-mr-watch-${safe_project}-${iid}.pid"
+}
+
+# 轮询 MR 检查状态
+cmd_mr_watch() {
+  local project=""
+  local iid=""
+  local interval="30"
+  local max_tries="120"
+  local background="false"
+  local log_file=""
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --project|-p) project="$2"; shift 2 ;;
+      --iid|-i) iid="$2"; shift 2 ;;
+      --interval|-n) interval="$2"; shift 2 ;;
+      --max-tries|-m) max_tries="$2"; shift 2 ;;
+      --background|-B) background="true"; shift ;;
+      --log-file|-l) log_file="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  check_deps
+  check_auth
+
+  if [[ -z "$project" ]]; then
+    echo "错误: 请指定项目路径 (--project)"
+    exit 1
+  fi
+
+  if [[ -z "$iid" ]]; then
+    echo "错误: 请指定 MR IID (--iid)"
+    exit 1
+  fi
+
+  local project_encoded
+  project_encoded=$(url_encode "$project")
+
+  if [[ -z "$log_file" ]]; then
+    log_file=$(watch_log_path "$project" "$iid")
+  fi
+
+  local pid_file
+  pid_file=$(watch_pid_path "$project" "$iid")
+
+  if [[ "$background" == "true" ]]; then
+    nohup "$0" mr watch -p "$project" -i "$iid" -n "$interval" -m "$max_tries" >"$log_file" 2>&1 < /dev/null &
+    local pid=$!
+    echo "$pid" > "$pid_file"
+    echo "✅ 已后台运行"
+    echo "PID: $pid"
+    echo "PID文件: $pid_file"
+    echo "日志: $log_file"
+    exit 0
+  fi
+
+  local last_status=""
+  local last_merge=""
+  local try=1
+
+  while [[ "$try" -le "$max_tries" ]]; do
+    local mr
+    mr=$(api_request "GET" "/projects/${project_encoded}/merge_requests/${iid}")
+
+    local mr_iid
+    mr_iid=$(echo "$mr" | jq -r '.iid // empty')
+    if [[ -z "$mr_iid" || "$mr_iid" == "null" ]]; then
+      echo "❌ 查询 MR 失败"
+      echo "$mr" | jq '.' 2>/dev/null || echo "$mr"
+      exit 1
+    fi
+
+    local ci_status merge_status web_url
+    ci_status=$(echo "$mr" | jq -r '.head_pipeline.status // "no_pipeline"')
+    merge_status=$(echo "$mr" | jq -r '.detailed_merge_status // .merge_status // "unknown"')
+    web_url=$(echo "$mr" | jq -r '.web_url // "-"')
+
+    if [[ "$ci_status" != "$last_status" || "$merge_status" != "$last_merge" || "$try" -eq 1 ]]; then
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] try=${try}/${max_tries} ci=${ci_status} merge=${merge_status}"
+      echo "MR: ${web_url}"
+      last_status="$ci_status"
+      last_merge="$merge_status"
+    fi
+
+    case "$ci_status" in
+      success)
+        echo "✅ CI 已成功"
+        exit 0
+        ;;
+      failed|canceled)
+        echo "❌ CI 已结束: ${ci_status}"
+        exit 2
+        ;;
+    esac
+
+    if [[ "$try" -ge "$max_tries" ]]; then
+      echo "⏱️ 达到最大轮询次数，停止监控"
+      exit 3
+    fi
+
+    sleep "$interval"
+    try=$((try + 1))
+  done
+}
+
+# 停止后台监控
+cmd_mr_watch_stop() {
+  local project=""
+  local iid=""
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --project|-p) project="$2"; shift 2 ;;
+      --iid|-i) iid="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  if [[ -z "$project" || -z "$iid" ]]; then
+    echo "错误: 请指定 --project 和 --iid"
+    exit 1
+  fi
+
+  local pid_file
+  pid_file=$(watch_pid_path "$project" "$iid")
+
+  if [[ ! -f "$pid_file" ]]; then
+    echo "未找到监控进程记录: $pid_file"
+    exit 1
+  fi
+
+  local pid
+  pid=$(cat "$pid_file")
+
+  if kill -0 "$pid" >/dev/null 2>&1; then
+    kill "$pid"
+    rm -f "$pid_file"
+    echo "✅ 已停止监控进程 PID=$pid"
+  else
+    rm -f "$pid_file"
+    echo "监控进程不存在（可能已结束），已清理 PID 文件"
+  fi
+}
+
+# 查看后台监控日志
+cmd_mr_watch_log() {
+  local project=""
+  local iid=""
+  local lines="50"
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --project|-p) project="$2"; shift 2 ;;
+      --iid|-i) iid="$2"; shift 2 ;;
+      --lines) lines="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  if [[ -z "$project" || -z "$iid" ]]; then
+    echo "错误: 请指定 --project 和 --iid"
+    exit 1
+  fi
+
+  local log_file
+  log_file=$(watch_log_path "$project" "$iid")
+
+  if [[ ! -f "$log_file" ]]; then
+    echo "日志不存在: $log_file"
+    exit 1
+  fi
+
+  tail -n "$lines" "$log_file"
+}
+
+# 生成子代理监控任务模板
+cmd_mr_delegate_watch() {
+  local project=""
+  local iid=""
+  local interval="30"
+  local hours="3"
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --project|-p) project="$2"; shift 2 ;;
+      --iid|-i) iid="$2"; shift 2 ;;
+      --interval|-n) interval="$2"; shift 2 ;;
+      --hours) hours="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  if [[ -z "$project" || -z "$iid" ]]; then
+    echo "错误: 请指定 --project 和 --iid"
+    exit 1
+  fi
+
+  cat <<EOF
+【子代理任务模板】
+监控 GitLab MR 状态直到结束：
+- 项目: ${project}
+- MR IID: ${iid}
+- 每 ${interval} 秒检查一次
+- 使用命令: ".claude/skills/gitlab/scripts/gitlab" mr checks -p ${project} -i ${iid}
+- 若 CI 成功：汇报成功并附 MR 链接
+- 若 CI 失败/取消：汇报失败状态、pipeline 链接、未解决讨论数，并给出下一步修复建议
+- 最长监控 ${hours} 小时
+EOF
+}
+
+# 项目信息
+cmd_project_info() {
+  local project=""
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --project|-p) project="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  check_deps
+  check_auth
+
+  if [[ -z "$project" ]]; then
+    echo "错误: 请指定项目路径 (--project)"
+    exit 1
+  fi
+
+  local project_encoded
+  project_encoded=$(url_encode "$project")
+  local response
+  response=$(api_request "GET" "/projects/${project_encoded}")
+
+  local id
+  id=$(echo "$response" | jq -r '.id // empty')
+  if [[ -z "$id" || "$id" == "null" ]]; then
+    echo "❌ 查询项目失败"
+    echo "$response" | jq '.' 2>/dev/null || echo "$response"
+    exit 1
+  fi
+
+  echo "$response" | jq -r '"ID: \(.id)\n名称: \(.name)\n路径: \(.path_with_namespace)\n默认分支: \(.default_branch)\n可见性: \(.visibility)\nWeb: \(.web_url)"'
+}
+
+# 主入口
+case "${1:-}" in
+  mr)
+    shift
+    case "${1:-}" in
+      create) shift; cmd_mr_create "$@" ;;
+      list) shift; cmd_mr_list "$@" ;;
+      view) shift; cmd_mr_view "$@" ;;
+      note) shift; cmd_mr_note "$@" ;;
+      checks) shift; cmd_mr_checks "$@" ;;
+      watch) shift; cmd_mr_watch "$@" ;;
+      watch-stop) shift; cmd_mr_watch_stop "$@" ;;
+      watch-log) shift; cmd_mr_watch_log "$@" ;;
+      delegate-watch) shift; cmd_mr_delegate_watch "$@" ;;
+      *) show_help; exit 1 ;;
+    esac
+    ;;
+  project)
+    shift
+    case "${1:-}" in
+      info) shift; cmd_project_info "$@" ;;
+      *) show_help; exit 1 ;;
+    esac
+    ;;
+  help|--help|-h) show_help ;;
+  *) show_help; exit 1 ;;
+esac

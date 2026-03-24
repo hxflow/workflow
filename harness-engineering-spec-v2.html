@@ -24,6 +24,9 @@
   --be:       #7c5fcf;   /* backend purple */
   --bed:      rgba(124,95,207,0.12);
   --bet:      rgba(124,95,207,0.06);
+  --mb:       #e8874a;   /* mobile orange  */
+  --mbd:      rgba(232,135,74,0.12);
+  --mbt:      rgba(232,135,74,0.06);
   --teal:     #3aac8c;
   --teald:    rgba(58,172,140,0.12);
   --red:      #c86060;
@@ -93,6 +96,8 @@ h1.hero-title em{color:var(--gold);font-style:normal}
 .role-badge .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .role-badge.fe .dot{background:var(--fe)}
 .role-badge.be .dot{background:var(--be)}
+.role-badge.mb{background:var(--mbd);border:1px solid rgba(232,135,74,.2);border-left:none;color:var(--mb)}
+.role-badge.mb .dot{background:var(--mb)}
 .hero-stats{
   position:absolute;bottom:48px;right:64px;
   display:flex;gap:40px;
@@ -129,6 +134,7 @@ section+section{border-top:1px solid rgba(255,255,255,.04)}
 .toc-who{font-size:11px;margin-top:6px;display:flex;gap:4px}
 .badge-fe{background:var(--fed);color:var(--fe);font-size:10px;padding:2px 7px;font-family:var(--mono)}
 .badge-be{background:var(--bed);color:var(--be);font-size:10px;padding:2px 7px;font-family:var(--mono)}
+.badge-mb{background:var(--mbd);color:var(--mb);font-size:10px;padding:2px 7px;font-family:var(--mono)}
 .badge-all{background:var(--goldd);color:var(--gold);font-size:10px;padding:2px 7px;font-family:var(--mono)}
 
 /* ── PHASE BLOCKS ── */
@@ -154,8 +160,10 @@ section+section{border-top:1px solid rgba(255,255,255,.04)}
 }
 .rtab.fe.active{background:var(--fed);border-color:rgba(74,158,224,.3);color:var(--fe)}
 .rtab.be.active{background:var(--bed);border-color:rgba(124,95,207,.3);color:var(--be)}
+.rtab.mb.active{background:var(--mbd);border-color:rgba(232,135,74,.3);color:var(--mb)}
 .rtab.fe:not(.active){color:var(--txt3)}
 .rtab.be:not(.active){color:var(--txt3);border-left:none}
+.rtab.mb:not(.active){color:var(--txt3);border-left:none}
 .role-panel{display:none;border:1px solid var(--bdr);border-top:none;background:var(--bg2);padding:28px 28px}
 .role-panel.active{display:block}
 
@@ -186,6 +194,7 @@ section+section{border-top:1px solid rgba(255,255,255,.04)}
 }
 .codeblock.fe{border-left-color:var(--fe)}
 .codeblock.be{border-left-color:var(--be)}
+.codeblock.mb{border-left-color:var(--mb)}
 .codeblock.gold{border-left-color:var(--gold)}
 .codeblock pre{font-family:var(--mono);font-size:12px;color:var(--txt2);line-height:1.85;white-space:pre}
 .cm{color:var(--txt3)}
@@ -197,12 +206,15 @@ section+section{border-top:1px solid rgba(255,255,255,.04)}
 
 /* ── SPLIT ── */
 .split{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bdr);border:1px solid var(--bdr);margin:24px 0}
+.split.three{grid-template-columns:1fr 1fr 1fr}
 .split-col{background:var(--bg);padding:28px 28px}
 .split-col.fe-col{border-top:2px solid var(--fe)}
 .split-col.be-col{border-top:2px solid var(--be)}
 .split-head{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .split-head.fe{color:var(--fe)}
 .split-head.be{color:var(--be)}
+.split-head.mb{color:var(--mb)}
+.split-col.mb-col{border-top:2px solid var(--mb)}
 
 /* ── LAYER ── */
 .layers{display:flex;align-items:center;gap:2px;margin:20px 0;flex-wrap:wrap}
@@ -294,6 +306,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 .wf-step:hover{background:var(--bg3)}
 .wf-step.fe-s{border-top:2px solid var(--fe)}
 .wf-step.be-s{border-top:2px solid var(--be)}
+.wf-step.mb-s{border-top:2px solid var(--mb)}
 .wf-step.shared-s{border-top:2px solid var(--gold)}
 .wf-step.gate-s{border-top:2px solid var(--teal);background:var(--teald)}
 .wf-step.block-s{border-top:2px solid var(--red);background:var(--redd)}
@@ -316,6 +329,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 .cmd-tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:2px 8px}
 .cmd-tag.fe{background:var(--fed);color:var(--fe)}
 .cmd-tag.be{background:var(--bed);color:var(--be)}
+.cmd-tag.mb{background:var(--mbd);color:var(--mb)}
 .cmd-tag.all{background:var(--goldd);color:var(--gold)}
 .cmd-tag.sys{background:var(--teald);color:var(--teal)}
 .cmd-body{padding:16px 20px}
@@ -366,6 +380,32 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 .ci-step-cmd{font-family:var(--mono);font-size:10px;color:var(--txt2)}
 .ci-step.pass{background:var(--teald)}
 .ci-step.fail{background:var(--redd)}
+
+/* ── SKILL INSTALL ── */
+.install-scope{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bdr);border:1px solid var(--bdr);margin:24px 0}
+.scope-col{background:var(--bg);padding:24px 24px}
+.scope-col:first-child{border-right:1px solid var(--bdr)}
+.scope-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.scope-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.scope-icon.proj{background:var(--teald);color:var(--teal)}
+.scope-icon.user{background:var(--goldd);color:var(--gold)}
+.scope-label{font-size:14px;font-weight:500;color:var(--txt)}
+.scope-path{font-family:var(--mono);font-size:11px;color:var(--txt3);margin-bottom:10px;padding:6px 10px;background:var(--bg2);border:1px solid var(--bdr);display:inline-block}
+.scope-desc{font-size:12.5px;color:var(--txt2);line-height:1.7}
+.scope-desc ul{margin:8px 0 0;padding-left:18px}
+.scope-desc li{margin-bottom:4px}
+.install-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bdr);border:1px solid var(--bdr);margin:24px 0}
+.install-method{background:var(--bg);padding:22px 22px;transition:background .2s}
+.install-method:hover{background:var(--bg2)}
+.im-step{font-family:var(--mono);font-size:10px;color:var(--txt3);letter-spacing:.12em;margin-bottom:10px}
+.im-title{font-size:13px;font-weight:500;color:var(--txt);margin-bottom:8px}
+.im-body{font-size:12.5px;color:var(--txt2);line-height:1.7}
+.im-cmd{font-family:var(--mono);font-size:12px;color:var(--gold);background:var(--bg2);padding:8px 12px;border:1px solid var(--bdr);margin-top:10px;display:block;white-space:pre-wrap;overflow-x:auto}
+@media(max-width:780px){
+  .install-scope{grid-template-columns:1fr}
+  .scope-col:first-child{border-right:none;border-bottom:1px solid var(--bdr)}
+  .install-methods{grid-template-columns:1fr}
+}
 
 /* ── SKILL ANATOMY ── */
 .skill-anatomy{display:grid;grid-template-columns:220px 1fr;gap:32px;margin:32px 0;border:1px solid var(--bdr);background:var(--bg2)}
@@ -513,6 +553,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
   .toc{grid-template-columns:1fr 1fr}
   .phase{grid-template-columns:1fr;gap:20px}
   .split{grid-template-columns:1fr}
+  .split.three{grid-template-columns:1fr}
   .rgrid{grid-template-columns:1fr}
   .rcard.w2{grid-column:1}
   .cmd-grid{grid-template-columns:1fr}
@@ -534,20 +575,89 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
   <div class="hero-inner">
     <div class="hero-tag">需求开发规范 · v2.0</div>
     <h1 class="hero-title">Harness<br><em>Engineering</em></h1>
-    <p class="hero-sub">前端与后端工程师操作手册 · 从需求到上线的完整执行指南</p>
+    <p class="hero-sub">前端、后端与移动端工程师操作手册 · 从需求到上线的完整执行指南</p>
     <div class="hero-roles">
-      <div class="role-badge fe"><span class="dot"></span>Frontend Engineer</div>
-      <div class="role-badge be"><span class="dot"></span>Backend Engineer</div>
+      <div class="role-badge fe"><span class="dot"></span>Frontend</div>
+      <div class="role-badge be"><span class="dot"></span>Backend</div>
+      <div class="role-badge mb"><span class="dot"></span>Mobile</div>
     </div>
   </div>
   <div class="hero-stats">
-    <div class="hstat"><div class="hstat-n">7</div><div class="hstat-l">开发阶段</div></div>
-    <div class="hstat"><div class="hstat-n">3</div><div class="hstat-l">核心支柱</div></div>
+    <div class="hstat"><div class="hstat-n">8</div><div class="hstat-l">开发阶段</div></div>
+    <div class="hstat"><div class="hstat-n">5</div><div class="hstat-l">团队 Profile</div></div>
     <div class="hstat"><div class="hstat-n">0</div><div class="hstat-l">手写业务代码</div></div>
   </div>
 </header>
 
 <main>
+
+<!-- ══════ 介绍 ══════ -->
+<section id="intro">
+<div class="wrap">
+  <div class="sh-tag">关于 Harness</div>
+  <h2 class="sh-title">什么是 Harness Engineering</h2>
+  <p class="sh-desc">Harness Engineering 是一套以 AI Agent 为核心执行者的软件工程方法论。在本仓库中，它被实现为一个 profile-driven workflow framework。工程师不再直接编写业务代码，而是通过结构化文档、架构约束和自动化流水线驱动 Agent 产出高质量代码。</p>
+
+  <div class="rgrid" style="margin-top:32px">
+    <div class="rcard">
+      <div class="rcard-title">为什么需要 Harness</div>
+      <div class="rcard-body">传统开发中，AI 辅助编码（Copilot 模式）仅解决了「写代码」环节。但软件工程的核心挑战在于：需求理解、架构一致性、质量保障和团队协作。Harness 将这些环节编码为可复用的规则和流水线，让 Agent 在确定性约束下工作，而非自由发挥。</div>
+    </div>
+    <div class="rcard">
+      <div class="rcard-title">核心理念</div>
+      <div class="rcard-body">工程师的角色从「代码编写者」转变为「系统设计者」——你设计约束、编写规范、定义验收标准，Agent 在这些框架内执行。你写的不是代码，是让 Agent 可靠产出代码的规则。这不是偷懒，是更高层次的工程能力。</div>
+    </div>
+    <div class="rcard">
+      <div class="rcard-title">适用团队</div>
+      <div class="rcard-body">Harness 通过 Profile 系统适配不同团队：后端（Types → Repo → Service → Runtime）、前端（Types → API → Stores → Components → Pages）、移动端（Domain → Data → Presentation → UI）。每个团队有独立的架构约束、黄金原则和质量门控。</div>
+    </div>
+  </div>
+
+  <div class="sh-tag" style="margin-top:48px">工作流全景</div>
+
+  <div class="levels">
+    <div class="level">
+      <div class="level-n">Phase 01 — 03</div>
+      <div class="level-title">准备阶段</div>
+      <div class="level-body">从 DevOps 平台拉取任务 → 结构化需求文档 → 执行计划拆分 → 上下文校验。确保 Agent 拿到的输入完整、准确、无歧义。</div>
+    </div>
+    <div class="level">
+      <div class="level-n">Phase 04 — 06</div>
+      <div class="level-title">执行阶段</div>
+      <div class="level-body">Agent 按 TASK 逐个执行 → 自动代码审查（全局 + 团队规则）→ 质量门控（lint / type / test / arch）。每一步都有自动修复和重试机制。</div>
+    </div>
+    <div class="level">
+      <div class="level-n">Phase 07 — 08</div>
+      <div class="level-title">交付阶段</div>
+      <div class="level-body">熵扫描确保代码质量 → git commit（关联 DevOps 任务 ID）→ 自动创建 GitLab MR → 后台 CI 监控 → 失败自动修复。从代码到 MR 全程自动化。</div>
+    </div>
+  </div>
+
+  <div class="dn" style="margin-top:24px">
+    <strong>一句话总结：</strong>Harness = 结构化文档 + 架构约束 + 自动化流水线。输入是需求，输出是通过 CI 的 Merge Request。中间的一切，由 Agent 在你设定的规则下完成。
+  </div>
+
+  <div class="sh-tag" style="margin-top:48px">工具链集成</div>
+
+  <div class="install-methods">
+    <div class="install-method">
+      <div class="im-step">需求来源</div>
+      <div class="im-title">DevOps 协作平台</div>
+      <div class="im-body">通过 <code>wushuang-devops</code> skill 从公司 DevOps 平台拉取任务详情，自动预填需求文档的来源、背景和 AC 候选项。</div>
+    </div>
+    <div class="install-method">
+      <div class="im-step">执行引擎</div>
+      <div class="im-title">Claude Code + Skills</div>
+      <div class="im-body">所有 Phase 通过 <code>/hx-*</code> 斜杠命令驱动，内置 Profile 系统适配团队差异。一键 <code>/hx-go</code> 可跑完 Phase 01→08 全流程。</div>
+    </div>
+    <div class="install-method">
+      <div class="im-step">代码交付</div>
+      <div class="im-title">GitLab MR + CI</div>
+      <div class="im-body">通过 <code>gitlab</code> skill 自动创建 Merge Request、后台监控 CI 状态。CI 失败时 Agent 自动修复并重新提交，最终产出可合并的 MR。</div>
+    </div>
+  </div>
+</div>
+</section>
 
 <!-- ══════ 总览 ══════ -->
 <section id="overview">
@@ -557,13 +667,15 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
   <p class="sh-desc">你不再直接编写代码。你的工作是设计让 Agent 可靠产出代码的系统——约束、文档、反馈回路。人工智能写代码，你写规则。</p>
 
   <div class="toc">
+    <a class="toc-item" href="#intro"><div class="toc-num">INTRO</div><div class="toc-label">什么是 Harness Engineering</div><div class="toc-who"><span class="badge-all">全员</span></div></a>
     <a class="toc-item" href="#phase1"><div class="toc-num">PHASE 01</div><div class="toc-label">需求接入与意图锁定</div><div class="toc-who"><span class="badge-all">全员</span></div></a>
-    <a class="toc-item" href="#phase2"><div class="toc-num">PHASE 02</div><div class="toc-label">设计文档与执行计划</div><div class="toc-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span></div></a>
+    <a class="toc-item" href="#phase2"><div class="toc-num">PHASE 02</div><div class="toc-label">需求文档与执行计划</div><div class="toc-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span><span class="badge-mb">移动</span></div></a>
     <a class="toc-item" href="#phase3"><div class="toc-num">PHASE 03</div><div class="toc-label">上下文工程准备</div><div class="toc-who"><span class="badge-all">全员</span></div></a>
-    <a class="toc-item" href="#phase4"><div class="toc-num">PHASE 04</div><div class="toc-label">Agent 执行</div><div class="toc-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span></div></a>
+    <a class="toc-item" href="#phase4"><div class="toc-num">PHASE 04</div><div class="toc-label">Agent 执行</div><div class="toc-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span><span class="badge-mb">移动</span></div></a>
     <a class="toc-item" href="#phase5"><div class="toc-num">PHASE 05</div><div class="toc-label">代码评审</div><div class="toc-who"><span class="badge-all">全员</span></div></a>
-    <a class="toc-item" href="#phase6"><div class="toc-num">PHASE 06</div><div class="toc-label">QA 与验收</div><div class="toc-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span></div></a>
+    <a class="toc-item" href="#phase6"><div class="toc-num">PHASE 06</div><div class="toc-label">QA 与验收</div><div class="toc-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span><span class="badge-mb">移动</span></div></a>
     <a class="toc-item" href="#phase7"><div class="toc-num">PHASE 07</div><div class="toc-label">熵管理与清理</div><div class="toc-who"><span class="badge-all">全员</span></div></a>
+    <a class="toc-item" href="#phase8"><div class="toc-num">PHASE 08</div><div class="toc-label">MR 提交与 CI 监控</div><div class="toc-who"><span class="badge-all">全员</span></div></a>
     <a class="toc-item" href="#arch"><div class="toc-num">附录 A</div><div class="toc-label">架构层级与黄金原则</div><div class="toc-who"><span class="badge-all">全员</span></div></a>
     <a class="toc-item" href="#workflow"><div class="toc-num">附录 B</div><div class="toc-label">日常工作流总图</div><div class="toc-who"><span class="badge-all">全员</span></div></a>
     <a class="toc-item" href="#commands"><div class="toc-num">附录 C</div><div class="toc-label">命令速查 &amp; npm scripts</div><div class="toc-who"><span class="badge-all">全员</span></div></a>
@@ -583,17 +695,17 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 <div class="wrap">
   <div class="sh-tag">Phase 01</div>
   <h2 class="sh-title">需求接入与意图锁定</h2>
-  <p class="sh-desc">需求进入开发流程前，必须转化为结构化文档。口头需求、Slack 消息、模糊描述不能直接驱动 Agent。</p>
+  <p class="sh-desc">需求统一从公司协作平台（DevOps）获取，通过 MCP 拉取任务详情后转化为结构化文档。口头需求、会议讨论、模糊描述不能直接驱动 Agent。</p>
 
   <div class="phase vis">
     <div class="phase-aside">
       <div class="phase-num">PHASE 01</div>
       <div class="phase-name">需求<br>格式化</div>
-      <div class="phase-who"><span class="badge-all">前端 + 后端</span></div>
+      <div class="phase-who"><span class="badge-all">全员</span></div>
       <div class="phase-time">⏱ 0.5 ~ 1h / 需求</div>
     </div>
     <div class="phase-body">
-      <p class="phase-lead">每一条需求都必须产出一个结构化文档，放入 <code>docs/design/</code>。这份文档将成为 Agent 执行的唯一输入来源。</p>
+      <p class="phase-lead">每一条需求都必须产出一个结构化文档，放入 <code>docs/requirement/</code>。需求来源是公司 DevOps 协作平台，通过 <code>wushuang-devops</code> skill 拉取任务详情，再转化为 Agent 可执行的标准格式。</p>
 
       <div class="cl-legend">
         <span><span class="dot" style="background:var(--red)"></span>必须</span>
@@ -603,7 +715,11 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
       <ul class="cl">
         <li class="must">
           <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-          <div>以 Markdown 写需求文档，文件命名 <code>docs/design/[feature-name].md</code>，禁止口头传达后直接执行</div>
+          <div>通过 <code>wushuang-devops</code> skill 从 DevOps 平台获取任务详情（任务 ID、标题、描述、优先级、关联需求），作为需求文档的输入来源</div>
+        </li>
+        <li class="must">
+          <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+          <div>以 Markdown 写需求文档，文件命名 <code>docs/requirement/[feature-name].md</code>，文档头部记录来源任务 ID 以保持双向追溯</div>
         </li>
         <li class="must">
           <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
@@ -624,8 +740,12 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
       </ul>
 
       <div class="codeblock gold" style="margin-top:28px">
-        <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);margin-bottom:12px;letter-spacing:.1em">需求文档模板 · docs/design/[feature-name].md</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);margin-bottom:12px;letter-spacing:.1em">需求文档模板 · docs/requirement/[feature-name].md</div>
         <pre><span class="ck"># 需求：用户登录接口</span>
+
+<span class="cs">## 来源</span>
+<span class="cm">DevOps 任务: #12345 — 用户登录接口开发</span>
+<span class="cm">优先级: P1｜迭代: Sprint 2024-03</span>
 
 <span class="cs">## 背景</span>
 <span class="cm">用户需要通过邮箱+密码登录，获取 JWT Token</span>
@@ -645,7 +765,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 <span class="cm">- 不做短信验证码登录</span>
 
 <span class="cs">## 依赖</span>
-<span class="cm">- docs/design/user-schema.md（用户数据结构）</span></pre>
+<span class="cm">- docs/requirement/user-schema.md（用户数据结构）</span></pre>
       </div>
 
     </div>
@@ -657,31 +777,32 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 <section id="phase2">
 <div class="wrap">
   <div class="sh-tag">Phase 02</div>
-  <h2 class="sh-title">设计文档与执行计划</h2>
+  <h2 class="sh-title">需求文档与执行计划</h2>
   <p class="sh-desc">工程师主导系统设计。Agent 辅助生成备选方案，但架构决策由人做。设计完成后生成 Agent 可直接执行的任务拆解。</p>
 
   <div class="phase vis">
     <div class="phase-aside">
       <div class="phase-num">PHASE 02</div>
       <div class="phase-name">设计<br>决策</div>
-      <div class="phase-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span></div>
+      <div class="phase-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span><span class="badge-mb">移动</span></div>
       <div class="phase-time">⏱ 1 ~ 3h / 特性</div>
     </div>
     <div class="phase-body">
       <div class="role-tabs" id="tabs-p2">
         <div class="rtab fe active" onclick="switchTab('p2','fe',this)">FRONTEND</div>
         <div class="rtab be" onclick="switchTab('p2','be',this)">BACKEND</div>
+        <div class="rtab mb" onclick="switchTab('p2','mb',this)">MOBILE</div>
       </div>
 
       <div class="role-panel fe active" id="panel-p2-fe">
         <ul class="cl">
           <li class="must">
             <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-            <div>确定组件拆分方案：哪些是纯展示组件（Presentational），哪些是容器组件（Container），用文字或草图写入设计文档</div>
+            <div>确定组件拆分方案：哪些是纯展示组件（Presentational），哪些是容器组件（Container），用文字或草图写入需求文档</div>
           </li>
           <li class="must">
             <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-            <div>定义每个组件的 Props 接口（TypeScript 类型），写入 <code>docs/design/[feature].md</code>，不允许 Agent 自行推断接口形态</div>
+            <div>定义每个组件的 Props 接口（TypeScript 类型），写入 <code>docs/requirement/[feature].md</code>，不允许 Agent 自行推断接口形态</div>
           </li>
           <li class="must">
             <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
@@ -722,11 +843,11 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
         <ul class="cl">
           <li class="must">
             <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-            <div>定义 API 契约（接口路径、请求体、响应体的 TypeScript/JSON Schema 类型），写入设计文档，在执行前锁定</div>
+            <div>定义 API 契约（接口路径、请求体、响应体的 TypeScript/JSON Schema 类型），写入需求文档，在执行前锁定</div>
           </li>
           <li class="must">
             <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-            <div>明确数据库 Schema 变更：新增表/字段/索引，写入 <code>docs/design/</code>，附上 migration 文件命名规范</div>
+            <div>明确数据库 Schema 变更：新增表/字段/索引，写入 <code>docs/requirement/</code>，附上 migration 文件命名规范</div>
           </li>
           <li class="must">
             <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
@@ -767,6 +888,55 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
   输出: src/service/authService.test.ts</pre>
         </div>
       </div>
+
+      <div class="role-panel mb" id="panel-p2-mb">
+        <ul class="cl">
+          <li class="must">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>确定目标平台（iOS / Android / HarmonyOS），明确最低支持版本，写入需求文档</div>
+          </li>
+          <li class="must">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>按 Clean Architecture 分层设计：Domain（纯逻辑）→ Data（网络/存储）→ Presentation（ViewModel）→ UI（视图）</div>
+          </li>
+          <li class="must">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>定义 API 契约（与后端对齐），离线策略（网络不可用时的处理），以及需要的系统权限</div>
+          </li>
+          <li class="rec">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>标注 Figma 设计稿链接、交互说明（含手势和转场动画）、设备适配要求（手机/折叠屏/平板）</div>
+          </li>
+          <li class="must">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>写出执行计划：按 Domain → Data → Presentation → UI → Test 拆分，每层独立可测</div>
+          </li>
+        </ul>
+        <div class="codeblock mb">
+          <pre><span class="cm"># 移动端执行计划示例 · docs/plans/user-login-mobile.md</span>
+
+<span class="ck">任务列表（按 Clean Architecture 依赖顺序）：</span>
+<span class="cs">TASK-MB-01:</span> <span class="cv">Domain 层</span>
+  输出: {platform_src}/domain/auth/
+  内容: LoginUseCase 接口、AuthRepository 协议、User 实体
+
+<span class="cs">TASK-MB-02:</span> <span class="cv">Data 层</span>
+  输出: {platform_src}/data/auth/
+  内容: AuthRepositoryImpl、AuthApiService、TokenStorage
+
+<span class="cs">TASK-MB-03:</span> <span class="cv">Presentation 层</span>
+  输出: {platform_src}/presentation/auth/
+  内容: LoginViewModel、LoginState（不可变值类型）
+
+<span class="cs">TASK-MB-04:</span> <span class="cv">UI 层</span>
+  输出: {platform_src}/ui/auth/
+  内容: LoginScreen（SwiftUI / Compose / ArkUI）
+
+<span class="cs">TASK-MB-05:</span> <span class="cv">单元测试</span>
+  输出: {platform_test}/auth/
+  内容: Domain + Presentation 层测试，Mock Data 层</pre>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -783,7 +953,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
     <div class="phase-aside">
       <div class="phase-num">PHASE 03</div>
       <div class="phase-name">上下文<br>准备</div>
-      <div class="phase-who"><span class="badge-all">前端 + 后端</span></div>
+      <div class="phase-who"><span class="badge-all">全员</span></div>
       <div class="phase-time">⏱ 15 ~ 30min</div>
     </div>
     <div class="phase-body">
@@ -794,11 +964,11 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
         </li>
         <li class="must">
           <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-          <div>本次执行需要的设计文档、执行计划、相关 Schema 类型定义，全部已提交进仓库。未入库的信息 Agent 无法访问</div>
+          <div>本次执行需要的需求文档、执行计划、相关 Schema 类型定义，全部已提交进仓库。未入库的信息 Agent 无法访问</div>
         </li>
         <li class="must">
           <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-          <div>如果在 Slack / 会议中做过与本需求相关的决策，必须先提炼写入 <code>docs/design/[feature].md</code>，再启动执行</div>
+          <div>如果在会议讨论中做过与本需求相关的决策，必须先提炼写入 <code>docs/requirement/[feature].md</code>，并同步更新 DevOps 平台对应任务的描述，再启动执行</div>
         </li>
         <li class="rec">
           <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
@@ -825,9 +995,9 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 → docs/plans/user-login-ui.md   <span class="cm">（TASK-FE-01 完成，02 进行中）</span>
 
 <span class="cs">## 核心模块文档</span>
-→ docs/design/user-schema.md
-→ docs/design/auth-system.md
-→ docs/design/error-codes.md
+→ docs/requirement/user-schema.md
+→ docs/requirement/auth-system.md
+→ docs/requirement/error-codes.md
 
 <span class="cs">## 执行规则</span>
 - 所有代码必须通过 npm run lint 和 npm run test
@@ -850,7 +1020,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
     <div class="phase-aside">
       <div class="phase-num">PHASE 04</div>
       <div class="phase-name">Agent<br>执行</div>
-      <div class="phase-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span></div>
+      <div class="phase-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span><span class="badge-mb">移动</span></div>
       <div class="phase-time">⏱ Agent 自主运行</div>
     </div>
     <div class="phase-body">
@@ -859,6 +1029,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
       <div class="role-tabs" id="tabs-p4">
         <div class="rtab fe active" onclick="switchTab('p4','fe',this)">FRONTEND</div>
         <div class="rtab be" onclick="switchTab('p4','be',this)">BACKEND</div>
+        <div class="rtab mb" onclick="switchTab('p4','mb',this)">MOBILE</div>
       </div>
 
       <div class="role-panel fe active" id="panel-p4-fe">
@@ -877,7 +1048,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 按照 <span class="ref">docs/plans/user-login-ui.md</span> 中的 <span class="hi">TASK-FE-01</span> 执行：
 
 创建 <span class="hi">src/components/auth/LoginForm.tsx</span>，满足以下要求：
-- Props 接口参考 <span class="ref">docs/design/user-login.md</span> 中的 LoginFormProps 定义
+- Props 接口参考 <span class="ref">docs/requirement/user-login.md</span> 中的 LoginFormProps 定义
 - 组件不包含任何 API 调用，通过 onSubmit prop 暴露表单数据
 - 使用项目现有的 <span class="hi">src/components/ui/</span> 中的 Input 和 Button 组件
 - 邮箱字段做 format 校验，密码字段 minLength: 8
@@ -889,7 +1060,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
         <ul class="cl" style="margin-top:20px">
           <li class="must">
             <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-            <div>Prompt 必须引用执行计划中的具体任务 ID（TASK-FE-XX），让 Agent 对齐设计文档</div>
+            <div>Prompt 必须引用执行计划中的具体任务 ID（TASK-FE-XX），让 Agent 对齐需求文档</div>
           </li>
           <li class="must">
             <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
@@ -925,8 +1096,8 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 - 入参/出参类型使用 <span class="ref">src/types/auth.ts</span> 中已定义的 LoginPayload / LoginResponse
 - 通过 <span class="hi">src/repo/userRepo.findByEmail()</span> 查用户，禁止在 Service 层直接操作数据库
 - 密码校验使用 <span class="hi">src/lib/crypto.compareHash()</span>
-- 连续失败 5 次锁账号逻辑参考 <span class="ref">docs/design/auth-system.md</span> 中「失败限制」章节
-- 所有错误使用 <span class="ref">docs/design/error-codes.md</span> 中定义的错误码，禁止自定义新错误码
+- 连续失败 5 次锁账号逻辑参考 <span class="ref">docs/requirement/auth-system.md</span> 中「失败限制」章节
+- 所有错误使用 <span class="ref">docs/requirement/error-codes.md</span> 中定义的错误码，禁止自定义新错误码
 - 成功时写结构化日志：字段含 userId、action: "login"、ip
 
 完成后运行 <span class="hi">npm run lint && npm run test</span>，所有测试通过后开 PR</div>
@@ -951,6 +1122,52 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
           </li>
         </ul>
       </div>
+
+      <div class="role-panel mb" id="panel-p4-mb">
+        <p style="font-size:13px;color:var(--txt2);margin-bottom:16px">移动端 Prompt 示例（以 iOS 为例）：</p>
+
+        <div class="prompt-ex">
+          <div class="prompt-bar"><span class="prompt-label bad">✗ 低质量 Prompt</span></div>
+          <div class="prompt-body">
+            <span class="bad-t">帮我写一个 iOS 登录页面，用 SwiftUI，要好看</span>
+          </div>
+        </div>
+
+        <div class="prompt-ex">
+          <div class="prompt-bar"><span class="prompt-label good">✓ 高质量 Prompt</span></div>
+          <div class="prompt-body">
+按照 <span class="ref">docs/plans/user-login-mobile.md</span> 中的 <span class="hi">TASK-IOS-03</span> 执行：
+
+创建 <span class="hi">Sources/Presentation/Auth/LoginViewModel.swift</span>，满足以下要求：
+- 使用 <span class="ref">Sources/Domain/Auth/LoginUseCase.swift</span> 中定义的协议
+- 状态使用不可变 struct <span class="hi">LoginState</span>，通过 @Published 暴露
+- 禁止在 ViewModel 中持有 View 的强引用（GP-MB-007）
+- UI 更新通过 @MainActor 确保在主线程（GP-MB-004）
+- 网络请求处理超时（15s）、无网络、服务端错误三种场景（GP-MB-006）
+
+遵循全局黄金原则 GP-001~GP-012 + 移动端原则 GP-MB-001~GP-MB-008
+完成后运行 <span class="hi">swiftlint lint --strict</span> 确认无报错</div>
+        </div>
+
+        <ul class="cl" style="margin-top:20px">
+          <li class="must">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>Prompt 必须指定目标平台（iOS/Android/HarmonyOS）及对应的语言框架（Swift+SwiftUI / Kotlin+Compose / ArkTS+ArkUI）</div>
+          </li>
+          <li class="must">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>Domain 层代码必须保持纯逻辑，不引入任何平台 API（GP-MB-001），Prompt 中明确提醒</div>
+          </li>
+          <li class="must">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>引用全局 + 移动端 + 平台特定三层黄金原则，确保 Agent 了解所有约束</div>
+          </li>
+          <li class="note">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></div>
+            <div>多平台开发时，先完成 Domain 层（三端共享），再分别执行各平台的 Data/Presentation/UI 层</div>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
@@ -967,19 +1184,19 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
     <div class="phase-aside">
       <div class="phase-num">PHASE 05</div>
       <div class="phase-name">代码<br>评审</div>
-      <div class="phase-who"><span class="badge-all">前端 + 后端</span></div>
+      <div class="phase-who"><span class="badge-all">全员</span></div>
       <div class="phase-time">⏱ 20 ~ 40min / PR</div>
     </div>
     <div class="phase-body">
       <p class="phase-lead">AI 生成代码与人工编写代码有不同的失效模式。Review 清单需要专门针对这些特征设计。</p>
 
-      <div class="split">
+      <div class="split three">
         <div class="split-col fe-col">
           <div class="split-head fe">▸ 前端 Review 清单</div>
           <ul class="cl">
             <li class="must">
               <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-              <div><strong style="color:var(--txt)">Props 接口是否和设计文档一致</strong>——Agent 有时会自行扩展或收缩接口</div>
+              <div><strong style="color:var(--txt)">Props 接口是否和需求文档一致</strong>——Agent 有时会自行扩展或收缩接口</div>
             </li>
             <li class="must">
               <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
@@ -1024,11 +1241,40 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
             </li>
             <li class="rec">
               <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-              <div>文档漂移检查：新增的接口参数是否已同步更新到 <code>docs/design/</code> 中对应的文档</div>
+              <div>文档漂移检查：新增的接口参数是否已同步更新到 <code>docs/requirement/</code> 中对应的文档</div>
             </li>
             <li class="note">
               <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></div>
               <div>单元测试通过 CI 自动验证，Review 中不需要人工计算覆盖率，只检查关键路径是否有测试</div>
+            </li>
+          </ul>
+        </div>
+        <div class="split-col mb-col">
+          <div class="split-head mb">▸ 移动端 Review 清单</div>
+          <ul class="cl">
+            <li class="must">
+              <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+              <div><strong style="color:var(--txt)">Domain 层是否纯逻辑</strong>——不引入 UIKit/SwiftUI/Android SDK/ArkUI 等平台 API（GP-MB-001）</div>
+            </li>
+            <li class="must">
+              <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+              <div><strong style="color:var(--txt)">层级依赖合规</strong>——UI 层是否直接调用了 Data 层（必须经过 Presentation）（GP-MB-002）</div>
+            </li>
+            <li class="must">
+              <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+              <div><strong style="color:var(--txt)">内存安全</strong>——ViewModel 是否持有 View 强引用（GP-MB-007），是否有循环引用风险</div>
+            </li>
+            <li class="rec">
+              <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+              <div>线程安全：UI 更新是否在主线程（GP-MB-004），后台任务是否正确切换</div>
+            </li>
+            <li class="rec">
+              <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+              <div>平台特定：iOS 无 force unwrap、Android 无 !!、HarmonyOS 无 FA 模型废弃 API</div>
+            </li>
+            <li class="note">
+              <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></div>
+              <div>深色模式、横竖屏切换、无障碍（VoiceOver/TalkBack）由 QA 阶段在真机验证</div>
             </li>
           </ul>
         </div>
@@ -1053,13 +1299,14 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
     <div class="phase-aside">
       <div class="phase-num">PHASE 06</div>
       <div class="phase-name">QA<br>验收</div>
-      <div class="phase-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span></div>
+      <div class="phase-who"><span class="badge-fe">前端</span><span class="badge-be">后端</span><span class="badge-mb">移动</span></div>
       <div class="phase-time">⏱ 特性相关</div>
     </div>
     <div class="phase-body">
       <div class="role-tabs" id="tabs-p6">
         <div class="rtab fe active" onclick="switchTab('p6','fe',this)">FRONTEND</div>
         <div class="rtab be" onclick="switchTab('p6','be',this)">BACKEND</div>
+        <div class="rtab mb" onclick="switchTab('p6','mb',this)">MOBILE</div>
       </div>
 
       <div class="role-panel fe active" id="panel-p6-fe">
@@ -1103,11 +1350,40 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
           </li>
           <li class="rec">
             <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-            <div>压测关键接口：QPS 目标、超时配置、限流阈值是否符合 <code>docs/design/</code> 中定义的平台可靠性要求</div>
+            <div>压测关键接口：QPS 目标、超时配置、限流阈值是否符合 <code>docs/requirement/</code> 中定义的平台可靠性要求</div>
           </li>
           <li class="note">
             <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></div>
             <div>发现 Bug 后：将报错日志 + 重现步骤写入 Bug 文档 → 让 Agent 读取日志自主定位并修复 → Review 修复 PR</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="role-panel mb" id="panel-p6-mb">
+        <ul class="cl">
+          <li class="must">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>在真机（非模拟器）上逐条验证 AC，覆盖核心交互路径</div>
+          </li>
+          <li class="must">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>弱网环境（3G 模拟）下测试 API 调用，确认超时处理和错误提示正常</div>
+          </li>
+          <li class="must">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>在最低支持系统版本上验证（iOS 16.0 / API 26 / HarmonyOS API 12）</div>
+          </li>
+          <li class="rec">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>内存泄漏检测：iOS 用 Instruments Leaks、Android 用 LeakCanary、HarmonyOS 用 DevEco Profiler</div>
+          </li>
+          <li class="rec">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <div>深色模式和动态字体适配验证，横竖屏切换是否正常</div>
+          </li>
+          <li class="note">
+            <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></div>
+            <div>发现 Bug 后：录屏 + 复现步骤写入文档 → Agent 读取后修复 → 真机复验</div>
           </li>
         </ul>
       </div>
@@ -1127,7 +1403,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
     <div class="phase-aside">
       <div class="phase-num">PHASE 07</div>
       <div class="phase-name">系统<br>健康</div>
-      <div class="phase-who"><span class="badge-all">前端 + 后端</span></div>
+      <div class="phase-who"><span class="badge-all">全员</span></div>
       <div class="phase-time">⏱ 双周 1 次</div>
     </div>
     <div class="phase-body">
@@ -1140,7 +1416,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
         </li>
         <li class="must">
           <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
-          <div>每双周让 Agent 扫描一次文档新鲜度：对照代码检查 <code>docs/design/</code> 中的内容是否仍然准确，陈旧文档自动开 Cleanup PR</div>
+          <div>每双周让 Agent 扫描一次文档新鲜度：对照代码检查 <code>docs/requirement/</code> 中的内容是否仍然准确，陈旧文档自动开 Cleanup PR</div>
         </li>
         <li class="rec">
           <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
@@ -1182,13 +1458,74 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 </div>
 </section>
 
+<!-- ══════ PHASE 8 ══════ -->
+<section id="phase8">
+<div class="wrap">
+  <div class="sh-tag">Phase 08</div>
+  <h2 class="sh-title">MR 提交与 CI 监控</h2>
+  <p class="sh-desc">代码完成、门控通过后，自动创建 GitLab Merge Request 并持续监控 CI 状态。CI 失败时 Agent 自动修复并重新提交，直到产出可合并的 MR。</p>
+
+  <div class="phase vis">
+    <div class="phase-aside">
+      <div class="phase-num">PHASE 08</div>
+      <div class="phase-name">MR<br>交付</div>
+      <div class="phase-who"><span class="badge-all">全员</span></div>
+      <div class="phase-time">⏱ 自动</div>
+    </div>
+    <div class="phase-body">
+      <p class="phase-lead">使用内置的 <code>gitlab</code> skill 完成从 commit 到 MR 创建的全流程。CI 监控在后台运行，失败时自动触发修复循环。</p>
+
+      <ul class="cl">
+        <li class="must">
+          <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+          <div>git commit 必须遵循规范格式：<code>&lt;type&gt;: #&lt;taskId&gt;@&lt;taskName&gt;</code>，如 <code>feat: #TS-46474@新增巴士订单订单明细展示&amp;契约对接</code></div>
+        </li>
+        <li class="must">
+          <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+          <div>MR 描述自动生成：关联 DevOps 任务 ID、变更摘要、AC 完成清单、门控通过状态、影响的架构层级</div>
+        </li>
+        <li class="must">
+          <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+          <div>MR 创建后自动启动后台 CI 监控（<code>gitlab mr watch -B</code>），CI 失败时 Agent 自动分析、修复、push，最多重试 3 轮</div>
+        </li>
+        <li class="rec">
+          <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+          <div>使用 <code>gitlab mr checks</code> 查看 MR 可合并状态、CI 状态和未解决讨论数</div>
+        </li>
+        <li class="note">
+          <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg></div>
+          <div>3 轮自动修复仍失败时流水线暂停，展示 pipeline 链接和失败详情，等待人工介入</div>
+        </li>
+      </ul>
+
+      <div class="codeblock gold" style="margin-top:24px">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);margin-bottom:12px;letter-spacing:.1em">MR 全流程命令</div>
+        <pre><span class="cm"># 一键创建 MR（自动生成描述 + 监控 CI）</span>
+<span class="ck">/hx-mr user-login --project lehu/bffservice</span>
+
+<span class="cm"># 或在全自动流水线中自动执行</span>
+<span class="ck">/hx-go user-login --task 46474 --profile backend</span>
+<span class="cm"># → Phase 01~07 完成后自动进入 Phase 08</span>
+
+<span class="cm"># 手动查看 MR 状态</span>
+<span class="cs">.claude/skills/gitlab/scripts/gitlab mr checks -p lehu/bffservice -i 123</span>
+
+<span class="cm"># 查看后台监控日志</span>
+<span class="cs">.claude/skills/gitlab/scripts/gitlab mr watch-log -p lehu/bffservice -i 123</span></pre>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
 <!-- ══════ ARCH ══════ -->
 <section id="arch">
 <div class="wrap">
   <div class="sh-tag">附录 A</div>
   <h2 class="sh-title">架构层级与依赖规则</h2>
-  <p class="sh-desc">依赖只能单向流动。每一层只能导入其左侧的层。结构测试和 CI 自动阻断违规——不是建议，是强制。</p>
+  <p class="sh-desc">依赖只能单向流动。每一层只能导入其左侧的层。结构测试和 CI 自动阻断违规——不是建议，是强制。各团队通过 Profile 系统定义各自的架构层级。</p>
 
+  <p style="font-size:12px;color:var(--be);font-family:var(--mono);margin-bottom:8px;letter-spacing:.12em">▸ 后端架构</p>
   <div class="layers">
     <div class="layer hi-be">Types</div>
     <div class="layer-arr">→</div>
@@ -1199,13 +1536,39 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
     <div class="layer hi-be">Service</div>
     <div class="layer-arr">→</div>
     <div class="layer hi-be">Runtime</div>
-    <div class="layer-arr">→</div>
-    <div class="layer hi-fe">UI</div>
   </div>
-  <p style="font-size:12px;color:var(--txt3);font-family:var(--mono);margin-top:8px;margin-bottom:36px">
-    <span style="color:var(--be)">■</span> 后端主要工作区 &nbsp;&nbsp;
-    <span style="color:var(--fe)">■</span> 前端主要工作区 &nbsp;&nbsp;
-    Auth / Telemetry / Feature Flags 通过 Providers 接口注入，不属于任何一层
+
+  <p style="font-size:12px;color:var(--fe);font-family:var(--mono);margin-top:20px;margin-bottom:8px;letter-spacing:.12em">▸ 前端架构</p>
+  <div class="layers">
+    <div class="layer hi-fe">Types</div>
+    <div class="layer-arr">→</div>
+    <div class="layer hi-fe">Services</div>
+    <div class="layer-arr">→</div>
+    <div class="layer hi-fe">Stores</div>
+    <div class="layer-arr">→</div>
+    <div class="layer hi-fe">Hooks</div>
+    <div class="layer-arr">→</div>
+    <div class="layer hi-fe">Components</div>
+    <div class="layer-arr">→</div>
+    <div class="layer hi-fe">Pages</div>
+  </div>
+
+  <p style="font-size:12px;color:var(--mb);font-family:var(--mono);margin-top:20px;margin-bottom:8px;letter-spacing:.12em">▸ 移动端架构（Clean Architecture）</p>
+  <div class="layers">
+    <div class="layer" style="background:var(--mbd);border-color:rgba(232,135,74,.25);color:var(--mb)">Domain</div>
+    <div class="layer-arr">→</div>
+    <div class="layer" style="background:var(--mbd);border-color:rgba(232,135,74,.25);color:var(--mb)">Data</div>
+    <div class="layer-arr">→</div>
+    <div class="layer" style="background:var(--mbd);border-color:rgba(232,135,74,.25);color:var(--mb)">Presentation</div>
+    <div class="layer-arr">→</div>
+    <div class="layer" style="background:var(--mbd);border-color:rgba(232,135,74,.25);color:var(--mb)">UI</div>
+  </div>
+
+  <p style="font-size:12px;color:var(--txt3);font-family:var(--mono);margin-top:12px;margin-bottom:36px">
+    <span style="color:var(--be)">■</span> 后端 &nbsp;
+    <span style="color:var(--fe)">■</span> 前端 &nbsp;
+    <span style="color:var(--mb)">■</span> 移动端 &nbsp;&nbsp;
+    横切关注点（Auth / Telemetry / DI）通过 Providers 接口注入，不属于任何一层
   </p>
 
   <div class="rgrid">
@@ -1239,6 +1602,26 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
       <div class="rcard-title">UI 层 — 界面</div>
       <div class="rcard-body"><code>src/components/ src/pages/ src/hooks/</code><br>React 组件和 Hook。组件负责展示，Hook 负责数据获取和状态管理。禁止直接操作后端数据库。</div>
     </div>
+    <div class="rcard">
+      <div class="rcard-tag" style="color:var(--mb)">▸ 移动端</div>
+      <div class="rcard-title">Domain 层 — 纯业务逻辑</div>
+      <div class="rcard-body"><code>{platform_src}/domain/</code><br>实体定义、Use Case 接口、Repository 协议。纯逻辑无平台依赖，三端可共享。禁止引入任何平台 API。</div>
+    </div>
+    <div class="rcard">
+      <div class="rcard-tag" style="color:var(--mb)">▸ 移动端</div>
+      <div class="rcard-title">Data 层 — 数据源</div>
+      <div class="rcard-body"><code>{platform_src}/data/</code><br>网络请求、本地存储、缓存策略的实现。只能导入 Domain 层。Repository 实现放在此层。</div>
+    </div>
+    <div class="rcard">
+      <div class="rcard-tag" style="color:var(--mb)">▸ 移动端</div>
+      <div class="rcard-title">Presentation 层 — 状态管理</div>
+      <div class="rcard-body"><code>{platform_src}/presentation/</code><br>ViewModel / 状态管理，将 Domain 数据转化为 UI 状态。状态必须为不可变值类型。</div>
+    </div>
+    <div class="rcard">
+      <div class="rcard-tag" style="color:var(--mb)">▸ 移动端</div>
+      <div class="rcard-title">UI 层 — 视图</div>
+      <div class="rcard-body"><code>{platform_src}/ui/</code><br>SwiftUI / Jetpack Compose / ArkUI 视图层。只做渲染和用户交互，只能导入 Domain 和 Presentation 层。</div>
+    </div>
     <div class="rcard w2">
       <div class="rcard-tag gold">▸ 横切关注点（跨所有层）</div>
       <div class="rcard-title">Providers — 统一注入接口</div>
@@ -1262,7 +1645,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
       <div class="wf-step shared-s">
         <div class="wf-snum">01</div>
         <div class="wf-stitle">写需求文档</div>
-        <div class="wf-sbody">新建 <code>docs/design/[feat].md</code>，填写 AC、影响层级、边界约束</div>
+        <div class="wf-sbody">新建 <code>docs/requirement/[feat].md</code>，填写 AC、影响层级、边界约束</div>
         <span class="wf-cmd">hx:doc [feat]</span>
       </div>
       <div class="wf-step shared-s">
@@ -1287,25 +1670,31 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 
     <div class="wf-arrow">↓</div>
 
-    <div class="wf-row-label">▸ 执行阶段（Agent）</div>
+    <div class="wf-row-label">▸ 执行阶段（Agent · 按 Profile 并行）</div>
     <div class="wf-row">
       <div class="wf-step fe-s">
         <div class="wf-snum">FE</div>
         <div class="wf-stitle">前端任务执行</div>
         <div class="wf-sbody">Agent 读取 TASK-FE-XX，产出组件/Hook/测试</div>
-        <span class="wf-cmd">hx:run fe [task-id]</span>
+        <span class="wf-cmd">/hx-run --profile frontend</span>
       </div>
       <div class="wf-step be-s">
         <div class="wf-snum">BE</div>
         <div class="wf-stitle">后端任务执行</div>
         <div class="wf-sbody">Agent 读取 TASK-BE-XX，产出 Service/Repo/Controller</div>
-        <span class="wf-cmd">hx:run be [task-id]</span>
+        <span class="wf-cmd">/hx-run --profile backend</span>
+      </div>
+      <div class="wf-step mb-s">
+        <div class="wf-snum">MB</div>
+        <div class="wf-stitle">移动端任务执行</div>
+        <div class="wf-sbody">Agent 读取 TASK-MB-XX，按 Clean Architecture 产出 Domain/Data/UI</div>
+        <span class="wf-cmd">/hx-run --profile mobile:ios</span>
       </div>
       <div class="wf-step gate-s">
         <div class="wf-snum">✓</div>
         <div class="wf-stitle">本地门控</div>
-        <div class="wf-sbody">Agent 自动执行：lint → typecheck → test。失败则自动修复后重跑，通过后开 PR</div>
-        <span class="wf-cmd">hx:gate</span>
+        <div class="wf-sbody">按 Profile 执行对应门控命令。失败则自动修复后重跑</div>
+        <span class="wf-cmd">/hx-gate --profile</span>
       </div>
     </div>
 
@@ -1365,28 +1754,66 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 <div class="wrap">
   <div class="sh-tag">附录 C</div>
   <h2 class="sh-title">命令速查 &amp; npm scripts</h2>
-  <p class="sh-desc">所有命令统一挂在 <code>package.json</code> scripts 下，前缀 <code>hx:</code>（harness 缩写）。复制下方配置到项目根目录即可使用。</p>
+  <p class="sh-desc">通过 Claude Code slash commands（<code>/hx-xxx</code>）驱动，所有命令支持 <code>--profile</code> 参数指定团队配置。同时提供 npm scripts 供 CI 和本地使用。</p>
 
-  <!-- ALIAS TABLE -->
+  <!-- SLASH COMMANDS TABLE -->
+  <div style="font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.12em;margin-bottom:12px">▸ CLAUDE CODE SLASH COMMANDS</div>
+  <table class="alias-table">
+    <tr>
+      <th>命令</th><th>Profile</th><th>说明</th>
+    </tr>
+    <tr><td>/hx-go [feat] [--task id] --profile [team]</td><td style="color:var(--teal)">必须</td><td>全自动流水线：从 DevOps 拉取任务 → Phase 01→08（含 MR），4 个人工检查点</td></tr>
+    <tr><td>/hx-run-all [feat] --profile [team]</td><td style="color:var(--teal)">必须</td><td>批量执行：跳过 01-02，执行所有 pending TASK</td></tr>
+    <tr><td>/hx-doc [feat] [--task id] --profile [team]</td><td style="color:var(--teal)">必须</td><td>从 DevOps 拉取任务详情，创建需求文档</td></tr>
+    <tr><td>/hx-plan [feat] --profile [team]</td><td style="color:var(--teal)">必须</td><td>生成执行计划（按团队策略拆分 TASK）</td></tr>
+    <tr><td>/hx-ctx --profile [team]</td><td style="color:var(--gold)">可选</td><td>校验上下文 + Profile 文件完整性</td></tr>
+    <tr><td>/hx-run [feat] [task-id] --profile [team]</td><td style="color:var(--teal)">必须</td><td>按 TASK-ID 驱动 Agent 执行</td></tr>
+    <tr><td>/hx-review --profile [team]</td><td style="color:var(--gold)">可选</td><td>按团队审查清单审查 diff</td></tr>
+    <tr><td>/hx-gate --profile [team]</td><td style="color:var(--gold)">可选</td><td>运行团队对应的门控命令</td></tr>
+    <tr><td>/hx-fix --profile [team]</td><td style="color:var(--gold)">可选</td><td>读取 Review 意见按团队规范修复</td></tr>
+    <tr><td>/hx-done [task-id]</td><td style="color:var(--txt3)">无</td><td>标记任务完成，更新进度</td></tr>
+    <tr><td>/hx-entropy --profile [team]</td><td style="color:var(--gold)">可选</td><td>熵扫描（全局 + 团队专项）</td></tr>
+    <tr><td>/hx-mr [feat] [--project path]</td><td style="color:var(--teal)">必须</td><td>创建 GitLab MR + 后台 CI 监控</td></tr>
+  </table>
+
+  <div class="dn" style="margin-top:16px;margin-bottom:32px">
+    <strong>Profile 参数值：</strong><code>backend</code> · <code>frontend</code> · <code>mobile:ios</code> · <code>mobile:android</code> · <code>mobile:harmony</code><br>
+    配置文件位于 <code>harness-scaffold/profiles/</code>，包含团队架构层级、任务拆分规则、黄金原则、审查清单、需求模板和计划模板。
+  </div>
+
+  <!-- GATE COMMANDS TABLE -->
+  <div style="font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.12em;margin-bottom:12px">▸ 团队门控命令（由 profile.yaml 中 gate_commands 定义）</div>
+  <table class="alias-table">
+    <tr>
+      <th>步骤</th><th>后端（Go）</th><th>前端（TS/React）</th><th>iOS（Swift）</th><th>Android（Kotlin）</th><th>HarmonyOS（ArkTS）</th>
+    </tr>
+    <tr><td>Lint</td><td>golangci-lint run ./...</td><td>eslint . --max-warnings 0</td><td>swiftlint lint --strict</td><td>./gradlew lintDebug</td><td>hvigorw lintHarDebug</td></tr>
+    <tr><td>Build</td><td>go build ./...</td><td>tsc --noEmit</td><td>xcodebuild build</td><td>./gradlew assembleDebug</td><td>hvigorw assembleHap</td></tr>
+    <tr><td>Test</td><td>go test ./... -v</td><td>vitest run --verbose</td><td>xcodebuild test</td><td>./gradlew testDebugUnitTest</td><td>hvigorw test</td></tr>
+    <tr><td>Arch</td><td>go vet ./...</td><td>node scripts/hx-arch-test.js</td><td>—</td><td>—</td><td>—</td></tr>
+  </table>
+
+  <div class="dn" style="margin-top:12px;margin-bottom:24px">
+    <strong>门控配置位置：</strong>后端/前端在 <code>profiles/{team}/profile.yaml</code> 的 <code>gate_commands</code> 字段，移动端在 <code>profiles/mobile/platforms/{platform}.yaml</code> 的 <code>gate_commands</code> 字段。<code>/hx-gate</code> 命令会自动读取对应 profile 执行。
+  </div>
+
+  <!-- FRONTEND NPM SCRIPTS -->
+  <div style="font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.12em;margin-bottom:12px">▸ 前端 NPM SCRIPTS（仅前端项目使用）</div>
   <table class="alias-table">
     <tr>
       <th>命令</th><th>实际执行</th><th>说明</th>
     </tr>
-    <tr><td>hx:doc [feat]</td><td>node scripts/hx-new-doc.js</td><td>从模板新建需求文档，自动填充文件名和日期</td></tr>
-    <tr><td>hx:plan [feat]</td><td>node scripts/hx-new-plan.js</td><td>新建执行计划文件，带 TASK-XX 模板</td></tr>
-    <tr><td>hx:ctx</td><td>node scripts/hx-ctx-check.js</td><td>校验 AGENTS.md ≤100行、所有文档链接有效</td></tr>
-    <tr><td>hx:check</td><td>hx:ctx &amp;&amp; hx:lint &amp;&amp; hx:type</td><td>执行前完整检查：上下文 + 代码质量</td></tr>
     <tr><td>hx:lint</td><td>eslint . --max-warnings 0</td><td>零容忍 lint，warnings 也视为错误</td></tr>
-    <tr><td>hx:type</td><td>tsc --noEmit</td><td>TypeScript 类型检查，不产生输出文件</td></tr>
-    <tr><td>hx:test</td><td>vitest run --reporter=verbose</td><td>全量测试，输出详细结果</td></tr>
-    <tr><td>hx:gate</td><td>hx:lint &amp;&amp; hx:type &amp;&amp; hx:test</td><td>本地门控：lint + 类型 + 测试，全通过才能提交</td></tr>
-    <tr><td>hx:run fe [id]</td><td>node scripts/hx-agent-run.js fe</td><td>触发前端 Agent 执行指定 TASK-ID</td></tr>
-    <tr><td>hx:run be [id]</td><td>node scripts/hx-agent-run.js be</td><td>触发后端 Agent 执行指定 TASK-ID</td></tr>
-    <tr><td>hx:review</td><td>node scripts/hx-review-checklist.js</td><td>打印当前 PR 的 Review 清单（按角色筛选）</td></tr>
-    <tr><td>hx:fix</td><td>node scripts/hx-agent-fix.js</td><td>读取 PR 评论，触发 Agent 自动修复</td></tr>
-    <tr><td>hx:done [id]</td><td>node scripts/hx-task-done.js</td><td>标记 TASK-ID 完成，更新进度 JSON</td></tr>
-    <tr><td>hx:entropy</td><td>node scripts/hx-entropy-scan.js</td><td>扫描最近合并的 PR，输出潜在模式问题供人工确认</td></tr>
-    <tr><td>hx:clean</td><td>node scripts/hx-doc-freshness.js</td><td>检查文档新鲜度，列出与代码不一致的文档</td></tr>
+    <tr><td>hx:type</td><td>tsc --noEmit</td><td>TypeScript 类型检查</td></tr>
+    <tr><td>hx:test</td><td>node scripts/hx-vitest.cjs run --reporter=verbose</td><td>全量测试，输出详细结果（自动兜底 Node &gt;= 18）</td></tr>
+    <tr><td>hx:test:unit</td><td>node scripts/hx-vitest.cjs run tests/unit --reporter=verbose</td><td>仅运行单元测试</td></tr>
+    <tr><td>hx:test:integration</td><td>node scripts/hx-vitest.cjs run tests/integration --reporter=verbose</td><td>运行 CLI 集成测试</td></tr>
+    <tr><td>hx:gate</td><td>node scripts/hx-gate.js</td><td>按 profile 的 gate_commands 执行本地门控</td></tr>
+    <tr><td>hx:check</td><td>node scripts/hx-check.js</td><td>完整检查：ctx + gate</td></tr>
+    <tr><td>hx:arch</td><td>node scripts/hx-arch-test.js</td><td>架构合规测试</td></tr>
+    <tr><td>hx:ctx</td><td>node scripts/hx-ctx-check.js</td><td>校验 AGENTS.md、requirement、plans 与 profile 资源</td></tr>
+    <tr><td>hx:entropy</td><td>node scripts/hx-entropy-scan.js</td><td>AI Slop 模式扫描</td></tr>
+    <tr><td>hx:clean</td><td>node scripts/hx-doc-freshness.js</td><td>文档新鲜度检查</td></tr>
   </table>
 
   <!-- PACKAGE.JSON -->
@@ -1398,6 +1825,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
       </div>
       <div class="cmd-body"><pre><span class="cm">"scripts": {</span>
   <span class="cm">// ── 文档工具 ──</span>
+  <span class="ck">"hx:install"</span>:  <span class="cs">"node scripts/hx-install.cjs"</span>,
   <span class="ck">"hx:doc"</span>:      <span class="cs">"node scripts/hx-new-doc.js"</span>,
   <span class="ck">"hx:plan"</span>:     <span class="cs">"node scripts/hx-new-plan.js"</span>,
   <span class="ck">"hx:ctx"</span>:      <span class="cs">"node scripts/hx-ctx-check.js"</span>,
@@ -1406,13 +1834,15 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
   <span class="ck">"hx:lint"</span>:     <span class="cs">"eslint . --max-warnings 0"</span>,
   <span class="ck">"hx:lint:fix"</span>: <span class="cs">"eslint . --fix"</span>,
   <span class="ck">"hx:type"</span>:     <span class="cs">"tsc --noEmit"</span>,
-  <span class="ck">"hx:test"</span>:     <span class="cs">"vitest run --reporter=verbose"</span>,
-  <span class="ck">"hx:test:w"</span>:   <span class="cs">"vitest --watch"</span>,
-  <span class="ck">"hx:test:cov"</span>: <span class="cs">"vitest run --coverage"</span>,
+  <span class="ck">"hx:test"</span>:     <span class="cs">"node scripts/hx-vitest.cjs run --reporter=verbose"</span>,
+  <span class="ck">"hx:test:unit"</span>:<span class="cs">"node scripts/hx-vitest.cjs run tests/unit --reporter=verbose"</span>,
+  <span class="ck">"hx:test:integration"</span>: <span class="cs">"node scripts/hx-vitest.cjs run tests/integration --reporter=verbose"</span>,
+  <span class="ck">"hx:test:w"</span>:   <span class="cs">"node scripts/hx-vitest.cjs --watch"</span>,
+  <span class="ck">"hx:test:cov"</span>: <span class="cs">"node scripts/hx-vitest.cjs run --coverage"</span>,
 
   <span class="cm">// ── 门控（顺序执行，任一失败即停）──</span>
-  <span class="ck">"hx:gate"</span>:     <span class="cs">"npm run hx:lint && npm run hx:type && npm run hx:test"</span>,
-  <span class="ck">"hx:check"</span>:    <span class="cs">"npm run hx:ctx && npm run hx:gate"</span>,
+  <span class="ck">"hx:gate"</span>:     <span class="cs">"node scripts/hx-gate.js"</span>,
+  <span class="ck">"hx:check"</span>:    <span class="cs">"node scripts/hx-check.js"</span>,
 
   <span class="cm">// ── Agent 执行 ──</span>
   <span class="ck">"hx:run"</span>:      <span class="cs">"node scripts/hx-agent-run.js"</span>,
@@ -1428,7 +1858,7 @@ footer p{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing
 
   <span class="cm">// ── 架构合规测试（CI 专用）──</span>
   <span class="ck">"hx:arch"</span>:     <span class="cs">"node scripts/hx-arch-test.js"</span>,
-  <span class="ck">"ci"</span>:          <span class="cs">"npm run hx:lint && npm run hx:type && npm run hx:test && npm run hx:arch"</span>
+  <span class="ck">"ci"</span>:          <span class="cs">"npm run hx:lint && npm run hx:type && npm run hx:test && npm run hx:arch && npm run hx:ctx"</span>
 <span class="cm">}</span></pre></div>
     </div>
 
@@ -1682,31 +2112,29 @@ npx husky init
         <button class="cmd-copy" onclick="copyHook('commit-msg-content',this)">复制</button>
       </div>
       <pre id="commit-msg-content"><span class="cm">#!/bin/sh
-# .husky/commit-msg — 强制 commit 消息格式</span>
+# .husky/commit-msg — 强制 commit 消息格式
+# 格式: &lt;type&gt;: #&lt;taskId&gt;@&lt;taskName&gt;
+# 示例: feat: #TS-46474@新增巴士订单订单明细展示&amp;契约对接</span>
 
 COMMIT_MSG=$(cat "$1")
 
 <span class="cm"># 允许的前缀类型</span>
-PATTERN=<span class="cs">'^(feat|fix|docs|refactor|test|chore|ci|revert)(\(.+\))?: .{5,72}$'</span>
+TYPES=<span class="cs">"feat|fix|docs|refactor|test|chore|ci|revert"</span>
+
+<span class="cm"># 格式: &lt;type&gt;: #&lt;taskId&gt;@&lt;taskName&gt;</span>
+PATTERN=<span class="cs">"^(${TYPES}): #[A-Z]+-[0-9]+@.+"</span>
 
 <span class="cv">if</span> ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; <span class="cv">then</span>
   echo <span class="ce">""</span>
   echo <span class="ce">"✗ commit 消息格式不符合规范"</span>
   echo <span class="ce">""</span>
-  echo <span class="cs">"  正确格式: &lt;type&gt;(&lt;scope&gt;): &lt;description&gt;"</span>
-  echo <span class="cs">"  示例:     feat(auth): add login rate limiting"</span>
-  echo <span class="cs">"            fix(ui): correct LoginForm loading state"</span>
+  echo <span class="cs">"  正确格式: &lt;type&gt;: #&lt;taskId&gt;@&lt;taskName&gt;"</span>
+  echo <span class="cs">"  示例:     feat: #TS-46474@新增巴士订单订单明细展示&amp;契约对接"</span>
+  echo <span class="cs">"            fix: #TS-12345@修复登录页密码校验异常"</span>
   echo <span class="cs">"  类型:     feat fix docs refactor test chore ci revert"</span>
+  echo <span class="cs">"  taskId:   DevOps 平台任务 ID（如 TS-46474）"</span>
   echo <span class="ce">""</span>
   exit 1
-<span class="cv">fi</span>
-
-<span class="cm"># 如果消息包含 TASK-XX，校验任务 ID 格式</span>
-<span class="cv">if</span> echo "$COMMIT_MSG" | grep -qE 'TASK-'; <span class="cv">then</span>
-  <span class="cv">if</span> ! echo "$COMMIT_MSG" | grep -qE 'TASK-(FE|BE)-[0-9]{2}'; <span class="cv">then</span>
-    echo <span class="ce">"✗ TASK ID 格式应为 TASK-FE-01 或 TASK-BE-01"</span>
-    exit 1
-  <span class="cv">fi</span>
 <span class="cv">fi</span>
 
 echo <span class="cs">"✓ commit 消息格式校验通过"</span></pre>
@@ -1850,18 +2278,20 @@ npm run hx:check
 <span class="cm"># 4. 阅读入口文档（必读）</span>
 cat AGENTS.md
 cat docs/golden-principles.md
+ls .claude/commands
+ls -l .CLAUDE.md   <span class="cm"># 应指向 AGENTS.md</span>
 
 <span class="cm"># 5. 开始第一个任务</span>
-npm run hx:doc [feature-name]   <span class="cm"># 从模板新建需求文档</span>
-npm run hx:plan [feature-name]  <span class="cm"># 新建执行计划</span>
-npm run hx:run fe TASK-FE-01    <span class="cm"># 触发 Agent 执行</span></pre></div>
+npm run hx:doc -- [feature-name] --profile backend   <span class="cm"># 从模板新建需求文档</span>
+npm run hx:plan -- [feature-name] --profile backend  <span class="cm"># 新建执行计划</span>
+npm run hx:run -- [feature-name] TASK-BE-01 --profile backend    <span class="cm"># 触发 Agent 执行</span></pre></div>
     </div>
   </div>
 
   <div class="dn" style="margin-top:8px">
     <strong>Shell 别名（可选但推荐）：</strong>将以下内容加入 <code>~/.zshrc</code> 或 <code>~/.bashrc</code>，在任意目录快速调用。<br>
     <code style="margin-top:8px;display:inline-block">alias hx='npm run hx'</code>
-    &nbsp;&nbsp;之后就可以直接输入 <code>hx:gate</code>、<code>hx:run fe TASK-FE-01</code> 而不加 <code>npm run</code> 前缀。
+    &nbsp;&nbsp;之后就可以直接输入 <code>hx:gate</code>，或运行 <code>npm run hx:run -- user-login TASK-FE-01 --profile frontend</code> 这类完整命令。
   </div>
 </div>
 </section>
@@ -1875,6 +2305,84 @@ npm run hx:run fe TASK-FE-01    <span class="cm"># 触发 Agent 执行</span></p
 
   <div class="dn">
     <strong>一句话定义：</strong>Skill = 放在 <code>mnt/skills/</code> 下的目录，包含一个 <code>SKILL.md</code> 文件以及可选的脚本、参考文档和资产文件。Agent 每次会话读取所有 Skill 的 <strong>frontmatter</strong>（name + description），决定是否调用某个 Skill 的完整内容。
+  </div>
+
+  <!-- INSTALL -->
+  <div class="sh-tag" style="margin-top:48px">Skill 安装与管理</div>
+
+  <div class="dn" style="margin-bottom:8px">
+    Skill 可以安装在两个级别：<strong>项目级</strong>（仅当前项目可用）和<strong>用户级</strong>（所有项目共享）。选择取决于 Skill 的通用程度。
+  </div>
+
+  <div class="install-scope">
+    <div class="scope-col">
+      <div class="scope-head">
+        <div class="scope-icon proj">P</div>
+        <div class="scope-label">Project 级别</div>
+      </div>
+      <div class="scope-path">.claude/skills/</div>
+      <div class="scope-desc">
+        仅当前项目可用，随代码库一起版本管理。适合团队专属的工作流、架构规范、发布流程等。
+        <ul>
+          <li>跟随 git 提交，团队成员自动获得</li>
+          <li>可在 <code>.claude/skills/</code> 目录下按团队组织子目录</li>
+          <li>优先级高于同名 User 级 Skill</li>
+        </ul>
+      </div>
+    </div>
+    <div class="scope-col">
+      <div class="scope-head">
+        <div class="scope-icon user">U</div>
+        <div class="scope-label">User 级别</div>
+      </div>
+      <div class="scope-path">~/.claude/skills/</div>
+      <div class="scope-desc">
+        所有项目共享的个人 Skill。适合跨项目通用的工具：代码审查习惯、个人提效脚本、通用模板等。
+        <ul>
+          <li>不随项目版本管理，仅本地存在</li>
+          <li>所有项目会话都会加载 frontmatter</li>
+          <li>同名时被 Project 级覆盖</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="sh-tag" style="margin-top:36px">安装方法</div>
+
+  <div class="install-methods">
+    <div class="install-method">
+      <div class="im-step">方法 1 · 搜索安装</div>
+      <div class="im-title">使用 /find-skills 发现</div>
+      <div class="im-body">在 Claude Code 中运行 <code>/find-skills</code>，描述你需要的能力，Agent 会搜索可用的 Skill 并引导安装。</div>
+      <div class="im-cmd">/find-skills API 文档生成</div>
+    </div>
+    <div class="install-method">
+      <div class="im-step">方法 2 · 命令安装</div>
+      <div class="im-title">使用 /install-skill</div>
+      <div class="im-body">直接从 Skill Registry 或 URL 安装。通过 <code>--target</code> 参数指定安装级别。</div>
+      <div class="im-cmd"># 安装到项目级（默认）
+/install-skill skill-name
+
+# 安装到用户级
+/install-skill skill-name --target user</div>
+    </div>
+    <div class="install-method">
+      <div class="im-step">方法 3 · 手动安装</div>
+      <div class="im-title">直接创建目录</div>
+      <div class="im-body">在对应的 skills 目录下创建 Skill 文件夹，包含 <code>SKILL.md</code> 和可选资产即可。</div>
+      <div class="im-cmd"># Project 级
+mkdir -p .claude/skills/my-skill
+# User 级
+mkdir -p ~/.claude/skills/my-skill</div>
+    </div>
+  </div>
+
+  <div class="dn" style="margin-top:16px">
+    <strong>使用 Skill：</strong>安装完成后无需额外配置。Agent 在每次会话启动时自动扫描两个级别的 skills 目录，加载所有 <code>SKILL.md</code> 的 frontmatter。当用户的请求匹配 description 中的触发条件时，Agent 自动调用该 Skill。也可以在对话中直接用斜杠命令 <code>/skill-name</code> 显式触发。
+  </div>
+
+  <div class="dn" style="margin-top:12px">
+    <strong>管理已安装 Skill：</strong>查看已安装 Skill 可使用 <code>ls .claude/skills/</code> 或 <code>ls ~/.claude/skills/</code>。卸载只需删除对应目录。更新 Skill 直接编辑 <code>SKILL.md</code>，下次会话自动生效。
   </div>
 
   <!-- ANATOMY -->
@@ -2064,7 +2572,7 @@ description: |
 <span class="cs">## 前置条件</span>
 <span class="cm">1. 确认输出格式：Markdown（默认）或 OpenAPI YAML
 2. 如果用户未提供文件，请求 Controller 文件路径
-3. 读取 `docs/design/error-codes.md` 获取错误码定义</span>
+3. 读取 `docs/requirement/error-codes.md` 获取错误码定义</span>
 
 <span class="cs">## 执行步骤</span>
 
@@ -2094,11 +2602,11 @@ description: |
 <span class="cs">## 输出规范</span>
 <span class="cm">- 路径: `/mnt/user-data/outputs/api-[feature-name].md`
 - 完成后调用 `present_files`
-- 同时建议用户将文件复制到 `docs/api/` 纳入版本控制</span>
+- 同时建议用户将文件纳入 `docs/` 版本控制，并在对应需求文档中建立引用</span>
 
 <span class="cs">## 不适用场景</span>
 <span class="cm">- 前端组件接口文档 → 手动维护 Props 定义
-- 数据库 Schema 文档 → 参考 docs/design/[schema].md</span></pre>
+- 数据库 Schema 文档 → 参考 docs/requirement/[schema].md</span></pre>
   </div>
 
   <div class="hook-panel" id="hook-skill-review">
@@ -2138,11 +2646,11 @@ description: |
 
 <span class="cv">### 第三步：前端特定检查</span>
 <span class="cm">- 是否绕过了 src/components/ui/ 的已有组件？
-- Props 接口与设计文档是否一致？
+- Props 接口与需求文档是否一致？
 - 组件文件中是否直接调用了 fetch/axios（GP-005）？</span>
 
 <span class="cv">### 第四步：文档同步</span>
-<span class="cm">- 接口/类型变更是否已更新 docs/design/ 中对应文档？</span>
+<span class="cm">- 接口/类型变更是否已更新 docs/requirement/ 中对应文档？</span>
 
 <span class="cs">## 输出规范</span>
 <span class="cm">在会话中直接输出 Markdown 清单，按优先级分组：
@@ -2300,7 +2808,7 @@ git log --since="14 days ago" --format="" --name-only \
     </div>
     <div class="pa-row opt-row">
       <div class="pa-label think">⑥ 思考提示</div>
-      <div class="pa-content">「如果对失败计数的存储位置有疑问，先阅读 <code>docs/design/auth-system.md</code> 的「会话状态」章节再决定」</div>
+      <div class="pa-content">「如果对失败计数的存储位置有疑问，先阅读 <code>docs/requirement/auth-system.md</code> 的「会话状态」章节再决定」</div>
       <div class="pa-note">对复杂决策点，提前给出「遇到歧义时去哪里找答案」，而非让 Agent 自行猜测或停下来问你。</div>
     </div>
   </div>
@@ -2331,11 +2839,11 @@ git log --since="14 days ago" --format="" --name-only \
 <span class="cm"># ③ 依赖约束（指定必须使用的现有模块）</span>
 <span class="ck">通过</span> <span class="cv">{已有模块路径.方法名()}</span> <span class="ck">完成</span> <span class="cv">{数据操作}</span>，禁止 <span class="cv">{违规行为}</span>
 
-<span class="cm"># ④ 业务规则（引用设计文档，不在提示词中重复描述）</span>
-<span class="cv">{业务规则描述}</span> 参考 <span class="cv">{设计文档路径}</span> 中的「<span class="cv">{章节名}</span>」
+<span class="cm"># ④ 业务规则（引用需求文档，不在提示词中重复描述）</span>
+<span class="cv">{业务规则描述}</span> 参考 <span class="cv">{需求文档路径}</span> 中的「<span class="cv">{章节名}</span>」
 
 <span class="cm"># ⑤ 全局规范（始终引用，不要每次重写）</span>
-错误处理遵循 <span class="cv">docs/design/error-codes.md</span>
+错误处理遵循 <span class="cv">docs/requirement/error-codes.md</span>
 日志字段遵循 <span class="cv">docs/golden-principles.md</span> 中的 GP-002
 
 <span class="cm"># ⑥ 验收动作</span>
@@ -2363,7 +2871,7 @@ git log --since="14 days ago" --format="" --name-only \
 
 <span class="ck">定位范围（如果已知）：</span>
 问题大概率在 <span class="cv">{文件路径}</span>，涉及 <span class="cv">{方法名}</span>
-相关设计文档：<span class="cv">{docs/design/xxx.md}</span>
+相关需求文档：<span class="cv">{docs/requirement/xxx.md}</span>
 
 <span class="ck">修复要求：</span>
 - 不改变 <span class="cv">{不能动的接口/类型}</span> 的签名
@@ -2389,7 +2897,7 @@ git log --since="14 days ago" --format="" --name-only \
 <span class="ck">硬性约束（不得违反）：</span>
 - 所有对外接口签名不变：入参类型 <span class="cv">{TypeA}</span>，返回类型 <span class="cv">{TypeB}</span>
 - 不改变任何现有测试的期望值（测试是行为契约）
-- 错误码不变，与 <span class="cv">docs/design/error-codes.md</span> 保持一致
+- 错误码不变，与 <span class="cv">docs/requirement/error-codes.md</span> 保持一致
 - 不引入新的外部依赖
 
 <span class="ck">允许改变：</span>
@@ -2441,12 +2949,12 @@ git log --since="14 days ago" --format="" --name-only \
   <div class="ppanel" id="pt-doc">
     <div class="ppanel-head"><span>补文档 · 从代码反向生成</span><span class="cmd-tag all">同步优先</span></div>
     <div class="cmd-body"><pre><span class="cm"># 补文档提示词模板
-# 用于更新设计文档，使其与代码保持同步</span>
+# 用于更新需求文档，使其与代码保持同步</span>
 
-<span class="ck">读取以下文件，更新对应的设计文档：</span>
+<span class="ck">读取以下文件，更新对应的需求文档：</span>
 
 <span class="ck">源文件：</span><span class="cv">{src/service/authService.ts}</span>
-<span class="ck">目标文档：</span><span class="cv">{docs/design/auth-system.md}</span>
+<span class="ck">目标文档：</span><span class="cv">{docs/requirement/auth-system.md}</span>
 
 <span class="ck">更新范围：</span>
 - 同步「接口签名」章节：确保文档中的方法签名与代码一致
@@ -2480,14 +2988,14 @@ git log --since="14 days ago" --format="" --name-only \
 <span class="ck">审查依据（必须读取后再审查）：</span>
 - <span class="cv">docs/golden-principles.md</span>（黄金原则）
 - <span class="cv">docs/map.md</span>（架构层级规则）
-- <span class="cv">docs/design/error-codes.md</span>（错误码体系）
+- <span class="cv">docs/requirement/error-codes.md</span>（错误码体系）
 
 <span class="ck">重点检查（AI 代码的常见失效模式）：</span>
 1. 架构违规：是否有跨层导入（Service → Runtime、Repo → Service）
 2. 类型安全：是否有 `: any`、类型断言 `as X`
 3. 规范违反：console.log、裸 throw new Error、魔法数字
 4. 过度工程：只用一次的逻辑是否被不必要地抽象成独立函数
-5. 文档漂移：新增/修改的接口是否已反映在对应设计文档中
+5. 文档漂移：新增/修改的接口是否已反映在对应需求文档中
 
 <span class="ck">输出格式：</span>
 🔴 必须修复（会被 CI 阻断或违反架构约束）
@@ -2609,7 +3117,7 @@ git log --since="14 days ago" --format="" --name-only \
 <span class="ok">「文件 ≤ 400 行，无 any，测试覆盖率 ≥ 80%」</span>
 <span class="cm">// 可量化的约束，Agent 能自验</span>
 
-<span class="ok">「如果对 X 有疑问，先读 docs/design/xxx.md」</span>
+<span class="ok">「如果对 X 有疑问，先读 docs/requirement/xxx.md」</span>
 <span class="cm">// 预埋决策入口，减少来回确认</span>
 
 <span class="ok">「不允许新增外部依赖，只用 Node.js 内置模块」</span>
@@ -2665,14 +3173,14 @@ git log --since="14 days ago" --format="" --name-only \
 </main>
 
 <footer>
-  <p>HARNESS ENGINEERING SPEC · v2.0 · 前端 &amp; 后端工程师操作手册</p>
+  <p>HARNESS ENGINEERING SPEC · v2.0 · 前端 &amp; 后端 &amp; 移动端工程师操作手册</p>
   <p>基于 OpenAI Codex Team 实践 · 持续演进</p>
 </footer>
 
 <script>
 function switchTab(group, role, el) {
   document.querySelectorAll('#tabs-' + group + ' .rtab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('#panel-' + group + '-fe, #panel-' + group + '-be').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#panel-' + group + '-fe, #panel-' + group + '-be, #panel-' + group + '-mb').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-' + group + '-' + role).classList.add('active');
 }
