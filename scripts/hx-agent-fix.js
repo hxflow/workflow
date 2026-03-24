@@ -16,7 +16,7 @@ const { options } = parseArgs(process.argv.slice(2))
 const profileName = typeof options.profile === 'string' ? options.profile : ctx.defaultProfile || getDefaultProfile(ctx.projectRoot)
 let profile
 try {
-  profile = loadProfile(FRAMEWORK_ROOT, profileName)
+  profile = loadProfile(FRAMEWORK_ROOT, profileName, { harnessDir: ctx.harnessDir })
 } catch (error) {
   console.error(`✗ ${error.message}`)
   console.error(`  可用 profile: ${profileUsage()}`)

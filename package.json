@@ -1,12 +1,11 @@
 {
-  "name": "qiyuan-harness-scaffold",
+  "name": "@harness-workflow/cli",
   "version": "1.0.0",
-  "description": "Profile-driven harness workflow scaffold with an interactive installer for existing projects.",
+  "description": "Profile-driven AI engineering workflow — zero-disruption installer for existing projects.",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "hx": "bin/hx.js",
-    "qiyuan-harness-scaffold": "scripts/hx-install.cjs"
+    "hx": "bin/hx.js"
   },
   "files": [
     "bin/hx.js",
@@ -24,8 +23,6 @@
     "scripts/hx-entropy-scan.js",
     "scripts/hx-gate.js",
     "scripts/hx-init.js",
-    "scripts/hx-install.cjs",
-    "scripts/hx-install.js",
     "scripts/hx-new-doc.js",
     "scripts/hx-new-plan.js",
     "scripts/hx-review-checklist.js",
@@ -52,8 +49,8 @@
   ],
   "scripts": {
     "// ── 文档工具 ──────────────────────────────────": "",
-    "hx:install": "node scripts/hx-install.cjs",
-    "hx:doc": "node scripts/hx-new-doc.js",
+    "hx:init": "node bin/hx.js init",
+    "hx:doc": "node bin/hx.js doc",
     "hx:plan": "node scripts/hx-new-plan.js",
     "hx:ctx": "node scripts/hx-ctx-check.js",
     "// ── 代码质量 ──────────────────────────────────": "",

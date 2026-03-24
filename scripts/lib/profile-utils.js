@@ -344,20 +344,51 @@ function readConfiguredProfile(root) {
   }
 }
 
-export function loadProfile(root, specifier) {
-  const parsed = parseProfileSpecifier(specifier || DEFAULT_PROFILE)
-  if (!parsed) {
-    throw new Error(`缺少 profile。可用值: ${PROFILE_USAGE}`)
+/**
+ * 加载 profile，支持多根目录查找。
+ *
+ * @param {string} frameworkRoot - 框架安装目录（内置 profiles）
+ * @param {string} specifier     - profile 标识符，如 "backend"、"mobile:ios"、"backend-go-ddd"
+ * @param {object} [opts]
+ * @param {string} [opts.harnessDir] - 用户项目的 .harness/ 目录（自定义 profiles 优先搜索）
+ */
+export function loadProfile(frameworkRoot, specifier, opts = {}) {
+  // 自定义 profile 不经过 parseProfileSpecifier 白名单校验
+  const isBuiltin = ['backend', 'frontend', 'mobile',
+    'mobile:ios', 'mobile:android', 'mobile:harmony'].includes(specifier || DEFAULT_PROFILE)
+
+  let parsed
+  if (isBuiltin) {
+    parsed = parseProfileSpecifier(specifier || DEFAULT_PROFILE)
+    if (!parsed) throw new Error(`缺少 profile。可用值: ${PROFILE_USAGE}`)
+  } else {
+    // 自定义 profile：直接用名称，不校验白名单
+    const raw = (specifier || '').trim()
+    parsed = {
+      profile: raw,
+      team: raw,
+      platform: null,
+      label: raw,
+      platformLabel: null
+    }
   }
 
-  const teamDir = resolve(root, 'profiles', parsed.team)
-  const profilePath = resolve(teamDir, 'profile.yaml')
-  if (!existsSync(profilePath)) {
+  // profileRoots: 用户自定义优先，框架内置兜底
+  const profileRoots = opts.harnessDir
+    ? [opts.harnessDir, frameworkRoot]
+    : [frameworkRoot]
+
+  // 找到包含该 profile 的实际根目录
+  const teamRoot = profileRoots.find(r => existsSync(resolve(r, 'profiles', parsed.team, 'profile.yaml')))
+  if (!teamRoot) {
     throw new Error(`profile 文件不存在: profiles/${parsed.team}/profile.yaml`)
   }
 
-  // 加载当前 profile 并沿 extends 链递归合并父 profile
-  const teamConfig = loadProfileWithInheritance(root, parsed.team)
+  const teamDir = resolve(teamRoot, 'profiles', parsed.team)
+  const profilePath = resolve(teamDir, 'profile.yaml')
+
+  // 沿 extends 链合并，两个根目录都参与查找
+  const teamConfig = loadProfileWithInheritance(profileRoots, parsed.team)
 
   let platformConfig = {}
   let platformPath = null
@@ -406,36 +437,42 @@ export function loadProfile(root, specifier) {
       planTemplatePath: resolve(teamDir, 'plan-template.md'),
       reviewChecklistPath: resolve(teamDir, 'review-checklist.md'),
       goldenRulesPath: resolve(teamDir, 'golden-rules.md'),
-      baseGoldenRulesPath: resolve(root, 'profiles', 'base', 'golden-rules.md')
+      baseGoldenRulesPath: resolve(frameworkRoot, 'profiles', 'base', 'golden-rules.md')
     }
   }
 }
 
 /**
  * 沿 extends 链递归加载 profile，从根基类向下逐层 deepMerge。
+ * 在多个根目录中按顺序查找（用户自定义优先，框架内置兜底）。
  * 防循环检测：visited 集合记录已加载的 profile 名。
+ *
+ * @param {string[]} profileRoots - 搜索根目录数组，按优先级排列
+ * @param {string}   profileName  - 要加载的 profile 名称
+ * @param {Set}      [visited]    - 已访问集合（循环检测）
  */
-function loadProfileWithInheritance(root, profileName, visited = new Set()) {
+function loadProfileWithInheritance(profileRoots, profileName, visited = new Set()) {
   if (visited.has(profileName)) {
     throw new Error(`profile 循环继承检测: ${[...visited, profileName].join(' → ')}`)
   }
   visited.add(profileName)
 
-  const profileDir = resolve(root, 'profiles', profileName)
-  const profilePath = resolve(profileDir, 'profile.yaml')
-  if (!existsSync(profilePath)) {
+  // 按优先级查找第一个包含该 profile 的根目录
+  const root = profileRoots.find(r => existsSync(resolve(r, 'profiles', profileName, 'profile.yaml')))
+  if (!root) {
     throw new Error(`profile 文件不存在: profiles/${profileName}/profile.yaml`)
   }
 
-  const config = parseSimpleYaml(readFileSync(profilePath, 'utf8'))
+  const profileDir = resolve(root, 'profiles', profileName)
+  const config = parseSimpleYaml(readFileSync(resolve(profileDir, 'profile.yaml'), 'utf8'))
   const parentName = config.extends
 
   if (!parentName) {
     return config
   }
 
-  // 递归加载父 profile，然后用当前 config 覆盖
-  const parentConfig = loadProfileWithInheritance(root, parentName, visited)
+  // 递归加载父 profile（父级同样在多根目录中查找）
+  const parentConfig = loadProfileWithInheritance(profileRoots, parentName, visited)
   return deepMerge(parentConfig, config)
 }
 

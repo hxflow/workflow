@@ -14,7 +14,7 @@ const profileName = typeof options.profile === 'string' ? options.profile : ctx.
 
 let profile
 try {
-  profile = loadProfile(FRAMEWORK_ROOT, profileName)
+  profile = loadProfile(FRAMEWORK_ROOT, profileName, { harnessDir: ctx.harnessDir })
 } catch (error) {
   console.error(`✗ ${error.message}`)
   console.error(`  可用 profile: ${profileUsage()}`)

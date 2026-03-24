@@ -99,7 +99,7 @@ checkRequiredAbsDoc(ctx.mapPath, warnings, summary, '✓ 架构地图: 存在')
 
 if (profileName) {
   try {
-    const profile = loadProfile(FRAMEWORK_ROOT, profileName)
+    const profile = loadProfile(FRAMEWORK_ROOT, profileName, { harnessDir: ctx.harnessDir })
     const requiredFiles = [
       profile.files.profilePath,
       profile.files.requirementTemplatePath,

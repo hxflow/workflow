@@ -28,7 +28,7 @@ try {
 console.log(divider + '\n')
 
 function printChecklist(profileName) {
-  const profile = loadProfile(FRAMEWORK_ROOT, profileName)
+  const profile = loadProfile(FRAMEWORK_ROOT, profileName, { harnessDir: ctx.harnessDir })
   if (!existsSync(profile.files.reviewChecklistPath)) {
     throw new Error(`审查清单不存在: ${profile.files.reviewChecklistPath}`)
   }
