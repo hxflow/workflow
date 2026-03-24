@@ -2,13 +2,13 @@
 // scripts/hx-task-done.js
 // 用法: npm run hx:done -- <TASK-ID>
 
-import { readdirSync, readFileSync, writeFileSync } from 'fs'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs'
+import { resolve } from 'path'
 
 import { inferProfileFromProgress, isTaskId } from './lib/profile-utils.js'
+import { resolveContext } from './lib/resolve-context.js'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ctx = resolveContext()
 const taskId = process.argv.slice(2).find((arg) => !arg.startsWith('--'))
 
 if (!taskId) {
@@ -23,20 +23,18 @@ if (!isTaskId(taskId)) {
   process.exit(1)
 }
 
-const plansDir = resolve(ROOT, 'docs/plans')
-let progressFiles = []
-
-try {
-  progressFiles = readdirSync(plansDir)
-    .filter((fileName) => fileName.endsWith('-progress.json'))
-    .map((fileName) => resolve(plansDir, fileName))
-} catch {
-  console.error('✗ docs/plans/ 目录不存在')
+const plansDir = ctx.plansDir
+if (!existsSync(plansDir)) {
+  console.error('✗ 计划目录不存在')
   process.exit(1)
 }
 
+let progressFiles = readdirSync(plansDir)
+  .filter((fileName) => fileName.endsWith('-progress.json'))
+  .map((fileName) => resolve(plansDir, fileName))
+
 if (progressFiles.length === 0) {
-  console.error('✗ docs/plans/ 中没有进度文件，请先运行 npm run hx:plan')
+  console.error('✗ 计划目录中没有进度文件，请先运行 hx plan')
   process.exit(1)
 }
 

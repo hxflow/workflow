@@ -4,10 +4,9 @@
 // 串行执行 ctx 与 gate，并透传命令参数
 
 import { execFileSync } from 'child_process'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+import { FRAMEWORK_ROOT } from './lib/resolve-context.js'
 const args = process.argv.slice(2)
 const nodeBin = process.execPath
 
@@ -15,8 +14,8 @@ execStep('scripts/hx-ctx-check.js')
 execStep('scripts/hx-gate.js')
 
 function execStep(scriptPath) {
-  execFileSync(nodeBin, [scriptPath, ...args], {
-    cwd: ROOT,
+  execFileSync(nodeBin, [resolve(FRAMEWORK_ROOT, scriptPath), ...args], {
+    cwd: FRAMEWORK_ROOT,
     stdio: 'inherit'
   })
 }

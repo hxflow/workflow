@@ -11,17 +11,17 @@
 ### 0. 解析参数
 - 提取 feature-name 和 --profile
 - 未提供 feature-name 则提示用法并停止
-- 未提供 --profile，尝试从 `docs/requirement/$FEAT.md` 文档头部读取团队标签，读不到则询问
+- 未提供 --profile，尝试从 `.harness/requirement/$FEAT.md` 文档头部读取团队标签，读不到则询问
 
 ### 1. 加载 Profile 配置
-- 读取 `harness-scaffold/profiles/${TEAM}/profile.yaml`
+- 读取 `.harness/.harness/profiles/${TEAM}/profile.yaml`
 - 获取 `task_split.strategy`、`task_split.order`、`task_split.template`
 - 获取 `task_prefix`（TASK-BE / TASK-FE / TASK-MB）
 - 移动端追加读取平台 yaml，获取 `task_prefix_override`（TASK-IOS / TASK-AND / TASK-HM）
-- 读取 `harness-scaffold/profiles/${TEAM}/plan-template.md` 作为计划模板
+- 读取 `.harness/.harness/profiles/${TEAM}/plan-template.md` 作为计划模板
 
 ### 2. 读取需求文档
-- 读取 `harness-scaffold/docs/requirement/$FEAT.md`，不存在则提示先运行 `/hx-doc`
+- 读取 `.harness/requirement/$FEAT.md`，不存在则提示先运行 `/hx-doc`
 - 提取 AC 列表和影响的架构层级
 
 ### 3. 自动拆分任务
@@ -37,8 +37,8 @@
 - 可独立测试
 
 ### 4. 生成文件
-- `harness-scaffold/docs/plans/$FEAT.md`（基于团队计划模板）
-- `harness-scaffold/docs/plans/$FEAT-progress.json`（含 profile 信息）
+- `.harness/plans/$FEAT.md`（基于团队计划模板）
+- `.harness/plans/$FEAT-progress.json`（含 profile 信息）
 
 progress.json 结构：
 ```json
@@ -46,7 +46,7 @@ progress.json 结构：
   "feature": "feature-name",
   "profile": "backend",
   "platform": null,
-  "requirementDoc": "docs/requirement/feature-name.md",
+  "requirementDoc": ".harness/requirement/feature-name.md",
   "tasks": [
     { "id": "TASK-BE-01", "name": "Types 层", "status": "pending", "output": "src/types/..." }
   ]
@@ -59,8 +59,8 @@ progress.json 结构：
 ### 6. 输出摘要
 ```
 ✓ 执行计划已创建:
-  docs/plans/$FEAT.md（X 个 ${TEAM} 任务）
-  docs/plans/$FEAT-progress.json
+  .harness/plans/$FEAT.md（X 个 ${TEAM} 任务）
+  .harness/plans/$FEAT-progress.json
   AGENTS.md 已更新
 
 下一步:

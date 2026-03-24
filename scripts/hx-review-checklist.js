@@ -4,12 +4,11 @@
 // 直接输出 profile 对应的审查清单
 
 import { existsSync, readFileSync } from 'fs'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
 
 import { getDefaultProfile, loadProfile, parseArgs, profileUsage } from './lib/profile-utils.js'
+import { resolveContext, FRAMEWORK_ROOT } from './lib/resolve-context.js'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ctx = resolveContext()
 const { options } = parseArgs(process.argv.slice(2))
 const requestedProfile = pickRequestedProfile(options)
 
@@ -29,7 +28,7 @@ try {
 console.log(divider + '\n')
 
 function printChecklist(profileName) {
-  const profile = loadProfile(ROOT, profileName)
+  const profile = loadProfile(FRAMEWORK_ROOT, profileName)
   if (!existsSync(profile.files.reviewChecklistPath)) {
     throw new Error(`审查清单不存在: ${profile.files.reviewChecklistPath}`)
   }
@@ -52,5 +51,5 @@ function pickRequestedProfile(options) {
     return options.profile
   }
 
-  return getDefaultProfile(ROOT)
+  return ctx.defaultProfile || getDefaultProfile(ctx.projectRoot)
 }

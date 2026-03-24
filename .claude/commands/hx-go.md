@@ -18,15 +18,15 @@
 - 如果 $ARGUMENTS 为空，提示用法并停止
 - 从 $ARGUMENTS 解析 feature-name（`FEAT`）、任务 ID（`TASK_ID`，可选）、团队（`TEAM`）、平台（`PLATFORM`，仅移动端）
 - 如果未提供 --profile，询问用户选择：`backend / frontend / mobile:ios / mobile:android / mobile:harmony`
-- 基础路径：`harness-scaffold/`
+- 项目工作目录：`.harness/`，框架 Profile 由 `hx` CLI 从安装包自动加载
 
 **加载配置文件：**
-1. `profiles/${TEAM}/profile.yaml` — 团队配置（架构层级、任务拆分规则、审查重点、QA 要求）
-2. `profiles/${TEAM}/requirement-template.md` — 需求文档模板
-3. `profiles/${TEAM}/plan-template.md` — 执行计划模板
-4. `profiles/${TEAM}/golden-rules.md` — 团队专属黄金原则
-5. `profiles/${TEAM}/review-checklist.md` — 审查清单
-6. 移动端追加：`profiles/mobile/platforms/${PLATFORM}.yaml` — 平台特化配置
+1. `.harness/.harness/profiles/${TEAM}/profile.yaml` — 团队配置（架构层级、任务拆分规则、审查重点、QA 要求）
+2. `.harness/.harness/profiles/${TEAM}/requirement-template.md` — 需求文档模板
+3. `.harness/.harness/profiles/${TEAM}/plan-template.md` — 执行计划模板
+4. `.harness/.harness/profiles/${TEAM}/golden-rules.md` — 团队专属黄金原则
+5. `.harness/.harness/profiles/${TEAM}/review-checklist.md` — 审查清单
+6. 移动端追加：`.harness/profiles/mobile/platforms/${PLATFORM}.yaml` — 平台特化配置
 
 **提取关键变量：**
 - `TASK_PREFIX` ← profile.yaml 的 task_prefix（或平台 yaml 的 task_prefix_override）
@@ -43,7 +43,7 @@
    - 通过 `wushuang-devops` skill 调用 DevOps MCP 查询任务详情（标题、描述、优先级、迭代、关联需求、子任务）
    - 提取关键信息作为需求文档的预填内容
    - 如果未提供 `--task`，询问用户是否需要关联 DevOps 任务
-2. 检查 `docs/requirement/${FEAT}.md` 是否已存在
+2. 检查 `.harness/requirement/${FEAT}.md` 是否已存在
    - **已存在**：读取并展示摘要，询问用户是否直接使用
    - **不存在**：基于**团队 requirement-template.md** 创建，填入日期、feature-name、团队标签、DevOps 任务来源
 3. 交互式引导用户填写/确认（根据团队模板的字段结构，DevOps 拉取的内容作为预填值）：
@@ -60,14 +60,14 @@
 
 ## 阶段 2 · Phase 02 执行计划（自动）
 
-1. 读取已确认的 `docs/requirement/${FEAT}.md`
+1. 读取已确认的 `.harness/requirement/${FEAT}.md`
 2. 根据 Profile 的 `task_split` 配置自动拆分任务：
    - 使用 `TASK_PREFIX` 作为任务 ID 前缀
    - 按 `SPLIT_ORDER` 排列依赖顺序
    - 每个 TASK 的输出路径从 `task_split.template` 获取
-3. 生成 `docs/plans/${FEAT}.md`（基于团队 plan-template.md）和 `docs/plans/${FEAT}-progress.json`
+3. 生成 `.harness/plans/${FEAT}.md`（基于团队 plan-template.md）和 `.harness/plans/${FEAT}-progress.json`
 4. progress.json 写入 `"profile": "${TEAM}"` 和 `"platform": "${PLATFORM}"`
-5. 更新 `AGENTS.md`「当前活跃特性」，标注团队
+5. 更新 `.harness/AGENTS.md`「当前活跃特性」，标注团队
 6. 展示任务列表摘要，询问用户确认
 
 **⏸ 检查点 2：用户确认执行计划后才继续**
@@ -76,7 +76,7 @@
 
 ## 阶段 3 · Phase 03 上下文校验（自动）
 
-1. 校验 AGENTS.md ≤ 100 行
+1. 校验 `.harness/AGENTS.md` ≤ 100 行
 2. 校验所有 `→` 引用的文档路径存在
 3. 校验需求文档 AC 非空
 4. 校验全局黄金原则和架构地图文件存在
@@ -88,7 +88,7 @@
 
 ## 阶段 4 · Phase 04 逐任务执行（自动，Agent 隔离）
 
-读取 `docs/plans/${FEAT}-progress.json`，按 `SPLIT_ORDER` 依赖顺序遍历所有 `pending` 的 TASK。
+读取 `.harness/plans/${FEAT}-progress.json`，按 `SPLIT_ORDER` 依赖顺序遍历所有 `pending` 的 TASK。
 
 **对每个 TASK 执行以下循环：**
 
@@ -100,13 +100,13 @@
 团队: ${TEAM_LABEL}，平台: ${PLATFORM_LABEL}
 
 先读取以下文件（必须全部读完再动手写代码）：
-1. harness-scaffold/AGENTS.md
-2. harness-scaffold/docs/golden-principles.md
-3. harness-scaffold/profiles/${TEAM}/golden-rules.md
-4. harness-scaffold/profiles/${TEAM}/profile.yaml
+1. .harness/AGENTS.md
+2. .harness/docs/golden-principles.md
+3. .harness/.harness/profiles/${TEAM}/golden-rules.md
+4. .harness/.harness/profiles/${TEAM}/profile.yaml
 ${PLATFORM_YAML_LINE}
-5. harness-scaffold/docs/requirement/${FEAT}.md
-6. harness-scaffold/docs/plans/${FEAT}.md
+5. .harness/requirement/${FEAT}.md
+6. .harness/plans/${FEAT}.md
 
 然后按照执行计划中 ${TASK_ID} 的描述，生成代码：
 - 输出到：${OUTPUT_PATH}

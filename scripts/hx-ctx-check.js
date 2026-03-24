@@ -4,8 +4,7 @@
 // 校验 AGENTS、requirement、plans 与 profile 资源是否一致
 
 import { existsSync, readFileSync } from 'fs'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 
 import {
   extractRequirementInfo,
@@ -17,12 +16,14 @@ import {
   profileUsage,
   readJsonFile
 } from './lib/profile-utils.js'
+import { resolveContext, FRAMEWORK_ROOT } from './lib/resolve-context.js'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ctx = resolveContext()
+const ROOT = ctx.projectRoot
 const { options } = parseArgs(process.argv.slice(2))
-const profileName = typeof options.profile === 'string' ? options.profile : getDefaultProfile(ROOT)
+const profileName = typeof options.profile === 'string' ? options.profile : ctx.defaultProfile || getDefaultProfile(ROOT)
 
-const agentsPath = resolve(ROOT, 'AGENTS.md')
+const agentsPath = ctx.agentsPath
 if (!existsSync(agentsPath)) {
   console.error('✗ AGENTS.md 不存在，请先创建')
   process.exit(1)
@@ -51,24 +52,25 @@ for (const refPath of refs) {
 }
 summary.push(`✓ 文档引用: ${validRefs}/${refs.length} 个有效`)
 
+const planPathPattern = /\.harness\/plans\/([\w-]+)\.md|docs\/plans\/([\w-]+)\.md/g
 const activeFeatures = [...new Set(
-  [...agentsContent.matchAll(/docs\/plans\/([\w-]+)\.md/g)].map((match) => match[1])
+  [...agentsContent.matchAll(planPathPattern)].map((match) => match[1] || match[2])
 )]
 
 for (const featureName of activeFeatures) {
-  const requirementPath = resolve(ROOT, 'docs/requirement', `${featureName}.md`)
+  const requirementPath = resolve(ctx.requirementDir, `${featureName}.md`)
   if (!existsSync(requirementPath)) {
-    errors.push(`活跃特性缺少需求文档: docs/requirement/${featureName}.md`)
+    errors.push(`活跃特性缺少需求文档: ${featureName}.md`)
     continue
   }
 
   const requirement = extractRequirementInfo(readFileSync(requirementPath, 'utf8'))
   if (requirement.acs.length === 0) {
-    errors.push(`需求文档缺少 AC: docs/requirement/${featureName}.md`)
+    errors.push(`需求文档缺少 AC: ${featureName}.md`)
   }
 }
 
-const progressEntries = findProgressFiles(ROOT).map((filePath) => ({ filePath, data: readJsonFile(filePath) }))
+const progressEntries = findProgressFiles(ROOT, { plansDir: ctx.plansDir }).map((filePath) => ({ filePath, data: readJsonFile(filePath) }))
 const filteredProgress = filterProgressByProfile(progressEntries, profileName)
 
 for (const { filePath, data } of filteredProgress) {
@@ -92,12 +94,12 @@ for (const { filePath, data } of filteredProgress) {
 }
 summary.push(`✓ 进度文件: ${filteredProgress.length} 个已检查`)
 
-checkRequiredDoc('docs/golden-principles.md', warnings, summary, '✓ 黄金原则: 存在')
-checkRequiredDoc('docs/map.md', warnings, summary, '✓ 架构地图: 存在')
+checkRequiredAbsDoc(ctx.goldenPrinciplesPath, warnings, summary, '✓ 黄金原则: 存在')
+checkRequiredAbsDoc(ctx.mapPath, warnings, summary, '✓ 架构地图: 存在')
 
 if (profileName) {
   try {
-    const profile = loadProfile(ROOT, profileName)
+    const profile = loadProfile(FRAMEWORK_ROOT, profileName)
     const requiredFiles = [
       profile.files.profilePath,
       profile.files.requirementTemplatePath,
@@ -143,14 +145,19 @@ console.log('\n全部通过，可以开始执行。')
 
 function checkRequiredDoc(relativeFilePath, targetWarnings, targetSummary, successMessage) {
   const absolutePath = resolve(ROOT, relativeFilePath)
+  checkRequiredAbsDoc(absolutePath, targetWarnings, targetSummary, successMessage, relativeFilePath)
+}
+
+function checkRequiredAbsDoc(absolutePath, targetWarnings, targetSummary, successMessage, label) {
+  const displayPath = label || absolutePath.replace(ROOT + '/', '').replace(FRAMEWORK_ROOT + '/', '')
   if (!existsSync(absolutePath)) {
-    targetWarnings.push(`${relativeFilePath} 不存在`)
+    targetWarnings.push(`${displayPath} 不存在`)
     return
   }
 
   const content = readFileSync(absolutePath, 'utf8').trim()
   if (!content) {
-    targetWarnings.push(`${relativeFilePath} 为空`)
+    targetWarnings.push(`${displayPath} 为空`)
     return
   }
 
@@ -158,5 +165,5 @@ function checkRequiredDoc(relativeFilePath, targetWarnings, targetSummary, succe
 }
 
 function relativePath(filePath) {
-  return filePath.replace(`${ROOT}/`, '')
+  return filePath.replace(`${ROOT}/`, '').replace(`${FRAMEWORK_ROOT}/`, '')
 }

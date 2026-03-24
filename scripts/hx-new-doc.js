@@ -4,8 +4,7 @@
 // 从 profile 模板创建需求文档
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 
 import {
   createTemplateReplacements,
@@ -16,16 +15,17 @@ import {
   profileUsage,
   renderTemplate
 } from './lib/profile-utils.js'
+import { resolveContext, FRAMEWORK_ROOT } from './lib/resolve-context.js'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ctx = resolveContext()
 const { positional, options } = parseArgs(process.argv.slice(2))
 const featureName = positional[0]
-const profileName = typeof options.profile === 'string' ? options.profile : getDefaultProfile(ROOT)
+const profileName = typeof options.profile === 'string' ? options.profile : ctx.defaultProfile || getDefaultProfile(ctx.projectRoot)
 const taskId = typeof options.task === 'string' ? options.task : null
 
 if (!featureName) {
   console.error('用法: npm run hx:doc -- <feature-name> [--profile <team[:platform]>]')
-  console.error(`示例: npm run hx:doc -- user-login --profile ${getDefaultProfile(ROOT)}`)
+  console.error(`示例: hx doc user-login --profile ${profileName || 'backend'}`)
   process.exit(1)
 }
 
@@ -36,24 +36,24 @@ if (!isValidFeatureName(featureName)) {
 
 let profile
 try {
-  profile = loadProfile(ROOT, profileName)
+  profile = loadProfile(FRAMEWORK_ROOT, profileName)
 } catch (error) {
   console.error(`✗ ${error.message}`)
   console.error(`  可用 profile: ${profileUsage()}`)
   process.exit(1)
 }
 
-const docsDir = resolve(ROOT, 'docs/requirement')
+const docsDir = ctx.requirementDir
 const outputPath = resolve(docsDir, `${featureName}.md`)
 if (existsSync(outputPath)) {
-  console.error(`✗ 文档已存在: docs/requirement/${featureName}.md`)
+  console.error(`✗ 文档已存在: ${featureName}.md`)
   console.error('  如需重新创建，请先删除现有文件')
   process.exit(1)
 }
 
 const templatePath = existsSync(profile.files.requirementTemplatePath)
   ? profile.files.requirementTemplatePath
-  : resolve(ROOT, 'docs/requirement/_template.md')
+  : resolve(ctx.requirementDir, '_template.md')
 
 mkdirSync(docsDir, { recursive: true })
 
@@ -72,9 +72,9 @@ if (taskId && !output.includes('来源任务')) {
 
 writeFileSync(outputPath, output, 'utf8')
 
-console.log(`✓ 需求文档已创建: docs/requirement/${featureName}.md`)
+console.log(`✓ 需求文档已创建: ${outputPath.replace(ctx.projectRoot + '/', '')}`)
 console.log(`  团队: ${profile.label}${profile.platformLabel ? ` · ${profile.platformLabel}` : ''}`)
 if (taskId) {
   console.log(`  来源任务: DevOps #${taskId}`)
 }
-console.log(`\n下一步: npm run hx:plan -- ${featureName} --profile ${profile.profile}`)
+console.log(`\n下一步: hx plan ${featureName} --profile ${profile.profile}`)

@@ -6,9 +6,9 @@
 
 ### 0. 加载门控配置
 - 如果指定了 --profile，读取对应 profile 的 `gate_commands` 配置：
-  - 后端：`harness-scaffold/profiles/backend/profile.yaml` → `gate_commands`
-  - 前端：`harness-scaffold/profiles/frontend/profile.yaml` → `gate_commands`
-  - 移动端：`harness-scaffold/profiles/mobile/platforms/${PLATFORM}.yaml` → `gate_commands`
+  - 后端：`.harness/.harness/profiles/backend/profile.yaml` → `gate_commands`
+  - 前端：`.harness/.harness/profiles/frontend/profile.yaml` → `gate_commands`
+  - 移动端：`.harness/.harness/profiles/mobile/platforms/${PLATFORM}.yaml` → `gate_commands`
 - 如果未指定 --profile，尝试从 progress.json 读取，仍无则询问用户
 - **门控命令完全由 profile 定义，不硬编码**
 

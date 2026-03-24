@@ -3,11 +3,13 @@
 // 检查 docs/requirement/ 中的文档是否比它引用的源码更旧
 
 import { readFileSync, readdirSync, existsSync } from 'fs'
-import { resolve, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 import { execSync } from 'child_process'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+import { resolveContext } from './lib/resolve-context.js'
+
+const ctx = resolveContext()
+const ROOT = ctx.projectRoot
 
 function getGitMtime(filePath) {
   try {
@@ -36,9 +38,9 @@ if (!isGitRepo()) {
 }
 
 // ── 读取 docs/requirement/ 下所有 Markdown 文档 ────────────────
-const designDir = resolve(ROOT, 'docs/requirement')
+const designDir = ctx.requirementDir
 if (!existsSync(designDir)) {
-  console.log('ℹ  docs/requirement/ 目录不存在，暂无文档需要检查')
+  console.log('ℹ  需求文档目录不存在，暂无文档需要检查')
   process.exit(0)
 }
 
@@ -47,7 +49,7 @@ const docFiles = readdirSync(designDir)
   .map(f => resolve(designDir, f))
 
 if (docFiles.length === 0) {
-  console.log('✓ docs/requirement/ 中暂无文档')
+  console.log('✓ 需求文档目录中暂无文档')
   process.exit(0)
 }
 

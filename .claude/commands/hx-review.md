@@ -11,13 +11,13 @@
 
 ### 2. 加载审查依据
 读取以下文件：
-1. `harness-scaffold/docs/golden-principles.md`（全局黄金原则）
-2. `harness-scaffold/docs/map.md`（架构层级）
+1. `.harness/docs/golden-principles.md`（全局黄金原则）
+2. `.harness/docs/map.md`（架构层级）
 3. 如果指定了 --profile：
-   - `harness-scaffold/profiles/${TEAM}/golden-rules.md`（团队专属黄金原则）
-   - `harness-scaffold/profiles/${TEAM}/review-checklist.md`（团队审查清单）
-   - `harness-scaffold/profiles/${TEAM}/profile.yaml`（架构层级定义）
-   - 移动端追加：`profiles/mobile/platforms/${PLATFORM}.yaml`
+   - `.harness/.harness/profiles/${TEAM}/golden-rules.md`（团队专属黄金原则）
+   - `.harness/.harness/profiles/${TEAM}/review-checklist.md`（团队审查清单）
+   - `.harness/.harness/profiles/${TEAM}/profile.yaml`（架构层级定义）
+   - 移动端追加：`.harness/profiles/mobile/platforms/${PLATFORM}.yaml`
 
 如果未指定 --profile，尝试从变更文件路径推断团队（src/service/ → backend, src/components/ → frontend 等）
 
@@ -55,7 +55,7 @@
 - 不必要的类型断言 `as XXX`
 
 **文档同步**：
-- 新增/修改的接口是否已反映在 `docs/requirement/` 对应文档中
+- 新增/修改的接口是否已反映在 `.harness/requirement/` 对应文档中
 
 ### 4. 输出报告
 
@@ -74,7 +74,7 @@
   1. src/hooks/useLogin.ts:23 — GP-009: 参数类型为 any
 
 ⚪ 观察项
-  1. docs/requirement/user-login.md — AC-003 与代码实现不一致
+  1. .harness/requirement/user-login.md — AC-003 与代码实现不一致
 
 摘要: 2 🔴 | 1 🟡 | 1 ⚪
 修复后运行: /hx-gate --profile backend

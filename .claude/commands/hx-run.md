@@ -15,13 +15,13 @@
 
 ### 1. 加载上下文（必须先读再做）
 按顺序读取以下文件：
-1. `harness-scaffold/AGENTS.md` — 获取执行规则
-2. `harness-scaffold/docs/golden-principles.md` — 全局黄金原则
-3. `harness-scaffold/profiles/${TEAM}/golden-rules.md` — 团队专属黄金原则
-4. `harness-scaffold/profiles/${TEAM}/profile.yaml` — 架构层级和约束
-5. 移动端追加：`harness-scaffold/profiles/mobile/platforms/${PLATFORM}.yaml` — 平台特化约束
-6. `harness-scaffold/docs/plans/${FEAT}.md` — 执行计划
-7. `harness-scaffold/docs/requirement/${FEAT}.md` — 需求文档
+1. `.harness/AGENTS.md` — 获取执行规则
+2. `.harness/docs/golden-principles.md` — 全局黄金原则
+3. `.harness/.harness/profiles/${TEAM}/golden-rules.md` — 团队专属黄金原则
+4. `.harness/.harness/profiles/${TEAM}/profile.yaml` — 架构层级和约束
+5. 移动端追加：`.harness/.harness/profiles/mobile/platforms/${PLATFORM}.yaml` — 平台特化约束
+6. `.harness/plans/${FEAT}.md` — 执行计划
+7. `.harness/requirement/${FEAT}.md` — 需求文档
 8. 读取 progress.json，确认该 TASK 状态不是 `done`
 
 ### 2. 构建执行 Prompt
@@ -55,7 +55,7 @@
 ── 执行 TASK-BE-03 ─────────────────────
 📋 特性: user-login
 👥 团队: 服务端
-📄 需求文档: docs/requirement/user-login.md
+📄 需求文档: .harness/requirement/user-login.md
 🎯 任务: Service 层 - 认证逻辑
 
 [执行代码生成...]

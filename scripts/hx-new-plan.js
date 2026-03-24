@@ -4,8 +4,7 @@
 // 根据 profile 配置创建执行计划与进度文件
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 
 import {
   extractRequirementInfo,
@@ -17,14 +16,15 @@ import {
   profileUsage
 } from './lib/profile-utils.js'
 import { buildPlanMarkdown, buildTasks, updateAgentsActiveFeature } from './lib/plan-utils.js'
+import { resolveContext, FRAMEWORK_ROOT } from './lib/resolve-context.js'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ctx = resolveContext()
 const { positional, options } = parseArgs(process.argv.slice(2))
 const featureName = positional[0]
 
 if (!featureName) {
   console.error('用法: npm run hx:plan -- <feature-name> [--profile <team[:platform]>]')
-  console.error(`示例: npm run hx:plan -- user-login --profile ${getDefaultProfile(ROOT)}`)
+  console.error(`示例: hx plan user-login --profile ${ctx.defaultProfile || 'backend'}`)
   process.exit(1)
 }
 
@@ -33,32 +33,32 @@ if (!isValidFeatureName(featureName)) {
   process.exit(1)
 }
 
-const inferredProfile = inferProfileFromRequirementDoc(ROOT, featureName)
+const inferredProfile = inferProfileFromRequirementDoc(FRAMEWORK_ROOT, featureName, { requirementDir: ctx.requirementDir })
 const profileName = typeof options.profile === 'string'
   ? options.profile
-  : inferredProfile || getDefaultProfile(ROOT)
+  : inferredProfile || ctx.defaultProfile || getDefaultProfile(ctx.projectRoot)
 
 let profile
 try {
-  profile = loadProfile(ROOT, profileName)
+  profile = loadProfile(FRAMEWORK_ROOT, profileName)
 } catch (error) {
   console.error(`✗ ${error.message}`)
   console.error(`  可用 profile: ${profileUsage()}`)
   process.exit(1)
 }
 
-const requirementPath = resolve(ROOT, 'docs/requirement', `${featureName}.md`)
+const requirementPath = resolve(ctx.requirementDir, `${featureName}.md`)
 if (!existsSync(requirementPath)) {
-  console.error(`✗ 需求文档不存在: docs/requirement/${featureName}.md`)
+  console.error(`✗ 需求文档不存在: ${featureName}.md`)
   console.error('  请先运行 npm run hx:doc 创建文档')
   process.exit(1)
 }
 
-const plansDir = resolve(ROOT, 'docs/plans')
+const plansDir = ctx.plansDir
 const mdPath = resolve(plansDir, `${featureName}.md`)
 const jsonPath = resolve(plansDir, `${featureName}-progress.json`)
 if (existsSync(mdPath) || existsSync(jsonPath)) {
-  console.error(`✗ 执行计划已存在: docs/plans/${featureName}.md 或 docs/plans/${featureName}-progress.json`)
+  console.error(`✗ 执行计划已存在: ${featureName}.md 或 ${featureName}-progress.json`)
   process.exit(1)
 }
 
@@ -74,6 +74,7 @@ if (tasks.length === 0) {
   process.exit(1)
 }
 
+const relRequirementPath = requirementPath.replace(ctx.projectRoot + '/', '')
 const progressJson = {
   feature: featureName,
   profile: profile.profile,
@@ -81,25 +82,25 @@ const progressJson = {
   platform: profile.platform,
   taskPrefix: profile.taskPrefix,
   createdAt: today,
-  requirementDoc: `docs/requirement/${featureName}.md`,
+  requirementDoc: relRequirementPath,
   checkedLayers: requirementInfo.checkedLayers,
   acIds: requirementInfo.acs.map((item) => item.id),
   tasks
 }
 
-const planMarkdown = buildPlanMarkdown(ROOT, featureName, profile, tasks, requirementInfo, today)
+const planMarkdown = buildPlanMarkdown(FRAMEWORK_ROOT, featureName, profile, tasks, requirementInfo, today, { plansDir })
 writeFileSync(mdPath, planMarkdown, 'utf8')
 writeFileSync(jsonPath, JSON.stringify(progressJson, null, 2), 'utf8')
 
-const agentsUpdated = updateAgentsActiveFeature(ROOT, featureName, profile)
+const agentsUpdated = updateAgentsActiveFeature(FRAMEWORK_ROOT, featureName, profile, { agentsPath: ctx.agentsPath })
 const firstTask = tasks[0]
 
 console.log('✓ 执行计划已创建:')
-console.log(`  docs/plans/${featureName}.md（${tasks.length} 个任务）`)
-console.log(`  docs/plans/${featureName}-progress.json`)
+console.log(`  ${mdPath.replace(ctx.projectRoot + '/', '')}（${tasks.length} 个任务）`)
+console.log(`  ${jsonPath.replace(ctx.projectRoot + '/', '')}`)
 if (agentsUpdated) {
   console.log('  AGENTS.md 已登记为活跃特性')
 }
 console.log('\n下一步:')
-console.log(`  npm run hx:ctx -- --profile ${profile.profile}`)
-console.log(`  npm run hx:run -- ${featureName} ${firstTask.id} --profile ${profile.profile}`)
+console.log(`  hx ctx --profile ${profile.profile}`)
+console.log(`  hx run ${featureName} ${firstTask.id} --profile ${profile.profile}`)

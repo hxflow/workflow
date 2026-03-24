@@ -6,8 +6,6 @@
 // 读取执行计划，生成带 profile 上下文的 Agent Prompt
 
 import { existsSync } from 'fs'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
 
 import {
   findProgressByTask,
@@ -19,8 +17,10 @@ import {
   parseArgs,
   profileUsage
 } from './lib/profile-utils.js'
+import { resolveContext, FRAMEWORK_ROOT } from './lib/resolve-context.js'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ctx = resolveContext()
+const ROOT = ctx.projectRoot
 const { positional, options } = parseArgs(process.argv.slice(2))
 
 const parsed = parseCommand(positional)
@@ -30,7 +30,7 @@ if (!parsed.taskId) {
   process.exit(1)
 }
 
-const progressEntry = findProgressByTask(ROOT, parsed.taskId, parsed.featureName)
+const progressEntry = findProgressByTask(ROOT, parsed.taskId, parsed.featureName, { plansDir: ctx.plansDir })
 if (!progressEntry) {
   console.error(`✗ 未找到任务 ${parsed.taskId}`)
   console.error('  请先运行 npm run hx:plan 生成执行计划')
@@ -40,11 +40,11 @@ if (!progressEntry) {
 const featureName = parsed.featureName || progressEntry.data.feature
 const profileName = typeof options.profile === 'string'
   ? options.profile
-  : inferProfileFromProgress(progressEntry.data) || guessProfileFromTaskId(parsed.taskId) || getDefaultProfile(ROOT)
+  : inferProfileFromProgress(progressEntry.data) || guessProfileFromTaskId(parsed.taskId) || ctx.defaultProfile || getDefaultProfile(ROOT)
 
 let profile
 try {
-  profile = loadProfile(ROOT, profileName)
+  profile = loadProfile(FRAMEWORK_ROOT, profileName)
 } catch (error) {
   console.error(`✗ ${error.message}`)
   console.error(`  可用 profile: ${profileUsage()}`)
@@ -64,17 +64,17 @@ if (task.status === 'done') {
   process.exit(0)
 }
 
-const requirementRelPath = progressEntry.data.requirementDoc || `docs/requirement/${featureName}.md`
+const requirementRelPath = progressEntry.data.requirementDoc || `.harness/requirement/${featureName}.md`
 const requirementPath = resolve(ROOT, requirementRelPath)
-const planRelPath = `docs/plans/${featureName}.md`
-const planPath = resolve(ROOT, planRelPath)
+const planRelPath = `.harness/plans/${featureName}.md`
+const planPath = resolve(ctx.plansDir, `${featureName}.md`)
 const goldenRulesRelPath = relativePath(profile.files.goldenRulesPath)
 const profileRelPath = relativePath(profile.files.profilePath)
 const platformRelPath = profile.files.platformPath ? relativePath(profile.files.platformPath) : null
 
 const contextFiles = [
-  'AGENTS.md',
-  'docs/golden-principles.md',
+  ctx.agentsPath.replace(ROOT + '/', ''),
+  ctx.goldenPrinciplesPath.replace(FRAMEWORK_ROOT + '/', ''),
   goldenRulesRelPath,
   profileRelPath,
   platformRelPath,
@@ -129,7 +129,7 @@ ${constraints}
 1. 严格对照 ${requirementRelPath} 中的验收标准（AC）实现
 2. 不重复发明已有类型或契约，优先复用 src/types/ 与需求文档中的定义
 3. 代码必须落在约定目录中，避免越层导入
-4. 错误处理遵循 docs/golden-principles.md 与团队 golden-rules
+4. 错误处理遵循全局黄金原则与团队 golden-rules
 5. 如果遇到歧义，先回到 requirement / plan 文档确认，不要自行猜测
 
 **门控命令：**
@@ -170,5 +170,5 @@ function parseCommand(args) {
 }
 
 function relativePath(filePath) {
-  return filePath.replace(`${ROOT}/`, '')
+  return filePath.replace(`${FRAMEWORK_ROOT}/`, '')
 }

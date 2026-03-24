@@ -4,18 +4,19 @@
 // 根据 profile 的 architecture.layers 检查跨层导入
 
 import { readFileSync, readdirSync, statSync } from 'fs'
-import { dirname, relative, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { relative, resolve } from 'path'
 
 import { getDefaultProfile, loadProfile, parseArgs, profileUsage } from './lib/profile-utils.js'
+import { resolveContext, FRAMEWORK_ROOT } from './lib/resolve-context.js'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ctx = resolveContext()
+const ROOT = ctx.projectRoot
 const { options } = parseArgs(process.argv.slice(2))
-const profileName = typeof options.profile === 'string' ? options.profile : getDefaultProfile(ROOT)
+const profileName = typeof options.profile === 'string' ? options.profile : ctx.defaultProfile || getDefaultProfile(ROOT)
 
 let profile
 try {
-  profile = loadProfile(ROOT, profileName)
+  profile = loadProfile(FRAMEWORK_ROOT, profileName)
 } catch (error) {
   console.error(`✗ ${error.message}`)
   console.error(`  可用 profile: ${profileUsage()}`)

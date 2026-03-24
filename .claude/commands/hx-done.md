@@ -5,7 +5,7 @@
 ## 执行步骤
 
 1. 校验参数格式：必须匹配 `TASK-(FE|BE|MB|IOS|AND|HM)-\d{2}`，否则提示用法
-2. 在 `harness-scaffold/docs/plans/*-progress.json` 中搜索该 task-id
+2. 在 `.harness/plans/*-progress.json` 中搜索该 task-id
 3. 如果未找到，报错并列出所有可用的 TASK-ID
 4. 如果已是 `done` 状态，提示已完成并跳过
 5. 将该 TASK 的 status 改为 `done`，写入 `completedAt` 为当前时间

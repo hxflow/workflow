@@ -11,11 +11,11 @@
 
 ### 2. 加载上下文
 读取：
-1. `harness-scaffold/docs/golden-principles.md`（全局）
-2. `harness-scaffold/docs/map.md`
+1. `.harness/docs/golden-principles.md`（全局）
+2. `.harness/docs/map.md`
 3. 如果指定了 --profile：
-   - `harness-scaffold/profiles/${TEAM}/golden-rules.md`
-   - `harness-scaffold/profiles/${TEAM}/profile.yaml`
+   - `.harness/.harness/profiles/${TEAM}/golden-rules.md`
+   - `.harness/.harness/profiles/${TEAM}/profile.yaml`
    - 移动端追加平台 yaml
 4. 涉及文件的对应需求文档
 
@@ -43,7 +43,7 @@
   问题: Repo 层包含业务逻辑（GP-BE-001）→ 移至 Service 层
   ✓ 已修复
 
-修复 3/3: docs/requirement/user-login.md
+修复 3/3: .harness/requirement/user-login.md
   问题: AC-003 与代码不一致 → 更新文档
   ✓ 已修复
 

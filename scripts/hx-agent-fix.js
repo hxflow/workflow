@@ -4,19 +4,19 @@
 // 根据错误日志生成带团队上下文的修复 Prompt
 
 import { existsSync, readFileSync } from 'fs'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 import { execSync } from 'child_process'
 
 import { getDefaultProfile, loadProfile, parseArgs, profileUsage } from './lib/profile-utils.js'
+import { resolveContext, FRAMEWORK_ROOT } from './lib/resolve-context.js'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ctx = resolveContext()
 const { options } = parseArgs(process.argv.slice(2))
 
-const profileName = typeof options.profile === 'string' ? options.profile : getDefaultProfile(ROOT)
+const profileName = typeof options.profile === 'string' ? options.profile : ctx.defaultProfile || getDefaultProfile(ctx.projectRoot)
 let profile
 try {
-  profile = loadProfile(ROOT, profileName)
+  profile = loadProfile(FRAMEWORK_ROOT, profileName)
 } catch (error) {
   console.error(`✗ ${error.message}`)
   console.error(`  可用 profile: ${profileUsage()}`)
@@ -25,7 +25,7 @@ try {
 
 let logContent = ''
 if (typeof options.file === 'string') {
-  const logPath = resolve(ROOT, options.file)
+  const logPath = resolve(ctx.projectRoot, options.file)
   if (!existsSync(logPath)) {
     console.error(`✗ 日志文件不存在: ${options.file}`)
     process.exit(1)
@@ -36,7 +36,7 @@ if (typeof options.file === 'string') {
 } else {
   try {
     logContent = execSync('npm run hx:test 2>&1 | tail -40', {
-      cwd: ROOT,
+      cwd: ctx.projectRoot,
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe']
     })
@@ -46,7 +46,7 @@ if (typeof options.file === 'string') {
 }
 
 const divider = '═'.repeat(60)
-const goldenRulesPath = profile.files.goldenRulesPath.replace(`${ROOT}/`, '')
+const goldenRulesPath = profile.files.goldenRulesPath.replace(`${FRAMEWORK_ROOT}/`, '')
 
 console.log(`\n${divider}`)
 console.log(`  Bug 修复 Prompt 生成器 (${profile.label}${profile.platformLabel ? ` · ${profile.platformLabel}` : ''})`)
@@ -58,8 +58,8 @@ console.log()
 const prompt = `修复以下错误。
 
 **在开始前，请先读取：**
-- AGENTS.md
-- docs/golden-principles.md
+- .harness/AGENTS.md
+- ${ctx.goldenPrinciplesPath.replace(FRAMEWORK_ROOT + '/', '')}
 - ${goldenRulesPath}
 - 报错涉及的源文件（见下方）
 
@@ -86,4 +86,4 @@ console.log(divider)
 console.log('\n提示：')
 console.log('  --log="错误文本"    直接传入日志片段')
 console.log('  --file=logs/err.txt 从文件读取日志')
-console.log(`  --profile=${profile.profile} 指定团队约束（默认 ${getDefaultProfile(ROOT)}）`)
+console.log(`  --profile=${profile.profile} 指定团队约束（默认 ${profileName}）`)

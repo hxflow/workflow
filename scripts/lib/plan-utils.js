@@ -53,10 +53,11 @@ export function buildTasks(featureName, profile, requirement) {
   }))
 }
 
-export function buildPlanMarkdown(root, featureName, profile, tasks, requirement, today) {
+export function buildPlanMarkdown(root, featureName, profile, tasks, requirement, today, opts = {}) {
+  const plansDir = opts.plansDir || resolve(root, 'docs/plans')
   const templatePath = existsSync(profile.files.planTemplatePath)
     ? profile.files.planTemplatePath
-    : resolve(root, 'docs/plans/_template.md')
+    : resolve(plansDir, '_template.md')
 
   const replacements = {
     ...createTemplateReplacements(featureName, profile),
@@ -122,8 +123,8 @@ export function markTargetPlatform(markdown, profile) {
     .replace(/- \[ \] HarmonyOS/g, profile.platform === 'harmony' ? '- [x] HarmonyOS' : '- [ ] HarmonyOS')
 }
 
-export function updateAgentsActiveFeature(root, featureName, profile) {
-  const agentsPath = resolve(root, 'AGENTS.md')
+export function updateAgentsActiveFeature(root, featureName, profile, opts = {}) {
+  const agentsPath = opts.agentsPath || resolve(root, 'AGENTS.md')
   if (!existsSync(agentsPath)) {
     return false
   }

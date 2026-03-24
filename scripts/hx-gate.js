@@ -4,18 +4,17 @@
 // 从 profile 读取 gate_commands 并按顺序执行
 
 import { execSync } from 'child_process'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
 
 import { getDefaultProfile, loadProfile, parseArgs, profileUsage } from './lib/profile-utils.js'
+import { resolveContext, FRAMEWORK_ROOT } from './lib/resolve-context.js'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ctx = resolveContext()
 const { options } = parseArgs(process.argv.slice(2))
-const profileName = typeof options.profile === 'string' ? options.profile : getDefaultProfile(ROOT)
+const profileName = typeof options.profile === 'string' ? options.profile : ctx.defaultProfile || getDefaultProfile(ctx.projectRoot)
 
 let profile
 try {
-  profile = loadProfile(ROOT, profileName)
+  profile = loadProfile(FRAMEWORK_ROOT, profileName)
 } catch (error) {
   console.error(`✗ ${error.message}`)
   console.error(`  可用 profile: ${profileUsage()}`)
@@ -46,7 +45,7 @@ for (const [index, step] of activeSteps.entries()) {
 
   process.stdout.write(`→ Step ${index + 1}/${activeSteps.length}  ${step.padEnd(6)} `)
   try {
-    execSync(command, { cwd: ROOT, stdio: 'inherit', shell: '/bin/zsh' })
+    execSync(command, { cwd: ctx.projectRoot, stdio: 'inherit', shell: '/bin/zsh' })
     console.log(`✓ ${step} 通过`)
   } catch (error) {
     console.log(`✗ ${step} 失败`)

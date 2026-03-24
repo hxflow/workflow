@@ -20,8 +20,8 @@
 
 ### 2. 生成 MR 描述
 读取以下信息自动生成 MR 描述文件：
-- `docs/requirement/${FEAT}.md` — 提取来源任务 ID、背景、AC 列表
-- `docs/plans/${FEAT}-progress.json` — 提取任务完成状态
+- `.harness/requirement/${FEAT}.md` — 提取来源任务 ID、背景、AC 列表
+- `.harness/plans/${FEAT}-progress.json` — 提取任务完成状态
 - `git log main..HEAD --oneline` — 提取本次变更的 commit 列表
 - `git diff main --stat` — 提取文件变更统计
 

@@ -1,6 +1,7 @@
 # Mobile Team Profile (通用，跨 iOS/Android/HarmonyOS)
 name: mobile
 label: 移动端
+extends: base
 task_prefix: TASK-MB
 supported_platforms: [ios, android, harmony]
 

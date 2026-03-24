@@ -1,6 +1,7 @@
 # Frontend Team Profile
 name: frontend
 label: 前端
+extends: base
 task_prefix: TASK-FE
 
 # ── 架构层级 ──

@@ -26,13 +26,13 @@
   - 用户选择跳过则进入手动填写流程
 
 ### 2. 加载 Profile 配置
-- 读取 `harness-scaffold/profiles/${TEAM}/profile.yaml` 获取架构层级和团队配置
-- 如果是移动端且有平台参数，追加读取 `harness-scaffold/profiles/mobile/platforms/${PLATFORM}.yaml`
-- 读取 `harness-scaffold/profiles/${TEAM}/requirement-template.md` 作为需求文档模板
-- 如果团队模板不存在，回退到全局模板 `harness-scaffold/docs/requirement/_template.md`
+- 读取 `.harness/.harness/profiles/${TEAM}/profile.yaml` 获取架构层级和团队配置
+- 如果是移动端且有平台参数，追加读取 `.harness/.harness/profiles/mobile/platforms/${PLATFORM}.yaml`
+- 读取 `.harness/.harness/profiles/${TEAM}/requirement-template.md` 作为需求文档模板
+- 如果团队模板不存在，回退到全局模板 `.harness/requirement/_template.md`
 
 ### 3. 创建文档
-- 检查 `harness-scaffold/docs/requirement/$FEAT.md` 是否已存在，存在则提示并停止
+- 检查 `.harness/requirement/$FEAT.md` 是否已存在，存在则提示并停止
 - 基于**团队专属模板**创建需求文档，自动填入：
   - feature-name 替换占位符
   - 今天的日期
@@ -57,7 +57,7 @@
 
 ### 5. 完成输出
 ```
-✓ 需求文档已创建: docs/requirement/$FEAT.md
+✓ 需求文档已创建: .harness/requirement/$FEAT.md
   来源: DevOps #${TASK_ID} — ${TASK_TITLE}
   团队: ${TEAM_LABEL}
   架构层级: ${LAYER_LIST}

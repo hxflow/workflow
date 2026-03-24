@@ -9,11 +9,11 @@
 ## 步骤
 
 ### 1. 加载计划
-- 读取 `harness-scaffold/docs/plans/${FEAT}-progress.json`
+- 读取 `.harness/plans/${FEAT}-progress.json`
 - 不存在则报错：「未找到执行计划，请先运行 /hx-plan $FEAT --profile ${PROFILE}」
 - 从 progress.json 读取 `profile` 和 `platform` 字段
 - 如果提供了 --profile 参数，以参数为准
-- 加载 `profiles/${TEAM}/profile.yaml`（移动端追加平台 yaml）
+- 加载 `.harness/.harness/profiles/${TEAM}/profile.yaml`（移动端追加平台 yaml）
 - 列出所有 TASK 及其状态，过滤出 `pending` 的任务
 
 ### 2. 上下文校验

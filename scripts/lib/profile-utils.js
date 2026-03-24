@@ -136,12 +136,13 @@ export function guessProfileFromTaskId(taskId) {
   }
 }
 
-export function inferProfileFromRequirementDoc(root, featureName) {
+export function inferProfileFromRequirementDoc(root, featureName, opts = {}) {
   if (!featureName) {
     return null
   }
 
-  const requirementPath = resolve(root, 'docs/requirement', `${featureName}.md`)
+  const reqDir = opts.requirementDir || resolve(root, 'docs/requirement')
+  const requirementPath = resolve(reqDir, `${featureName}.md`)
   if (!existsSync(requirementPath)) {
     return null
   }
@@ -163,8 +164,8 @@ export function inferProfileFromRequirementDoc(root, featureName) {
   return platform ? `mobile:${platform}` : 'mobile'
 }
 
-export function findProgressFiles(root) {
-  const plansDir = resolve(root, 'docs/plans')
+export function findProgressFiles(root, opts = {}) {
+  const plansDir = opts.plansDir || resolve(root, 'docs/plans')
   if (!existsSync(plansDir)) {
     return []
   }
@@ -178,10 +179,11 @@ export function readJsonFile(filePath) {
   return JSON.parse(readFileSync(filePath, 'utf8'))
 }
 
-export function findProgressByTask(root, taskId, featureName = null) {
+export function findProgressByTask(root, taskId, featureName = null, opts = {}) {
+  const plansDir = opts.plansDir || resolve(root, 'docs/plans')
   const progressFiles = featureName
-    ? [resolve(root, 'docs/plans', `${featureName}-progress.json`)].filter(existsSync)
-    : findProgressFiles(root)
+    ? [resolve(plansDir, `${featureName}-progress.json`)].filter(existsSync)
+    : findProgressFiles(root, opts)
 
   for (const filePath of progressFiles) {
     const data = readJsonFile(filePath)
@@ -354,7 +356,9 @@ export function loadProfile(root, specifier) {
     throw new Error(`profile 文件不存在: profiles/${parsed.team}/profile.yaml`)
   }
 
-  const baseConfig = parseSimpleYaml(readFileSync(profilePath, 'utf8'))
+  // 加载当前 profile 并沿 extends 链递归合并父 profile
+  const teamConfig = loadProfileWithInheritance(root, parsed.team)
+
   let platformConfig = {}
   let platformPath = null
 
@@ -366,20 +370,20 @@ export function loadProfile(root, specifier) {
     platformConfig = parseSimpleYaml(readFileSync(platformPath, 'utf8'))
   }
 
-  const merged = deepMerge(baseConfig, platformConfig)
+  const merged = deepMerge(teamConfig, platformConfig)
   const paths = merged.paths || {}
   const layerPaths = merged.layer_paths || {}
   const architecture = normaliseArchitecture(merged.architecture, paths, layerPaths)
 
   const taskSplit = merged.task_split || { order: [], template: [] }
-  const taskPrefix = merged.task_prefix || baseConfig.task_prefix || ''
+  const taskPrefix = merged.task_prefix || teamConfig.task_prefix || ''
   const profileName = parsed.team === 'mobile' && parsed.platform ? `${parsed.team}:${parsed.platform}` : parsed.team
 
   return {
     profile: profileName,
     team: parsed.team,
     platform: parsed.platform,
-    label: baseConfig.label || TEAM_LABELS[parsed.team] || parsed.team,
+    label: teamConfig.label || TEAM_LABELS[parsed.team] || parsed.team,
     platformLabel: platformConfig.label || parsed.platformLabel,
     taskPrefix,
     architecture,
@@ -389,6 +393,9 @@ export function loadProfile(root, specifier) {
     reviewExtra: merged.review_extra || [],
     qa: merged.qa || {},
     qaExtra: merged.qa_extra || [],
+    executionRules: merged.execution_rules || [],
+    commitFormat: merged.commit_format || '',
+    commitTypes: merged.commit_types || [],
     paths,
     raw: merged,
     files: {
@@ -398,9 +405,38 @@ export function loadProfile(root, specifier) {
       requirementTemplatePath: resolve(teamDir, 'requirement-template.md'),
       planTemplatePath: resolve(teamDir, 'plan-template.md'),
       reviewChecklistPath: resolve(teamDir, 'review-checklist.md'),
-      goldenRulesPath: resolve(teamDir, 'golden-rules.md')
+      goldenRulesPath: resolve(teamDir, 'golden-rules.md'),
+      baseGoldenRulesPath: resolve(root, 'profiles', 'base', 'golden-rules.md')
     }
   }
+}
+
+/**
+ * 沿 extends 链递归加载 profile，从根基类向下逐层 deepMerge。
+ * 防循环检测：visited 集合记录已加载的 profile 名。
+ */
+function loadProfileWithInheritance(root, profileName, visited = new Set()) {
+  if (visited.has(profileName)) {
+    throw new Error(`profile 循环继承检测: ${[...visited, profileName].join(' → ')}`)
+  }
+  visited.add(profileName)
+
+  const profileDir = resolve(root, 'profiles', profileName)
+  const profilePath = resolve(profileDir, 'profile.yaml')
+  if (!existsSync(profilePath)) {
+    throw new Error(`profile 文件不存在: profiles/${profileName}/profile.yaml`)
+  }
+
+  const config = parseSimpleYaml(readFileSync(profilePath, 'utf8'))
+  const parentName = config.extends
+
+  if (!parentName) {
+    return config
+  }
+
+  // 递归加载父 profile，然后用当前 config 覆盖
+  const parentConfig = loadProfileWithInheritance(root, parentName, visited)
+  return deepMerge(parentConfig, config)
 }
 
 function normaliseArchitecture(architecture, paths, layerPaths) {

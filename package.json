@@ -5,9 +5,11 @@
   "license": "MIT",
   "type": "module",
   "bin": {
+    "hx": "bin/hx.js",
     "qiyuan-harness-scaffold": "scripts/hx-install.cjs"
   },
   "files": [
+    "bin/hx.js",
     "AGENTS.md",
     "README.md",
     "docs/**/*.md",
@@ -21,6 +23,7 @@
     "scripts/hx-doc-freshness.js",
     "scripts/hx-entropy-scan.js",
     "scripts/hx-gate.js",
+    "scripts/hx-init.js",
     "scripts/hx-install.cjs",
     "scripts/hx-install.js",
     "scripts/hx-new-doc.js",
@@ -31,6 +34,7 @@
     "scripts/lib/install-utils.js",
     "scripts/lib/plan-utils.js",
     "scripts/lib/profile-utils.js",
+    "scripts/lib/resolve-context.js",
     ".claude/commands/**/*.md",
     ".claude/skills/**/*",
     ".husky/*",

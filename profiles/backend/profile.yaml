@@ -1,6 +1,7 @@
 # Backend Team Profile
 name: backend
 label: 服务端
+extends: base
 task_prefix: TASK-BE
 
 # ── 架构层级（单向依赖，从左到右）──

@@ -8,7 +8,7 @@
 
 ### 1. AI Slop 模式扫描
 
-**全局扫描**（`harness-scaffold/src/**` 或对应平台目录）：
+**全局扫描**（`src/**` 或对应平台目录）：
 
 | 模式 | 规则 | 严重度 |
 |------|------|--------|
@@ -38,7 +38,7 @@
 - 平台特定：force unwrap / !! / FA 废弃 API
 
 ### 2. 文档新鲜度检查
-- 扫描 `harness-scaffold/docs/requirement/*.md`
+- 扫描 `.harness/requirement/*.md`
 - 对每个文档中引用的源文件，比较最后修改时间
 - 如果源码比文档更新，标记为可能过期
 
@@ -49,7 +49,7 @@
 - 移动端：ui/ 是否导入了 data/，domain/ 是否导入了平台 API
 
 ### 4. 进度文件审计
-- 扫描所有 `docs/plans/*-progress.json`
+- 扫描所有 `.harness/plans/*-progress.json`
 - 如果指定 --profile，只检查匹配的进度文件
 - 列出超过 2 周未更新且仍有 pending 的 TASK
 - 列出已完成但未从 AGENTS.md 移除的特性
@@ -74,7 +74,7 @@
   🔴 GP-BE-001 违规: src/repo/userRepo.ts 含业务判断
 
 ■ 文档新鲜度
-  ⚠ docs/requirement/user-login.md 可能过期
+  ⚠ .harness/requirement/user-login.md 可能过期
 
 ■ 架构合规
   ✓ 无跨层违规
@@ -88,5 +88,5 @@
 ── 建议操作 ─────────────────────────
 1. 修复 2 个 console.log
 2. 重构 src/repo/userRepo.ts 中的业务逻辑
-3. 更新 docs/requirement/user-login.md
+3. 更新 .harness/requirement/user-login.md
 ```

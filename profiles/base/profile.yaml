@@ -1,0 +1,53 @@
+# Base Profile — 所有团队 Profile 的根基类
+# 定义跨团队的通用配置，子 Profile 通过 extends: base 继承
+name: base
+label: 通用基础
+task_prefix: TASK
+
+# ── 架构层级（抽象定义，子 Profile 必须覆盖）──
+architecture:
+  layers: []
+  cross_cutting:
+    - 结构化日志（禁止 console.log/print 进入源码目录）
+    - 错误处理（统一错误类型，禁止裸抛异常）
+    - 配置管理（禁止魔法数字，配置值集中管理）
+
+# ── 任务拆分规则（子 Profile 覆盖具体策略）──
+task_split:
+  strategy: layer_by_layer
+  order: []
+  template: []
+
+# ── 代码审查通用检查项（Phase 05）──
+review_focus:
+  must:
+    - 架构层级合规：是否存在跨层违规导入
+    - 错误处理规范：是否使用统一错误类型
+    - 日志规范：是否使用结构化日志
+    - 类型安全：是否存在不安全的类型断言
+  recommend:
+    - 命名规范一致性
+    - 重复代码检测
+    - 文档同步（接口变更是否同步到需求文档）
+
+# ── 门控命令（子 Profile 必须覆盖）──
+gate_commands: {}
+
+# ── QA 验收通用要求（Phase 06）──
+qa:
+  must:
+    - 逐条验证需求文档中定义的 AC
+    - 确认结构化日志正确输出
+  recommend:
+    - 性能基线验证
+
+# ── 执行规则（全局生效）──
+execution_rules:
+  - 每个 TASK 独立开 Agent 会话执行，不在同一会话连续执行多个 TASK
+  - 所有代码必须通过团队对应的门控检查
+  - 执行前必须读取 AGENTS.md + golden-principles.md + 团队 golden-rules.md
+  - 上下文使用率超过 40% 时，新开会话并把进度写入 progress.json
+
+# ── Commit 消息格式 ──
+commit_format: "<type>: #<taskId>@<taskName>"
+commit_types: [feat, fix, docs, refactor, test, chore, ci, revert]

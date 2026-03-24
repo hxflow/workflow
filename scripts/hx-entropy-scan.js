@@ -3,10 +3,12 @@
 // 扫描 src/ 目录，识别常见 AI Slop 模式，输出需人工确认的条目
 
 import { readFileSync, readdirSync, statSync } from 'fs'
-import { resolve, dirname, relative } from 'path'
-import { fileURLToPath } from 'url'
+import { resolve, relative } from 'path'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+import { resolveContext } from './lib/resolve-context.js'
+
+const ctx = resolveContext()
+const ROOT = ctx.projectRoot
 
 // ── 扫描规则（每条对应一个黄金原则）─────────────────────────────
 const PATTERNS = [
