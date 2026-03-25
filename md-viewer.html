@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>文档预览</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-primary: #0a0a0f;
+        --bg-secondary: #12121a;
+        --bg-tertiary: #1a1a24;
+        --bg-card: rgba(255, 255, 255, 0.03);
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --text-primary: #f0f0f5;
+        --text-secondary: #8888a0;
+        --text-muted: #555566;
+        --accent-primary: #c30000;
+        --accent-secondary: #ff4444;
+        --gradient-accent: linear-gradient(135deg, #c30000, #ff4444);
+        --code-bg: #0d1117;
+        --code-border: #30363d;
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --header-bg: rgba(10, 10, 15, 0.9);
+      }
+
+      [data-theme="light"] {
+        --bg-primary: #f8fafc;
+        --bg-secondary: #ffffff;
+        --bg-tertiary: #f1f5f9;
+        --bg-card: rgba(0, 0, 0, 0.02);
+        --border-subtle: rgba(0, 0, 0, 0.08);
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --code-bg: #f6f8fa;
+        --code-border: #d0d7de;
+        --header-bg: rgba(248, 250, 252, 0.9);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          "Noto Sans SC",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        line-height: 1.7;
+        transition:
+          background 0.3s ease,
+          color 0.3s ease;
+      }
+
+      .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: var(--header-bg);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border-subtle);
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        z-index: 100;
+        transition:
+          background 0.3s ease,
+          border-color 0.3s ease;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .back-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+      }
+
+      .back-btn:hover {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border-color: var(--accent-primary);
+      }
+
+      .back-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .breadcrumb span {
+        color: var(--text-secondary);
+      }
+
+      .breadcrumb .current {
+        color: var(--text-primary);
+      }
+
+      .header-right {
+        margin-left: auto;
+      }
+
+      .theme-toggle {
+        display: flex;
+        gap: 4px;
+        padding: 4px;
+        background: var(--bg-card);
+        border-radius: 20px;
+        border: 1px solid var(--border-subtle);
+      }
+
+      .theme-btn {
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: transparent;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        transition: all 0.2s ease;
+      }
+
+      .theme-btn:hover {
+        color: var(--text-primary);
+      }
+
+      .theme-btn.active {
+        background: var(--gradient-accent);
+        color: white;
+      }
+
+      .theme-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .main-container {
+        display: flex;
+        padding-top: 60px;
+        min-height: 100vh;
+      }
+
+      .toc-sidebar {
+        width: 260px;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        background: var(--bg-secondary);
+        border-right: 1px solid var(--border-subtle);
+        padding: 24px 0;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--text-muted) transparent;
+        transition:
+          background 0.3s ease,
+          border-color 0.3s ease;
+      }
+
+      .toc-sidebar::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .toc-sidebar::-webkit-scrollbar-thumb {
+        background: var(--text-muted);
+        border-radius: 2px;
+      }
+
+      .toc-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-muted);
+        padding: 0 20px;
+        margin-bottom: 16px;
+      }
+
+      .toc-list {
+        list-style: none;
+      }
+
+      .toc-item {
+        padding: 0;
+      }
+
+      .toc-link {
+        display: block;
+        padding: 8px 20px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        transition: all 0.2s ease;
+      }
+
+      .toc-link:hover {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        border-left-color: var(--accent-primary);
+      }
+
+      .toc-link.h2 {
+        padding-left: 32px;
+        font-size: 12px;
+      }
+
+      .toc-link.h3 {
+        padding-left: 44px;
+        font-size: 11px;
+      }
+
+      .toc-link.active {
+        background: rgba(195, 0, 0, 0.1);
+        color: var(--accent-primary);
+        border-left-color: var(--accent-primary);
+      }
+
+      [data-theme="light"] .toc-link.active {
+        background: rgba(99, 102, 241, 0.08);
+      }
+
+      .content-area {
+        flex: 1;
+        margin-left: 260px;
+        padding: 48px;
+        max-width: 900px;
+      }
+
+      .doc-content {
+        animation: fadeIn 0.4s ease;
+      }
+
+      .doc-content h1 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 32px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-subtle);
+        background: var(--gradient-accent);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .doc-content h2 {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 40px 0 20px;
+        color: var(--text-primary);
+      }
+
+      .doc-content h3 {
+        font-size: 18px;
+        font-weight: 500;
+        margin: 32px 0 16px;
+        color: var(--text-primary);
+      }
+
+      .doc-content h4,
+      .doc-content h5,
+      .doc-content h6 {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 24px 0 12px;
+        color: var(--text-secondary);
+      }
+
+      .doc-content p {
+        margin-bottom: 16px;
+        color: var(--text-secondary);
+      }
+
+      .doc-content a {
+        color: var(--accent-primary);
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .doc-content a:hover {
+        border-bottom-color: var(--accent-primary);
+      }
+
+      .doc-content strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .doc-content em {
+        color: var(--text-secondary);
+      }
+
+      .doc-content code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.9em;
+        background: var(--code-bg);
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #f97583;
+      }
+
+      [data-theme="light"] .doc-content code {
+        color: #cf222e;
+      }
+
+      .doc-content pre {
+        background: var(--code-bg);
+        border: 1px solid var(--code-border);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        margin: 20px 0;
+        overflow-x: auto;
+        position: relative;
+        transition:
+          background 0.3s ease,
+          border-color 0.3s ease;
+      }
+
+      .doc-content pre code {
+        background: none;
+        padding: 0;
+        color: #c9d1d9;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      [data-theme="light"] .doc-content pre code {
+        color: #24292f;
+      }
+
+      .doc-content blockquote {
+        border-left: 3px solid var(--accent-primary);
+        background: rgba(99, 102, 241, 0.1);
+        padding: 16px 20px;
+        margin: 20px 0;
+        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      }
+
+      [data-theme="light"] .doc-content blockquote {
+        background: rgba(99, 102, 241, 0.06);
+      }
+
+      .doc-content blockquote p {
+        margin: 0;
+        color: var(--text-secondary);
+      }
+
+      .doc-content ul,
+      .doc-content ol {
+        margin: 16px 0;
+        padding-left: 24px;
+        color: var(--text-secondary);
+      }
+
+      .doc-content li {
+        margin-bottom: 8px;
+      }
+
+      .doc-content li::marker {
+        color: var(--accent-primary);
+      }
+
+      .doc-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 14px;
+      }
+
+      .doc-content th,
+      .doc-content td {
+        padding: 12px 16px;
+        text-align: left;
+        border: 1px solid var(--border-subtle);
+      }
+
+      .doc-content th {
+        background: var(--bg-tertiary);
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .doc-content td {
+        background: var(--bg-card);
+        color: var(--text-secondary);
+      }
+
+      .doc-content tr:hover td {
+        background: rgba(195, 0, 0, 0.05);
+      }
+
+      [data-theme="light"] .doc-content tr:hover td {
+        background: rgba(195, 0, 0, 0.03);
+      }
+
+      .doc-content hr {
+        border: none;
+        height: 1px;
+        background: var(--border-subtle);
+        margin: 32px 0;
+      }
+
+      .doc-content img {
+        max-width: 100%;
+        border-radius: var(--radius-md);
+        margin: 20px 0;
+      }
+
+      .doc-content input[type="checkbox"] {
+        margin-right: 8px;
+        accent-color: var(--accent-primary);
+      }
+
+      .loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 60vh;
+        color: var(--text-secondary);
+      }
+
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--border-subtle);
+        border-top-color: var(--accent-primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 16px;
+      }
+
+      .error-message {
+        text-align: center;
+        padding: 60px;
+        color: #f87171;
+      }
+
+      .error-message h3 {
+        margin-bottom: 12px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root:not([data-theme="dark"]) {
+          --bg-primary: #f8fafc;
+          --bg-secondary: #ffffff;
+          --bg-tertiary: #f1f5f9;
+          --bg-card: rgba(0, 0, 0, 0.02);
+          --border-subtle: rgba(0, 0, 0, 0.08);
+          --text-primary: #1e293b;
+          --text-secondary: #64748b;
+          --text-muted: #94a3b8;
+          --code-bg: #f6f8fa;
+          --code-border: #d0d7de;
+          --header-bg: rgba(248, 250, 252, 0.9);
+        }
+      }
+
+      @media (max-width: 1024px) {
+        .toc-sidebar {
+          display: none;
+        }
+        .content-area {
+          margin-left: 0;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .header {
+          padding: 0 16px;
+        }
+        .breadcrumb {
+          display: none;
+        }
+        .header-right {
+          display: none;
+        }
+        .content-area {
+          padding: 24px;
+        }
+        .doc-content h1 {
+          font-size: 28px;
+        }
+        .doc-content h2 {
+          font-size: 20px;
+        }
+      }
+
+      .hljs {
+        background: transparent !important;
+      }
+
+      .hljs-keyword {
+        color: #ff7b72;
+      }
+      .hljs-string {
+        color: #a5d6ff;
+      }
+      .hljs-number {
+        color: #79c0ff;
+      }
+      .hljs-comment {
+        color: #8b949e;
+        font-style: italic;
+      }
+      .hljs-function {
+        color: #d2a8ff;
+      }
+      .hljs-class {
+        color: #ffa657;
+      }
+      .hljs-variable {
+        color: #ffa657;
+      }
+      .hljs-attr {
+        color: #79c0ff;
+      }
+      .hljs-tag {
+        color: #7ee787;
+      }
+      .hljs-attribute {
+        color: #79c0ff;
+      }
+      .hljs-selector-class {
+        color: #d2a8ff;
+      }
+      .hljs-selector-id {
+        color: #ffa657;
+      }
+      .hljs-built_in {
+        color: #ffa657;
+      }
+      .hljs-literal {
+        color: #79c0ff;
+      }
+      .hljs-type {
+        color: #ffa657;
+      }
+      .hljs-params {
+        color: #c9d1d9;
+      }
+      .hljs-meta {
+        color: #79c0ff;
+      }
+      .hljs-title {
+        color: #d2a8ff;
+      }
+
+      [data-theme="light"] .hljs {
+        color: #24292f;
+      }
+      [data-theme="light"] .hljs-keyword {
+        color: #cf222e;
+      }
+      [data-theme="light"] .hljs-string {
+        color: #0a3069;
+      }
+      [data-theme="light"] .hljs-number {
+        color: #0550ae;
+      }
+      [data-theme="light"] .hljs-comment {
+        color: #6e7781;
+      }
+      [data-theme="light"] .hljs-function {
+        color: #8250df;
+      }
+      [data-theme="light"] .hljs-class {
+        color: #953800;
+      }
+      [data-theme="light"] .hljs-variable {
+        color: #953800;
+      }
+      [data-theme="light"] .hljs-attr {
+        color: #0550ae;
+      }
+      [data-theme="light"] .hljs-tag {
+        color: #116329;
+      }
+      [data-theme="light"] .hljs-attribute {
+        color: #0550ae;
+      }
+      [data-theme="light"] .hljs-built_in {
+        color: #953800;
+      }
+      [data-theme="light"] .hljs-literal {
+        color: #0550ae;
+      }
+      [data-theme="light"] .hljs-type {
+        color: #953800;
+      }
+      [data-theme="light"] .hljs-title {
+        color: #8250df;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-left">
+        <a href="index.html" class="back-btn">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          返回导航
+        </a>
+        <div class="breadcrumb">
+          <span id="file-path"></span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="theme-toggle">
+          <button class="theme-btn" data-theme="light" title="浅色模式">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          </button>
+          <button class="theme-btn" data-theme="dark" title="深色模式">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+          <button class="theme-btn" data-theme="system" title="跟随系统">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-container">
+      <aside class="toc-sidebar">
+        <div class="toc-title">目录导航</div>
+        <ul class="toc-list" id="toc-list"></ul>
+      </aside>
+
+      <main class="content-area">
+        <div id="content" class="loading">
+          <div class="loading-spinner"></div>
+          <p>正在加载文档...</p>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    <script>
+      marked.setOptions({
+        highlight: function (code, lang) {
+          if (lang && hljs.getLanguage(lang)) {
+            return hljs.highlight(code, { language: lang }).value;
+          }
+          return hljs.highlightAuto(code).value;
+        },
+        breaks: true,
+        gfm: true,
+      });
+
+      function initTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        const themeButtons = document.querySelectorAll(".theme-btn");
+
+        if (savedTheme && savedTheme !== "system") {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+          updateThemeButtons(savedTheme);
+        } else {
+          updateThemeButtons("system");
+        }
+
+        themeButtons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const theme = btn.dataset.theme;
+            setTheme(theme);
+          });
+        });
+      }
+
+      function setTheme(theme) {
+        localStorage.setItem("theme", theme);
+
+        if (theme === "system") {
+          document.documentElement.removeAttribute("data-theme");
+        } else {
+          document.documentElement.setAttribute("data-theme", theme);
+        }
+
+        updateThemeButtons(theme);
+      }
+
+      function updateThemeButtons(activeTheme) {
+        document.querySelectorAll(".theme-btn").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.theme === activeTheme);
+        });
+      }
+
+      function getQueryParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name);
+      }
+
+      function renderMarkdown(content) {
+        const contentDiv = document.getElementById("content");
+        contentDiv.innerHTML = marked.parse(content);
+        generateTOC(content);
+        contentDiv.classList.remove("loading");
+      }
+
+      function generateTOC(content) {
+        const tocList = document.getElementById("toc-list");
+        const headings = content.match(/^#{1,3}\s+.+$/gm) || [];
+
+        if (headings.length === 0) {
+          tocList.innerHTML =
+            '<li class="toc-item"><span class="toc-link" style="color: var(--text-muted); cursor: default;">暂无目录</span></li>';
+          return;
+        }
+
+        tocList.innerHTML = headings
+          .map((h) => {
+            const level = h.match(/^#+/)[0].length;
+            const text = h.replace(/^#+\s+/, "");
+            const id = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, "-");
+            return `<li class="toc-item">
+          <a href="#${id}" class="toc-link h${level}" data-id="${id}">${text}</a>
+        </li>`;
+          })
+          .join("");
+
+        tocList.querySelectorAll(".toc-link").forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const id = link.dataset.id;
+            const element = document.getElementById(id);
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          });
+        });
+
+        document
+          .querySelectorAll(".doc-content h1, .doc-content h2, .doc-content h3")
+          .forEach((h) => {
+            const id = h.textContent
+              .toLowerCase()
+              .replace(/[^\w\u4e00-\u9fa5]+/g, "-");
+            h.id = id;
+          });
+      }
+
+      function showError(message) {
+        const contentDiv = document.getElementById("content");
+        contentDiv.classList.remove("loading");
+        contentDiv.innerHTML = `
+        <div class="error-message">
+          <h3>加载失败</h3>
+          <p>${message}</p>
+        </div>
+      `;
+      }
+
+      async function loadDocument() {
+        const filePath = getQueryParam("file");
+
+        if (!filePath) {
+          showError("未指定文档路径");
+          return;
+        }
+
+        document.getElementById("file-path").textContent = filePath;
+        document.getElementById("file-path").classList.add("current");
+        document.title = `${filePath.split("/").pop()} - 文档预览`;
+
+        try {
+          const response = await fetch(filePath);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const content = await response.text();
+          renderMarkdown(content);
+        } catch (error) {
+          showError(`无法加载文档: ${error.message}`);
+        }
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        initTheme();
+        loadDocument();
+      });
+
+      let lastScrollY = 0;
+      window.addEventListener("scroll", () => {
+        const tocLinks = document.querySelectorAll(".toc-link");
+        const content = document.getElementById("content");
+        const headings = content.querySelectorAll("h1, h2, h3");
+
+        let current = "";
+        headings.forEach((h) => {
+          const rect = h.getBoundingClientRect();
+          if (rect.top <= 100) {
+            current = h.id;
+          }
+        });
+
+        tocLinks.forEach((link) => {
+          link.classList.toggle("active", link.dataset.id === current);
+        });
+
+        lastScrollY = window.scrollY;
+      });
+    </script>
+  </body>
+</html>

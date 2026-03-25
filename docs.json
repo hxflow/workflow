@@ -1,0 +1,176 @@
+[
+  {
+    "name": "AGENTS",
+    "path": "AGENTS.md",
+    "type": "md",
+    "category": "根目录"
+  }
+,
+  {
+    "name": "CLAUDE",
+    "path": "CLAUDE.md",
+    "type": "md",
+    "category": "根目录"
+  }
+,
+  {
+    "name": "README",
+    "path": "README.md",
+    "type": "md",
+    "category": "根目录"
+  }
+,
+  {
+    "name": "golden-principles",
+    "path": "docs/golden-principles.md",
+    "type": "md",
+    "category": "docs"
+  }
+,
+  {
+    "name": "map",
+    "path": "docs/map.md",
+    "type": "md",
+    "category": "docs"
+  }
+,
+  {
+    "name": "_template",
+    "path": "docs/plans/_template.md",
+    "type": "md",
+    "category": "docs/plans"
+  }
+,
+  {
+    "name": "quality-grades",
+    "path": "docs/quality-grades.md",
+    "type": "md",
+    "category": "docs"
+  }
+,
+  {
+    "name": "_template",
+    "path": "docs/requirement/_template.md",
+    "type": "md",
+    "category": "docs/requirement"
+  }
+,
+  {
+    "name": "harness-engineering-spec-v2",
+    "path": "harness-engineering-spec-v2.html",
+    "type": "html",
+    "category": "根目录"
+  }
+,
+  {
+    "name": "README",
+    "path": "profiles/README.md",
+    "type": "md",
+    "category": "profiles"
+  }
+,
+  {
+    "name": "README",
+    "path": "profiles/backend/README.md",
+    "type": "md",
+    "category": "profiles/backend"
+  }
+,
+  {
+    "name": "golden-rules",
+    "path": "profiles/backend/golden-rules.md",
+    "type": "md",
+    "category": "profiles/backend"
+  }
+,
+  {
+    "name": "plan-template",
+    "path": "profiles/backend/plan-template.md",
+    "type": "md",
+    "category": "profiles/backend"
+  }
+,
+  {
+    "name": "requirement-template",
+    "path": "profiles/backend/requirement-template.md",
+    "type": "md",
+    "category": "profiles/backend"
+  }
+,
+  {
+    "name": "review-checklist",
+    "path": "profiles/backend/review-checklist.md",
+    "type": "md",
+    "category": "profiles/backend"
+  }
+,
+  {
+    "name": "README",
+    "path": "profiles/frontend/README.md",
+    "type": "md",
+    "category": "profiles/frontend"
+  }
+,
+  {
+    "name": "golden-rules",
+    "path": "profiles/frontend/golden-rules.md",
+    "type": "md",
+    "category": "profiles/frontend"
+  }
+,
+  {
+    "name": "plan-template",
+    "path": "profiles/frontend/plan-template.md",
+    "type": "md",
+    "category": "profiles/frontend"
+  }
+,
+  {
+    "name": "requirement-template",
+    "path": "profiles/frontend/requirement-template.md",
+    "type": "md",
+    "category": "profiles/frontend"
+  }
+,
+  {
+    "name": "review-checklist",
+    "path": "profiles/frontend/review-checklist.md",
+    "type": "md",
+    "category": "profiles/frontend"
+  }
+,
+  {
+    "name": "README",
+    "path": "profiles/mobile/README.md",
+    "type": "md",
+    "category": "profiles/mobile"
+  }
+,
+  {
+    "name": "golden-rules",
+    "path": "profiles/mobile/golden-rules.md",
+    "type": "md",
+    "category": "profiles/mobile"
+  }
+,
+  {
+    "name": "plan-template",
+    "path": "profiles/mobile/plan-template.md",
+    "type": "md",
+    "category": "profiles/mobile"
+  }
+,
+  {
+    "name": "requirement-template",
+    "path": "profiles/mobile/requirement-template.md",
+    "type": "md",
+    "category": "profiles/mobile"
+  }
+,
+  {
+    "name": "review-checklist",
+    "path": "profiles/mobile/review-checklist.md",
+    "type": "md",
+    "category": "profiles/mobile"
+  }
+]

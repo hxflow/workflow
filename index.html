@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QIYUAN Harness Engineering</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-primary: #0a0a0f;
+        --bg-secondary: #12121a;
+        --bg-card: rgba(255, 255, 255, 0.03);
+        --bg-card-hover: rgba(195, 0, 0, 0.08);
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --border-glow: rgba(195, 0, 0, 0.4);
+        --text-primary: #f0f0f5;
+        --text-secondary: #8888a0;
+        --text-muted: #555566;
+        --accent-primary: #c30000;
+        --accent-secondary: #ff4444;
+        --accent-tertiary: #ff6b6b;
+        --gradient-accent: linear-gradient(135deg, #c30000, #ff4444, #ff6b6b);
+        --gradient-bg: radial-gradient(
+          ellipse at top,
+          rgba(195, 0, 0, 0.15) 0%,
+          transparent 50%
+        );
+        --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+        --shadow-glow: 0 0 40px rgba(195, 0, 0, 0.2);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+      }
+
+      [data-theme="light"] {
+        --bg-primary: #f8fafc;
+        --bg-secondary: #ffffff;
+        --bg-card: rgba(0, 0, 0, 0.02);
+        --bg-card-hover: rgba(195, 0, 0, 0.08);
+        --border-subtle: rgba(0, 0, 0, 0.08);
+        --border-glow: rgba(195, 0, 0, 0.3);
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --gradient-bg: radial-gradient(
+          ellipse at top,
+          rgba(195, 0, 0, 0.08) 0%,
+          transparent 50%
+        );
+        --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
+        --shadow-glow: 0 0 40px rgba(195, 0, 0, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          "Noto Sans SC",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        overflow-x: hidden;
+        transition:
+          background 0.3s ease,
+          color 0.3s ease;
+      }
+
+      .bg-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--gradient-bg);
+        pointer-events: none;
+        z-index: 0;
+        transition: background 0.3s ease;
+      }
+
+      .noise-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.03;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      [data-theme="light"] .noise-overlay {
+        opacity: 0.02;
+      }
+
+      .container {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 280px;
+        background: var(--bg-secondary);
+        backdrop-filter: blur(20px);
+        border-right: 1px solid var(--border-subtle);
+        padding: 32px 0;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--text-muted) transparent;
+        transition:
+          background 0.3s ease,
+          border-color 0.3s ease;
+      }
+
+      .sidebar::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .sidebar::-webkit-scrollbar-thumb {
+        background: var(--text-muted);
+        border-radius: 2px;
+      }
+
+      .logo {
+        padding: 0 24px 32px;
+        border-bottom: 1px solid var(--border-subtle);
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .logo-text h1 {
+        font-size: 18px;
+        font-weight: 700;
+        background: var(--gradient-accent);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 4px;
+        letter-spacing: -0.5px;
+      }
+
+      .logo-text p {
+        font-size: 10px;
+        color: var(--text-muted);
+        font-weight: 500;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      .theme-toggle {
+        display: flex;
+        gap: 4px;
+        padding: 4px;
+        background: var(--bg-card);
+        border-radius: 20px;
+        border: 1px solid var(--border-subtle);
+      }
+
+      .theme-btn {
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: transparent;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        transition: all 0.2s ease;
+      }
+
+      .theme-btn:hover {
+        color: var(--text-primary);
+      }
+
+      .theme-btn.active {
+        background: var(--gradient-accent);
+        color: white;
+      }
+
+      .theme-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .nav-section {
+        padding: 0 16px;
+        margin-bottom: 24px;
+      }
+
+      .nav-title {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-muted);
+        padding: 0 8px;
+        margin-bottom: 12px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--text-secondary);
+        font-size: 13px;
+        border: 1px solid transparent;
+      }
+
+      .nav-item:hover {
+        background: var(--bg-card-hover);
+        color: var(--text-primary);
+      }
+
+      .nav-item.active {
+        background: rgba(195, 0, 0, 0.15);
+        border-color: var(--border-glow);
+        color: var(--text-primary);
+      }
+
+      [data-theme="light"] .nav-item.active {
+        background: rgba(195, 0, 0, 0.12);
+      }
+
+      .nav-item .icon {
+        width: 18px;
+        height: 18px;
+        opacity: 0.7;
+      }
+
+      .nav-item.active .icon {
+        opacity: 1;
+      }
+
+      .nav-count {
+        margin-left: auto;
+        font-size: 11px;
+        background: var(--bg-card);
+        padding: 2px 8px;
+        border-radius: 10px;
+        color: var(--text-muted);
+      }
+
+      .main-content {
+        flex: 1;
+        margin-left: 280px;
+        padding: 48px;
+      }
+
+      .header {
+        margin-bottom: 48px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .header-text h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        animation: fadeInUp 0.6s ease;
+      }
+
+      .header-text p {
+        font-size: 16px;
+        color: var(--text-secondary);
+        font-weight: 300;
+        animation: fadeInUp 0.6s ease 0.1s both;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 8px;
+        animation: fadeInUp 0.6s ease 0.2s both;
+      }
+
+      .mobile-theme-toggle {
+        display: none;
+        padding: 8px 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        font-size: 13px;
+        cursor: pointer;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .mobile-theme-toggle svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .search-box {
+        position: relative;
+        margin-bottom: 40px;
+        animation: fadeInUp 0.6s ease 0.2s both;
+      }
+
+      .search-box input {
+        width: 100%;
+        max-width: 500px;
+        padding: 16px 20px 16px 52px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        color: var(--text-primary);
+        font-size: 15px;
+        font-family: inherit;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .search-box input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(195, 0, 0, 0.2);
+      }
+
+      .search-box input::placeholder {
+        color: var(--text-muted);
+      }
+
+      .search-box .search-icon {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        color: var(--text-muted);
+      }
+
+      .docs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+      }
+
+      .category-section {
+        margin-bottom: 48px;
+      }
+
+      .category-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .category-title h3 {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .category-title .count {
+        font-size: 12px;
+        color: var(--text-muted);
+        background: var(--bg-card);
+        padding: 4px 10px;
+        border-radius: 12px;
+      }
+
+      .doc-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.5s ease both;
+      }
+
+      .doc-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--gradient-accent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .doc-card:hover {
+        background: var(--bg-card-hover);
+        border-color: var(--border-glow);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-card), var(--shadow-glow);
+      }
+
+      .doc-card:hover::before {
+        opacity: 1;
+      }
+
+      .doc-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        margin-bottom: 12px;
+      }
+
+      .doc-type.html {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+      }
+
+      [data-theme="light"] .doc-type.html {
+        background: rgba(239, 68, 68, 0.1);
+      }
+
+      .doc-type.md {
+        background: rgba(195, 0, 0, 0.15);
+        color: #ff6b6b;
+      }
+
+      [data-theme="light"] .doc-type.md {
+        background: rgba(195, 0, 0, 0.1);
+      }
+
+      .doc-type .type-icon {
+        width: 12px;
+        height: 12px;
+      }
+
+      .doc-name {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        line-height: 1.4;
+      }
+
+      .doc-path {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-family: "JetBrains Mono", monospace;
+        word-break: break-all;
+      }
+
+      .no-results {
+        text-align: center;
+        padding: 80px 40px;
+        color: var(--text-secondary);
+      }
+
+      .no-results .icon {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 20px;
+        opacity: 0.3;
+      }
+
+      .no-results h3 {
+        font-size: 20px;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+      }
+
+      .loading-state {
+        text-align: center;
+        padding: 80px 40px;
+        color: var(--text-secondary);
+      }
+
+      .loading-state .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--border-subtle);
+        border-top-color: var(--accent-primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 16px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root:not([data-theme="dark"]) {
+          --bg-primary: #f8fafc;
+          --bg-secondary: #ffffff;
+          --bg-card: rgba(0, 0, 0, 0.02);
+          --bg-card-hover: rgba(195, 0, 0, 0.08);
+          --border-subtle: rgba(0, 0, 0, 0.08);
+          --border-glow: rgba(195, 0, 0, 0.3);
+          --text-primary: #1e293b;
+          --text-secondary: #64748b;
+          --text-muted: #94a3b8;
+          --gradient-bg: radial-gradient(
+            ellipse at top,
+            rgba(195, 0, 0, 0.08) 0%,
+            transparent 50%
+          );
+          --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
+          --shadow-glow: 0 0 40px rgba(195, 0, 0, 0.1);
+        }
+      }
+
+      @media (max-width: 1024px) {
+        .sidebar {
+          width: 240px;
+        }
+        .main-content {
+          margin-left: 240px;
+          padding: 32px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          display: none;
+        }
+        .main-content {
+          margin-left: 0;
+          padding: 24px;
+        }
+        .header {
+          flex-direction: column;
+          gap: 16px;
+        }
+        .header-text h2 {
+          font-size: 28px;
+        }
+        .mobile-theme-toggle {
+          display: flex;
+        }
+        .docs-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-gradient"></div>
+    <div class="noise-overlay"></div>
+
+    <div class="container">
+      <aside class="sidebar">
+        <div class="logo">
+          <div class="logo-text">
+            <h1>QIYUAN</h1>
+            <p>Harness Engineering</p>
+          </div>
+          <div class="theme-toggle">
+            <button class="theme-btn" data-theme="light" title="浅色模式">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
+            </button>
+            <button class="theme-btn" data-theme="dark" title="深色模式">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            </button>
+            <button class="theme-btn" data-theme="system" title="跟随系统">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-title">概览</div>
+          <div class="nav-item active" data-filter="all">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            <span>全部文档</span>
+            <span class="nav-count" id="total-count">0</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-title">按类型</div>
+          <div class="nav-item" data-filter="html">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
+              />
+              <polyline points="13 2 13 9 20 9" />
+            </svg>
+            <span>HTML 文档</span>
+            <span class="nav-count" id="html-count">0</span>
+          </div>
+          <div class="nav-item" data-filter="md">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              />
+              <path d="M14 2v6h6" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            <span>Markdown 文档</span>
+            <span class="nav-count" id="md-count">0</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-title">按目录</div>
+          <div id="category-nav"></div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <div class="header">
+          <div class="header-text">
+            <h2>文档导航</h2>
+            <p>探索项目中的所有文档资源</p>
+          </div>
+          <div class="header-actions">
+            <button class="mobile-theme-toggle" id="mobile-theme-toggle">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+              </svg>
+              切换主题
+            </button>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <svg
+            class="search-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="搜索文档名称或路径..."
+          />
+        </div>
+
+        <div id="loading" class="loading-state">
+          <div class="spinner"></div>
+          <p>正在加载文档...</p>
+        </div>
+
+        <div id="docs-container"></div>
+        <div id="no-results" class="no-results hidden">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <h3>未找到匹配文档</h3>
+          <p>请尝试其他关键词</p>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      let docs = [];
+      let categories = [];
+      let currentFilter = "all";
+      let searchTerm = "";
+
+      function initTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        const themeButtons = document.querySelectorAll(".theme-btn");
+
+        if (savedTheme && savedTheme !== "system") {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+          updateThemeButtons(savedTheme);
+        } else {
+          updateThemeButtons("system");
+        }
+
+        themeButtons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const theme = btn.dataset.theme;
+            setTheme(theme);
+          });
+        });
+      }
+
+      function setTheme(theme) {
+        localStorage.setItem("theme", theme);
+
+        if (theme === "system") {
+          document.documentElement.removeAttribute("data-theme");
+        } else {
+          document.documentElement.setAttribute("data-theme", theme);
+        }
+
+        updateThemeButtons(theme);
+      }
+
+      function updateThemeButtons(activeTheme) {
+        document.querySelectorAll(".theme-btn").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.theme === activeTheme);
+        });
+      }
+
+      function toggleMobileTheme() {
+        const current = document.documentElement.getAttribute("data-theme");
+        const newTheme = current === "light" ? "dark" : "light";
+        setTheme(newTheme);
+      }
+
+      async function loadDocs() {
+        try {
+          const response = await fetch("docs.json");
+          if (!response.ok) throw new Error("Failed to load docs.json");
+          docs = await response.json();
+          categories = [...new Set(docs.map((d) => d.category))];
+
+          document.getElementById("loading").classList.add("hidden");
+          updateCounts();
+          renderCategoryNav();
+          renderDocs();
+        } catch (error) {
+          console.error("Error loading docs:", error);
+          document.getElementById("loading").innerHTML = `
+            <h3>加载失败</h3>
+            <p>请确保通过服务器访问（而非直接打开文件）</p>
+          `;
+        }
+      }
+
+      function init() {
+        initTheme();
+        loadDocs();
+        setupEventListeners();
+
+        document
+          .getElementById("mobile-theme-toggle")
+          .addEventListener("click", toggleMobileTheme);
+      }
+
+      function updateCounts() {
+        document.getElementById("total-count").textContent = docs.length;
+        document.getElementById("html-count").textContent = docs.filter(
+          (d) => d.type === "html",
+        ).length;
+        document.getElementById("md-count").textContent = docs.filter(
+          (d) => d.type === "md",
+        ).length;
+      }
+
+      function renderCategoryNav() {
+        const nav = document.getElementById("category-nav");
+        nav.innerHTML = categories
+          .map((cat) => {
+            const count = docs.filter((d) => d.category === cat).length;
+            return `
+          <div class="nav-item" data-filter="${cat}">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>${cat}</span>
+            <span class="nav-count">${count}</span>
+          </div>
+        `;
+          })
+          .join("");
+      }
+
+      function getFilteredDocs() {
+        return docs.filter((doc) => {
+          const matchesFilter =
+            currentFilter === "all" ||
+            doc.type === currentFilter ||
+            doc.category === currentFilter;
+          const matchesSearch =
+            searchTerm === "" ||
+            doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            doc.path.toLowerCase().includes(searchTerm.toLowerCase());
+          return matchesFilter && matchesSearch;
+        });
+      }
+
+      function renderDocs() {
+        const container = document.getElementById("docs-container");
+        const noResults = document.getElementById("no-results");
+        const filtered = getFilteredDocs();
+
+        if (filtered.length === 0) {
+          container.innerHTML = "";
+          noResults.classList.remove("hidden");
+          return;
+        }
+
+        noResults.classList.add("hidden");
+
+        const grouped = {};
+        filtered.forEach((doc) => {
+          if (!grouped[doc.category]) {
+            grouped[doc.category] = [];
+          }
+          grouped[doc.category].push(doc);
+        });
+
+        container.innerHTML = Object.entries(grouped)
+          .map(
+            ([cat, catDocs], idx) => `
+        <section class="category-section" style="animation-delay: ${idx * 0.1}s">
+          <div class="category-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <h3>${cat}</h3>
+            <span class="count">${catDocs.length} 个文件</span>
+          </div>
+          <div class="docs-grid">
+            ${catDocs
+              .map(
+                (doc, i) => `
+              <div class="doc-card" data-path="${doc.path}" data-type="${doc.type}" style="animation-delay: ${(idx * catDocs.length + i) * 0.05}s">
+                <div class="doc-type ${doc.type}">
+                  <svg class="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    ${
+                      doc.type === "html"
+                        ? '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/>'
+                        : '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'
+                    }
+                  </svg>
+                  ${doc.type.toUpperCase()}
+                </div>
+                <div class="doc-name">${doc.name}</div>
+                <div class="doc-path">${doc.path}</div>
+              </div>
+            `,
+              )
+              .join("")}
+          </div>
+        </section>
+      `,
+          )
+          .join("");
+
+        document.querySelectorAll(".doc-card").forEach((card) => {
+          card.addEventListener("click", () => {
+            const path = card.dataset.path;
+            const type = card.dataset.type;
+            if (type === "html") {
+              window.open(path, "_blank");
+            } else {
+              window.location.href = `md-viewer.html?file=${encodeURIComponent(path)}`;
+            }
+          });
+        });
+      }
+
+      function setupEventListeners() {
+        // 使用事件委托处理动态生成的 nav-item
+        document.addEventListener("click", (e) => {
+          const navItem = e.target.closest(".nav-item");
+          if (navItem) {
+            document
+              .querySelectorAll(".nav-item")
+              .forEach((i) => i.classList.remove("active"));
+            navItem.classList.add("active");
+            currentFilter = navItem.dataset.filter;
+            renderDocs();
+          }
+        });
+
+        document
+          .getElementById("search-input")
+          .addEventListener("input", (e) => {
+            searchTerm = e.target.value;
+            renderDocs();
+          });
+      }
+
+      init();
+    </script>
+  </body>
+</html>
