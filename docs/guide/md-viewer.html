@@ -25,10 +25,9 @@
         --gradient-accent: linear-gradient(135deg, #c30000, #ff4444);
         --code-bg: #0d1117;
         --code-border: #30363d;
+        --header-bg: rgba(10, 10, 15, 0.9);
         --radius-sm: 8px;
         --radius-md: 12px;
-        --radius-lg: 16px;
-        --header-bg: rgba(10, 10, 15, 0.9);
       }
 
       [data-theme="light"] {
@@ -78,9 +77,7 @@
         align-items: center;
         padding: 0 24px;
         z-index: 100;
-        transition:
-          background 0.3s ease,
-          border-color 0.3s ease;
+        transition: background 0.3s ease;
       }
 
       .header-left {
@@ -109,7 +106,6 @@
         color: var(--text-primary);
         border-color: var(--accent-primary);
       }
-
       .back-btn svg {
         width: 16px;
         height: 16px;
@@ -122,10 +118,6 @@
         font-size: 13px;
         color: var(--text-muted);
         font-family: "JetBrains Mono", monospace;
-      }
-
-      .breadcrumb span {
-        color: var(--text-secondary);
       }
 
       .breadcrumb .current {
@@ -162,12 +154,10 @@
       .theme-btn:hover {
         color: var(--text-primary);
       }
-
       .theme-btn.active {
         background: var(--gradient-accent);
         color: white;
       }
-
       .theme-btn svg {
         width: 14px;
         height: 14px;
@@ -191,15 +181,12 @@
         overflow-y: auto;
         scrollbar-width: thin;
         scrollbar-color: var(--text-muted) transparent;
-        transition:
-          background 0.3s ease,
-          border-color 0.3s ease;
+        transition: background 0.3s ease;
       }
 
       .toc-sidebar::-webkit-scrollbar {
         width: 4px;
       }
-
       .toc-sidebar::-webkit-scrollbar-thumb {
         background: var(--text-muted);
         border-radius: 2px;
@@ -219,10 +206,6 @@
         list-style: none;
       }
 
-      .toc-item {
-        padding: 0;
-      }
-
       .toc-link {
         display: block;
         padding: 8px 20px;
@@ -238,25 +221,18 @@
         color: var(--text-primary);
         border-left-color: var(--accent-primary);
       }
-
       .toc-link.h2 {
         padding-left: 32px;
         font-size: 12px;
       }
-
       .toc-link.h3 {
         padding-left: 44px;
         font-size: 11px;
       }
-
       .toc-link.active {
         background: rgba(195, 0, 0, 0.1);
         color: var(--accent-primary);
         border-left-color: var(--accent-primary);
-      }
-
-      [data-theme="light"] .toc-link.active {
-        background: rgba(99, 102, 241, 0.08);
       }
 
       .content-area {
@@ -288,14 +264,12 @@
         margin: 40px 0 20px;
         color: var(--text-primary);
       }
-
       .doc-content h3 {
         font-size: 18px;
         font-weight: 500;
         margin: 32px 0 16px;
         color: var(--text-primary);
       }
-
       .doc-content h4,
       .doc-content h5,
       .doc-content h6 {
@@ -304,28 +278,23 @@
         margin: 24px 0 12px;
         color: var(--text-secondary);
       }
-
       .doc-content p {
         margin-bottom: 16px;
         color: var(--text-secondary);
       }
-
       .doc-content a {
         color: var(--accent-primary);
         text-decoration: none;
         border-bottom: 1px solid transparent;
         transition: border-color 0.2s ease;
       }
-
       .doc-content a:hover {
         border-bottom-color: var(--accent-primary);
       }
-
       .doc-content strong {
         color: var(--text-primary);
         font-weight: 600;
       }
-
       .doc-content em {
         color: var(--text-secondary);
       }
@@ -339,10 +308,6 @@
         color: #f97583;
       }
 
-      [data-theme="light"] .doc-content code {
-        color: #cf222e;
-      }
-
       .doc-content pre {
         background: var(--code-bg);
         border: 1px solid var(--code-border);
@@ -350,10 +315,7 @@
         padding: 20px;
         margin: 20px 0;
         overflow-x: auto;
-        position: relative;
-        transition:
-          background 0.3s ease,
-          border-color 0.3s ease;
+        transition: background 0.3s ease;
       }
 
       .doc-content pre code {
@@ -364,38 +326,27 @@
         line-height: 1.6;
       }
 
-      [data-theme="light"] .doc-content pre code {
-        color: #24292f;
-      }
-
       .doc-content blockquote {
         border-left: 3px solid var(--accent-primary);
-        background: rgba(99, 102, 241, 0.1);
+        background: rgba(195, 0, 0, 0.1);
         padding: 16px 20px;
         margin: 20px 0;
         border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-      }
-
-      [data-theme="light"] .doc-content blockquote {
-        background: rgba(99, 102, 241, 0.06);
       }
 
       .doc-content blockquote p {
         margin: 0;
         color: var(--text-secondary);
       }
-
       .doc-content ul,
       .doc-content ol {
         margin: 16px 0;
         padding-left: 24px;
         color: var(--text-secondary);
       }
-
       .doc-content li {
         margin-bottom: 8px;
       }
-
       .doc-content li::marker {
         color: var(--accent-primary);
       }
@@ -406,46 +357,35 @@
         margin: 20px 0;
         font-size: 14px;
       }
-
       .doc-content th,
       .doc-content td {
         padding: 12px 16px;
         text-align: left;
         border: 1px solid var(--border-subtle);
       }
-
       .doc-content th {
         background: var(--bg-tertiary);
         font-weight: 600;
         color: var(--text-primary);
       }
-
       .doc-content td {
         background: var(--bg-card);
         color: var(--text-secondary);
       }
-
       .doc-content tr:hover td {
         background: rgba(195, 0, 0, 0.05);
       }
-
-      [data-theme="light"] .doc-content tr:hover td {
-        background: rgba(195, 0, 0, 0.03);
-      }
-
       .doc-content hr {
         border: none;
         height: 1px;
         background: var(--border-subtle);
         margin: 32px 0;
       }
-
       .doc-content img {
         max-width: 100%;
         border-radius: var(--radius-md);
         margin: 20px 0;
       }
-
       .doc-content input[type="checkbox"] {
         margin-right: 8px;
         accent-color: var(--accent-primary);
@@ -459,7 +399,6 @@
         height: 60vh;
         color: var(--text-secondary);
       }
-
       .loading-spinner {
         width: 40px;
         height: 40px;
@@ -475,7 +414,6 @@
         padding: 60px;
         color: #f87171;
       }
-
       .error-message h3 {
         margin-bottom: 12px;
       }
@@ -490,7 +428,6 @@
           transform: translateY(0);
         }
       }
-
       @keyframes spin {
         to {
           transform: rotate(360deg);
@@ -546,7 +483,6 @@
       .hljs {
         background: transparent !important;
       }
-
       .hljs-keyword {
         color: #ff7b72;
       }
@@ -569,21 +505,6 @@
       .hljs-variable {
         color: #ffa657;
       }
-      .hljs-attr {
-        color: #79c0ff;
-      }
-      .hljs-tag {
-        color: #7ee787;
-      }
-      .hljs-attribute {
-        color: #79c0ff;
-      }
-      .hljs-selector-class {
-        color: #d2a8ff;
-      }
-      .hljs-selector-id {
-        color: #ffa657;
-      }
       .hljs-built_in {
         color: #ffa657;
       }
@@ -593,60 +514,8 @@
       .hljs-type {
         color: #ffa657;
       }
-      .hljs-params {
-        color: #c9d1d9;
-      }
-      .hljs-meta {
-        color: #79c0ff;
-      }
       .hljs-title {
         color: #d2a8ff;
-      }
-
-      [data-theme="light"] .hljs {
-        color: #24292f;
-      }
-      [data-theme="light"] .hljs-keyword {
-        color: #cf222e;
-      }
-      [data-theme="light"] .hljs-string {
-        color: #0a3069;
-      }
-      [data-theme="light"] .hljs-number {
-        color: #0550ae;
-      }
-      [data-theme="light"] .hljs-comment {
-        color: #6e7781;
-      }
-      [data-theme="light"] .hljs-function {
-        color: #8250df;
-      }
-      [data-theme="light"] .hljs-class {
-        color: #953800;
-      }
-      [data-theme="light"] .hljs-variable {
-        color: #953800;
-      }
-      [data-theme="light"] .hljs-attr {
-        color: #0550ae;
-      }
-      [data-theme="light"] .hljs-tag {
-        color: #116329;
-      }
-      [data-theme="light"] .hljs-attribute {
-        color: #0550ae;
-      }
-      [data-theme="light"] .hljs-built_in {
-        color: #953800;
-      }
-      [data-theme="light"] .hljs-literal {
-        color: #0550ae;
-      }
-      [data-theme="light"] .hljs-type {
-        color: #953800;
-      }
-      [data-theme="light"] .hljs-title {
-        color: #8250df;
       }
     </style>
   </head>
@@ -745,31 +614,26 @@
       function initTheme() {
         const savedTheme = localStorage.getItem("theme");
         const themeButtons = document.querySelectorAll(".theme-btn");
-
         if (savedTheme && savedTheme !== "system") {
           document.documentElement.setAttribute("data-theme", savedTheme);
           updateThemeButtons(savedTheme);
         } else {
           updateThemeButtons("system");
         }
-
         themeButtons.forEach((btn) => {
           btn.addEventListener("click", () => {
-            const theme = btn.dataset.theme;
-            setTheme(theme);
+            setTheme(btn.dataset.theme);
           });
         });
       }
 
       function setTheme(theme) {
         localStorage.setItem("theme", theme);
-
         if (theme === "system") {
           document.documentElement.removeAttribute("data-theme");
         } else {
           document.documentElement.setAttribute("data-theme", theme);
         }
-
         updateThemeButtons(theme);
       }
 
@@ -780,8 +644,7 @@
       }
 
       function getQueryParam(name) {
-        const params = new URLSearchParams(window.location.search);
-        return params.get(name);
+        return new URLSearchParams(window.location.search).get(name);
       }
 
       function renderMarkdown(content) {
@@ -794,77 +657,57 @@
       function generateTOC(content) {
         const tocList = document.getElementById("toc-list");
         const headings = content.match(/^#{1,3}\s+.+$/gm) || [];
-
         if (headings.length === 0) {
           tocList.innerHTML =
             '<li class="toc-item"><span class="toc-link" style="color: var(--text-muted); cursor: default;">暂无目录</span></li>';
           return;
         }
-
         tocList.innerHTML = headings
           .map((h) => {
             const level = h.match(/^#+/)[0].length;
             const text = h.replace(/^#+\s+/, "");
             const id = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, "-");
-            return `<li class="toc-item">
-          <a href="#${id}" class="toc-link h${level}" data-id="${id}">${text}</a>
-        </li>`;
+            return `<li class="toc-item"><a href="#${id}" class="toc-link h${level}" data-id="${id}">${text}</a></li>`;
           })
           .join("");
 
         tocList.querySelectorAll(".toc-link").forEach((link) => {
           link.addEventListener("click", (e) => {
             e.preventDefault();
-            const id = link.dataset.id;
-            const element = document.getElementById(id);
-            if (element) {
+            const element = document.getElementById(link.dataset.id);
+            if (element)
               element.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
           });
         });
 
         document
           .querySelectorAll(".doc-content h1, .doc-content h2, .doc-content h3")
           .forEach((h) => {
-            const id = h.textContent
+            h.id = h.textContent
               .toLowerCase()
               .replace(/[^\w\u4e00-\u9fa5]+/g, "-");
-            h.id = id;
           });
       }
 
       function showError(message) {
         const contentDiv = document.getElementById("content");
         contentDiv.classList.remove("loading");
-        contentDiv.innerHTML = `
-        <div class="error-message">
-          <h3>加载失败</h3>
-          <p>${message}</p>
-        </div>
-      `;
+        contentDiv.innerHTML = `<div class="error-message"><h3>加载失败</h3><p>${message}</p></div>`;
       }
 
       async function loadDocument() {
         const filePath = getQueryParam("file");
-
         if (!filePath) {
           showError("未指定文档路径");
           return;
         }
-
         document.getElementById("file-path").textContent = filePath;
         document.getElementById("file-path").classList.add("current");
         document.title = `${filePath.split("/").pop()} - 文档预览`;
-
         try {
-          const response = await fetch(
-            new URL(`../../${filePath}`, window.location.href),
-          );
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-          const content = await response.text();
-          renderMarkdown(content);
+          const response = await fetch("../" + filePath);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          renderMarkdown(await response.text());
         } catch (error) {
           showError(`无法加载文档: ${error.message}`);
         }
@@ -875,25 +718,18 @@
         loadDocument();
       });
 
-      let lastScrollY = 0;
       window.addEventListener("scroll", () => {
         const tocLinks = document.querySelectorAll(".toc-link");
-        const content = document.getElementById("content");
-        const headings = content.querySelectorAll("h1, h2, h3");
-
+        const headings = document.querySelectorAll(
+          ".doc-content h1, .doc-content h2, .doc-content h3",
+        );
         let current = "";
         headings.forEach((h) => {
-          const rect = h.getBoundingClientRect();
-          if (rect.top <= 100) {
-            current = h.id;
-          }
+          if (h.getBoundingClientRect().top <= 100) current = h.id;
         });
-
         tocLinks.forEach((link) => {
           link.classList.toggle("active", link.dataset.id === current);
         });
-
-        lastScrollY = window.scrollY;
       });
     </script>
   </body>
