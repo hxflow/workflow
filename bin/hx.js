@@ -11,11 +11,12 @@
  *   hx version
  *
  * 自定义工作流:
- *   在 .hx/commands/ 中创建 <name>.md，运行 hx upgrade 后即可在 Claude Code 中使用 /<name>
- *   同名文件会覆盖框架内置的 /hx-* 命令
+ *   在 .hx/commands/ 中创建 <name>.md，运行 hx upgrade 后即可被 Claude/Codex 适配层发现
+ *   同名文件会覆盖框架内置的 hx-* 命令 contract
  *
- * 工作流命令（Claude Code 中运行 /hx-*）:
- *   init  doc  plan  ctx  run  gate  review  fix  entropy  mr  done  status  go  run-all
+ * 工作流命令（Canonical contract）:
+ *   hx-init  hx-doc  hx-plan  hx-ctx  hx-run  hx-qa  hx-review  hx-fix
+ *   hx-clean  hx-mr  hx-status  hx-go
  */
 
 import { resolve, dirname } from 'path'
@@ -34,14 +35,14 @@ function printHelp() {
   用法: hx <command> [options]
 
   内置命令:
-    setup     全局安装框架文件到 ~/.hx/ 和 ~/.claude/（首次使用必跑）
+    setup     全局安装框架文件到 ~/.hx/，并生成 Claude/Codex 适配层（首次使用必跑）
     upgrade   升级命令文件；同步 .hx/commands/ 中的自定义覆盖
     uninstall 移除安装痕迹
     doctor    健康检测（环境、安装、项目配置）
 
   自定义工作流:
-    在 .hx/commands/<name>.md 中编写 Claude 指令，直接在 Claude Code 中使用 /<name>
-    同名文件自动覆盖框架内置的 /hx-* 命令，hx upgrade 不会覆盖它
+    在 .hx/commands/<name>.md 中编写 prompt-first 命令定义
+    Claude 使用 /hx-*；Codex 使用 hx-*；两边共享同一份命令 contract
 
   全局选项:
     --help    显示帮助
@@ -91,12 +92,15 @@ const BUILTIN_SCRIPTS = {
 const script = BUILTIN_SCRIPTS[command]
 
 if (!script) {
-  const CLAUDE_COMMANDS = ['init', 'doc', 'plan', 'ctx', 'run', 'gate', 'review', 'fix', 'entropy', 'mr', 'done', 'status', 'go', 'run-all']
-  if (CLAUDE_COMMANDS.includes(command)) {
-    console.error(`  "${command}" 是 Claude 命令，请在 Claude Code 中运行 /hx-${command}`)
+  const CANONICAL_COMMANDS = ['hx-init', 'hx-doc', 'hx-plan', 'hx-ctx', 'hx-run', 'hx-qa', 'hx-review', 'hx-fix', 'hx-clean', 'hx-mr', 'hx-status', 'hx-go']
+  const legacyCommands = ['init', 'doc', 'plan', 'ctx', 'run', 'qa', 'review', 'fix', 'clean', 'mr', 'status', 'go']
+  if (CANONICAL_COMMANDS.includes(command)) {
+    console.error(`  "${command}" 是 agent 命令 contract。Claude 使用 "/${command}"，Codex 使用 "${command}"。`)
+  } else if (legacyCommands.includes(command)) {
+    console.error(`  "${command}" 是旧式短命令。Claude 使用 "/hx-${command}"，Codex 使用 "hx-${command}"。`)
   } else {
     console.error(`  未知命令: ${command}`)
-    console.error(`  自定义工作流：在 .hx/commands/${command}.md 中编写指令，运行 hx upgrade 后使用 /${command}`)
+    console.error(`  自定义工作流：在 .hx/commands/${command}.md 中编写指令，运行 hx upgrade 后供 Claude/Codex 适配层使用`)
   }
   process.exit(1)
 }

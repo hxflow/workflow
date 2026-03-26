@@ -31,15 +31,15 @@ function makeTempDir(prefix) {
 
 describe('parseArgs', () => {
   it('解析位置参数和长选项', () => {
-    const { positional, options } = parseArgs(['feature-login', '--profile', 'backend', '--skip', '--task=123'])
+    const { positional, options } = parseArgs(['feature-login', '--profile', 'base', '--skip', '--task=123'])
 
     expect(positional).toEqual(['feature-login'])
-    expect(options).toEqual({ profile: 'backend', skip: true, task: '123' })
+    expect(options).toEqual({ profile: 'base', skip: true, task: '123' })
   })
 
   it('解析短标志 -p 为 profile', () => {
-    const { options } = parseArgs(['-p', 'frontend'])
-    expect(options.profile).toBe('frontend')
+    const { options } = parseArgs(['-p', 'my-team'])
+    expect(options.profile).toBe('my-team')
   })
 
   it('解析短标志 -y 为布尔值 true', () => {
@@ -58,8 +58,8 @@ describe('parseArgs', () => {
   })
 
   it('解析 --key=value 语法', () => {
-    const { options } = parseArgs(['--profile=mobile:ios'])
-    expect(options.profile).toBe('mobile:ios')
+    const { options } = parseArgs(['--profile=go-ddd'])
+    expect(options.profile).toBe('go-ddd')
   })
 
   it('解析无值的布尔标志', () => {
@@ -75,61 +75,42 @@ describe('parseArgs', () => {
   })
 
   it('多个位置参数均被收集', () => {
-    const { positional } = parseArgs(['feature-a', 'TASK-BE-01', '--profile', 'backend'])
-    expect(positional).toEqual(['feature-a', 'TASK-BE-01'])
+    const { positional } = parseArgs(['feature-a', 'TASK-01', '--profile', 'base'])
+    expect(positional).toEqual(['feature-a', 'TASK-01'])
   })
 })
 
 // ── parseProfileSpecifier ──────────────────────────────────────────────────
 
 describe('parseProfileSpecifier', () => {
-  it('解析 backend', () => {
-    const result = parseProfileSpecifier('backend')
-    expect(result).toMatchObject({ profile: 'backend', team: 'backend', platform: null })
+  it('解析 base', () => {
+    const result = parseProfileSpecifier('base')
+    expect(result).toMatchObject({ profile: 'base', team: 'base', platform: null })
   })
 
-  it('解析 frontend', () => {
-    const result = parseProfileSpecifier('frontend')
-    expect(result).toMatchObject({ profile: 'frontend', team: 'frontend', platform: null })
+  it('解析自定义 profile 名称', () => {
+    const result = parseProfileSpecifier('my-team')
+    expect(result).toMatchObject({ profile: 'my-team', team: 'my-team', platform: null })
   })
 
-  it('解析 mobile:ios，包含 platformLabel', () => {
-    const result = parseProfileSpecifier('mobile:ios')
+  it('允许包含冒号的共享 profile 名称', () => {
+    const result = parseProfileSpecifier('ios:swiftui')
     expect(result).toMatchObject({
-      profile: 'mobile:ios',
-      team: 'mobile',
-      platform: 'ios',
-      platformLabel: 'iOS'
+      profile: 'ios:swiftui',
+      team: 'ios:swiftui',
+      platform: null,
+      platformLabel: null
     })
   })
 
-  it('解析 mobile:android', () => {
-    const result = parseProfileSpecifier('mobile:android')
-    expect(result).toMatchObject({ platform: 'android', platformLabel: 'Android' })
+  it('禁止包含路径分隔符', () => {
+    expect(() => parseProfileSpecifier('../secrets')).toThrow(/无效的 profile/)
+    expect(() => parseProfileSpecifier('foo/bar')).toThrow(/无效的 profile/)
   })
 
-  it('解析 mobile:harmony', () => {
-    const result = parseProfileSpecifier('mobile:harmony')
-    expect(result).toMatchObject({ platform: 'harmony', platformLabel: 'HarmonyOS' })
-  })
-
-  it('mobile 不带平台时 platform 为 null', () => {
-    const result = parseProfileSpecifier('mobile')
-    expect(result.platform).toBeNull()
-  })
-
-  it('非 mobile team 带平台后缀时报错', () => {
-    expect(() => parseProfileSpecifier('frontend:ios')).toThrow(/不需要平台后缀/)
-    expect(() => parseProfileSpecifier('backend:ios')).toThrow(/不需要平台后缀/)
-  })
-
-  it('mobile 带无效平台时报错', () => {
-    expect(() => parseProfileSpecifier('mobile:web')).toThrow(/无效的移动端平台/)
-    expect(() => parseProfileSpecifier('mobile:unknown')).toThrow(/无效的移动端平台/)
-  })
-
-  it('无效的 team 名报错', () => {
-    expect(() => parseProfileSpecifier('unknown')).toThrow(/无效的 profile/)
+  it('禁止使用 . 和 ..', () => {
+    expect(() => parseProfileSpecifier('.')).toThrow(/无效的 profile/)
+    expect(() => parseProfileSpecifier('..')).toThrow(/无效的 profile/)
   })
 
   it('空字符串返回 null', () => {
@@ -143,8 +124,8 @@ describe('parseProfileSpecifier', () => {
 
 describe('parseSimpleYaml', () => {
   it('解析简单键值对', () => {
-    const result = parseSimpleYaml('name: backend\nversion: 1\n')
-    expect(result).toEqual({ name: 'backend', version: 1 })
+    const result = parseSimpleYaml('name: base\nversion: 1\n')
+    expect(result).toEqual({ name: 'base', version: 1 })
   })
 
   it('解析布尔值', () => {
@@ -178,13 +159,13 @@ describe('parseSimpleYaml', () => {
   })
 
   it('忽略注释行', () => {
-    const result = parseSimpleYaml('# 这是注释\nname: backend\n# 另一行注释\n')
-    expect(result).toEqual({ name: 'backend' })
+    const result = parseSimpleYaml('# 这是注释\nname: base\n# 另一行注释\n')
+    expect(result).toEqual({ name: 'base' })
   })
 
   it('行内注释被忽略', () => {
-    const result = parseSimpleYaml('name: backend # 行内注释\n')
-    expect(result).toEqual({ name: 'backend' })
+    const result = parseSimpleYaml('name: base # 行内注释\n')
+    expect(result).toEqual({ name: 'base' })
   })
 
   it('空内容返回空对象', () => {
@@ -207,41 +188,40 @@ describe('parseSimpleYaml', () => {
 // ── loadProfile ────────────────────────────────────────────────────────────
 
 describe('loadProfile', () => {
-  it('加载内置 backend profile', () => {
-    const profile = loadProfile(FRAMEWORK_ROOT, 'backend')
-    expect(profile.team).toBe('backend')
-    expect(profile.profile).toBe('backend')
+  it('加载内置 base profile', () => {
+    const profile = loadProfile(FRAMEWORK_ROOT, 'base')
+    expect(profile.team).toBe('base')
+    expect(profile.profile).toBe('base')
     expect(profile.label).toBeTruthy()
     expect(typeof profile.gateCommands).toBe('object')
   })
 
-  it('加载内置 frontend profile', () => {
-    const profile = loadProfile(FRAMEWORK_ROOT, 'frontend')
-    expect(profile.team).toBe('frontend')
-    expect(profile.profile).toBe('frontend')
+  it('未传 specifier 时默认加载 base', () => {
+    const profile = loadProfile(FRAMEWORK_ROOT)
+    expect(profile.team).toBe('base')
+    expect(profile.profile).toBe('base')
   })
 
-  it('加载 mobile:ios profile，平台信息正确', () => {
-    const profile = loadProfile(FRAMEWORK_ROOT, 'mobile:ios')
-    expect(profile.team).toBe('mobile')
-    expect(profile.platform).toBe('ios')
-    expect(profile.platformLabel).toBe('iOS')
-    expect(profile.profile).toBe('mobile:ios')
-  })
+  it('加载 searchRoots 中的自定义 profile', () => {
+    const customRoot = makeTempDir('load-profile-custom-only-')
+    const profileDir = resolve(customRoot, 'profiles', 'my-team')
+    mkdirSync(profileDir, { recursive: true })
+    writeFileSync(resolve(profileDir, 'profile.yaml'), [
+      'label: My Team',
+      'task_prefix: MT'
+    ].join('\n'), 'utf8')
 
-  it('加载 mobile:android profile', () => {
-    const profile = loadProfile(FRAMEWORK_ROOT, 'mobile:android')
-    expect(profile.platform).toBe('android')
-    expect(profile.platformLabel).toBe('Android')
-  })
+    const profile = loadProfile(FRAMEWORK_ROOT, 'my-team', {
+      searchRoots: [customRoot, FRAMEWORK_ROOT]
+    })
 
-  it('加载 mobile:harmony profile', () => {
-    const profile = loadProfile(FRAMEWORK_ROOT, 'mobile:harmony')
-    expect(profile.platform).toBe('harmony')
+    expect(profile.team).toBe('my-team')
+    expect(profile.profile).toBe('my-team')
+    expect(profile.label).toBe('My Team')
   })
 
   it('返回 files 对象，包含 profilePath 等路径', () => {
-    const profile = loadProfile(FRAMEWORK_ROOT, 'backend')
+    const profile = loadProfile(FRAMEWORK_ROOT, 'base')
     expect(profile.files).toBeTruthy()
     expect(profile.files.profilePath).toContain('profile.yaml')
     expect(profile.files.requirementTemplatePath).toContain('requirement-template.md')

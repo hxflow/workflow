@@ -12,7 +12,7 @@
     "bin/hx.js",
     "README.md",
     "src/agents/**/*",
-    "src/docs/**/*.md",
+    "src/pipelines/**/*.yaml",
     "src/profiles/**/*.md",
     "src/profiles/**/*.yaml",
     "src/scripts/hx-setup.js",

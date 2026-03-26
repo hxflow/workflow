@@ -5,7 +5,7 @@
  *
  * 行为：
  *   1. git pull 更新系统层（框架 repo 自身）
- *   2. 重新生成 ~/.claude/commands/ 转发器（pick up 新增命令）
+ *   2. 重新生成 agent 适配产物（Claude 转发器 / Codex skill bundle）
  *   3. 更新当前项目 CLAUDE.md 中的 harness 标记块（如在项目中运行）
  *
  * 三层架构升级原则：
@@ -22,13 +22,17 @@ import { homedir } from 'os'
 import { resolve } from 'path'
 
 import { FRAMEWORK_ROOT, USER_HX_DIR, findProjectRoot } from './lib/resolve-context.js'
-import { parseArgs } from './lib/profile-utils.js'
+import { parseArgs, parseSimpleYaml } from './lib/profile-utils.js'
 import {
+  DEFAULT_PLAN_DOC,
+  DEFAULT_REQUIREMENT_DOC,
   HARNESS_MARKER_START,
   HARNESS_MARKER_END,
   buildHarnessBlock,
   escapeRegExp,
+  generateCodexSkillFiles,
   generateForwarderFiles,
+  resolveAgentTargets,
 } from './lib/install-utils.js'
 
 // ── CLI 参数 ──
@@ -37,16 +41,17 @@ const { options } = parseArgs(process.argv.slice(2))
 
 if (options.help) {
   console.log(`
-  用法: hx upgrade [--dry-run]
+  用法: hx upgrade [--agent <claude|codex|all>] [--dry-run]
 
   更新框架到最新版：
     1. git pull 更新系统层（框架 repo）
-    2. 重新生成 ~/.claude/commands/ 转发器
+    2. 重新生成 agent 适配产物
     3. 更新当前项目 CLAUDE.md 中的 harness 标记块
 
   用户层 (~/.hx/commands/) 和项目层 (.hx/commands/) 不会被修改。
 
   选项:
+        --agent <name>  更新目标 agent，支持 claude、codex、all（默认 all）
         --dry-run       仅显示将要更新的内容，不实际写入
     -h, --help          显示帮助
   `)
@@ -54,8 +59,14 @@ if (options.help) {
 }
 
 const dryRun = options['dry-run'] === true
-const userClaudeDir = resolve(homedir(), '.claude')
-const summary = { updated: [], skipped: [], warnings: [] }
+const agents = resolveAgentTargets(options.agent)
+const userClaudeDir = options['user-claude-dir']
+  ? resolve(options['user-claude-dir'])
+  : resolve(homedir(), '.claude')
+const userCodexDir = options['user-codex-dir']
+  ? resolve(options['user-codex-dir'])
+  : resolve(homedir(), '.codex')
+const summary = { created: [], updated: [], skipped: [], warnings: [] }
 
 console.log(`\n  Harness Workflow · upgrade${dryRun ? ' (dry-run)' : ''}`)
 console.log(`  系统层: ${FRAMEWORK_ROOT}\n`)
@@ -75,17 +86,32 @@ try {
   summary.warnings.push(`git pull 失败: ${err.message.split('\n')[0]}`)
 }
 
-// ── Step 2: 重新生成转发器 ──
+// ── Step 2: 重新生成 agent 适配产物 ──
 
-console.log('  Step 2: 重新生成转发器...')
-generateForwarderFiles(
-  resolve(FRAMEWORK_ROOT, 'agents', 'commands'),
-  resolve(userClaudeDir, 'commands'),
-  FRAMEWORK_ROOT,
-  USER_HX_DIR,
-  summary,
-  { dryRun }
-)
+console.log(`  Step 2: 重新生成 agent 适配产物 (${agents.join(', ')})...`)
+const commandSourceDir = resolve(FRAMEWORK_ROOT, 'agents', 'commands')
+
+if (agents.includes('claude')) {
+  generateForwarderFiles(
+    commandSourceDir,
+    resolve(userClaudeDir, 'commands'),
+    FRAMEWORK_ROOT,
+    USER_HX_DIR,
+    summary,
+    { dryRun }
+  )
+}
+
+if (agents.includes('codex')) {
+  generateCodexSkillFiles(
+    commandSourceDir,
+    resolve(userCodexDir, 'skills', 'hxflow'),
+    FRAMEWORK_ROOT,
+    USER_HX_DIR,
+    summary,
+    { createDir: true, dryRun }
+  )
+}
 
 // ── Step 3: 更新 CLAUDE.md 标记块（如在项目中运行）──
 
@@ -131,10 +157,26 @@ function upgradeCLAUDEmd(projectRoot, summary) {
     return
   }
 
-  const profileMatch = content.match(/Profile: `([^`]+)`/)
-  const profile = profileMatch?.[1] || 'backend'
+  const configPath = resolve(projectRoot, '.hx', 'config.yaml')
+  let profile = 'base'
+  let requirementDoc = DEFAULT_REQUIREMENT_DOC
+  let planDoc = DEFAULT_PLAN_DOC
 
-  const newBlock = buildHarnessBlock(profile)
+  if (existsSync(configPath)) {
+    try {
+      const config = parseSimpleYaml(readFileSync(configPath, 'utf8'))
+      profile = config.defaultProfile || profile
+      requirementDoc = config.paths?.requirementDoc || requirementDoc
+      planDoc = config.paths?.planDoc || planDoc
+    } catch (err) {
+      summary.warnings.push(`.hx/config.yaml 解析失败，使用默认 CLAUDE 标记块: ${err.message}`)
+    }
+  } else {
+    const profileMatch = content.match(/Profile: `([^`]+)`/)
+    profile = profileMatch?.[1] || profile
+  }
+
+  const newBlock = buildHarnessBlock(profile, { requirementDoc, planDoc })
   const currentBlock = content.match(
     new RegExp(`${escapeRegExp(HARNESS_MARKER_START)}[\\s\\S]*?${escapeRegExp(HARNESS_MARKER_END)}`)
   )?.[0]

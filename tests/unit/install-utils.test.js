@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { resolve } from 'path'
 
@@ -8,8 +8,10 @@ import {
   HARNESS_MARKER_END,
   buildHarnessBlock,
   escapeRegExp,
+  generateCodexSkillFiles,
   generateForwarderFiles,
-  syncSkillDirs
+  loadCommandSpecs,
+  resolveAgentTargets,
 } from '../../src/scripts/lib/install-utils.js'
 
 const tempDirs = []
@@ -30,25 +32,43 @@ function makeTempDir(prefix) {
 
 describe('buildHarnessBlock', () => {
   it('包含开始和结束标记', () => {
-    const block = buildHarnessBlock('backend')
+    const block = buildHarnessBlock('base')
     expect(block).toContain(HARNESS_MARKER_START)
     expect(block).toContain(HARNESS_MARKER_END)
   })
 
   it('包含传入的 profile 名称', () => {
-    expect(buildHarnessBlock('backend')).toContain('backend')
-    expect(buildHarnessBlock('mobile:ios')).toContain('mobile:ios')
-    expect(buildHarnessBlock('frontend')).toContain('frontend')
+    expect(buildHarnessBlock('base')).toContain('base')
+    expect(buildHarnessBlock('my-team')).toContain('my-team')
+    expect(buildHarnessBlock('go-ddd')).toContain('go-ddd')
+  })
+
+  it('包含 Claude 和 Codex 的统一命令说明', () => {
+    const block = buildHarnessBlock('base')
+    expect(block).toContain('标准命令')
+    expect(block).toContain('Claude: 使用')
+    expect(block).toContain('Codex: 使用')
   })
 
   it('以开始标记开头、以结束标记结尾', () => {
-    const block = buildHarnessBlock('backend')
+    const block = buildHarnessBlock('base')
     expect(block.startsWith(HARNESS_MARKER_START)).toBe(true)
     expect(block.endsWith(HARNESS_MARKER_END)).toBe(true)
   })
 
   it('不同 profile 生成不同内容', () => {
-    expect(buildHarnessBlock('backend')).not.toBe(buildHarnessBlock('frontend'))
+    expect(buildHarnessBlock('base')).not.toBe(buildHarnessBlock('my-team'))
+  })
+
+  it('根据 requirementDoc 和 planDoc 模板展示实际目录', () => {
+    const block = buildHarnessBlock('go-ddd', {
+      requirementDoc: '业务线/香港/需求/{feature}/资料/需求.md',
+      planDoc: '业务线/香港/需求/{feature}/任务/{taskId}/任务执行.md',
+    })
+
+    expect(block).toContain('Profile: `go-ddd`')
+    expect(block).toContain('需求文档: `业务线/香港/需求/{feature}/资料/`')
+    expect(block).toContain('执行计划: `业务线/香港/需求/{feature}/任务/{taskId}/`')
   })
 })
 
@@ -80,6 +100,74 @@ describe('escapeRegExp', () => {
   it('marker 字符串可以安全用于 RegExp', () => {
     const escaped = escapeRegExp(HARNESS_MARKER_START)
     expect(() => new RegExp(escaped)).not.toThrow()
+  })
+})
+
+// ── resolveAgentTargets ────────────────────────────────────────────────────
+
+describe('resolveAgentTargets', () => {
+  it('默认返回全部 agent', () => {
+    expect(resolveAgentTargets()).toEqual(['claude', 'codex'])
+    expect(resolveAgentTargets('all')).toEqual(['claude', 'codex'])
+  })
+
+  it('支持单个 agent 和逗号分隔 agent', () => {
+    expect(resolveAgentTargets('claude')).toEqual(['claude'])
+    expect(resolveAgentTargets('codex')).toEqual(['codex'])
+    expect(resolveAgentTargets('claude,codex')).toEqual(['claude', 'codex'])
+  })
+
+  it('非法 agent 抛错', () => {
+    expect(() => resolveAgentTargets('unknown')).toThrow(/无效的 agent/)
+  })
+})
+
+// ── loadCommandSpecs ───────────────────────────────────────────────────────
+
+describe('loadCommandSpecs', () => {
+  it('解析命令 frontmatter', () => {
+    const sourceDir = makeTempDir('spec-src-')
+    writeFileSync(resolve(sourceDir, 'hx-run.md'), [
+      '---',
+      'name: hx-run',
+      'description: Phase 04 · 执行任务',
+      'usage: hx-run <feature> <task-id> [--profile <name>]',
+      'claude: /hx-run',
+      'codex: hx-run',
+      '---',
+      '',
+      '# hx-run',
+      ''
+    ].join('\n'), 'utf8')
+
+    const specs = loadCommandSpecs(sourceDir)
+    expect(specs).toHaveLength(1)
+    expect(specs[0]).toMatchObject({
+      name: 'hx-run',
+      description: 'Phase 04 · 执行任务',
+      usage: 'hx-run <feature> <task-id> [--profile <name>]',
+      claude: '/hx-run',
+      codex: 'hx-run',
+    })
+  })
+
+  it('保留 hx-plan 的可选 feature 用法', () => {
+    const sourceDir = makeTempDir('spec-plan-src-')
+    writeFileSync(resolve(sourceDir, 'hx-plan.md'), [
+      '---',
+      'name: hx-plan',
+      'description: Phase 02 · 生成执行计划',
+      'usage: hx-plan [<feature-name>] [--profile <name>]',
+      'claude: /hx-plan',
+      'codex: hx-plan',
+      '---',
+      '',
+      '# hx-plan',
+      ''
+    ].join('\n'), 'utf8')
+
+    const specs = loadCommandSpecs(sourceDir)
+    expect(specs[0]?.usage).toBe('hx-plan [<feature-name>] [--profile <name>]')
   })
 })
 
@@ -194,79 +282,57 @@ describe('generateForwarderFiles', () => {
   })
 })
 
-// ── syncSkillDirs ──────────────────────────────────────────────────────────
+// ── generateCodexSkillFiles ────────────────────────────────────────────────
 
-describe('syncSkillDirs', () => {
-  it('将 skill 子目录从 source 复制到 target', () => {
-    const sourceDir = makeTempDir('sync-src-')
-    const targetDir = makeTempDir('sync-dst-')
-    mkdirSync(resolve(sourceDir, 'gitlab'), { recursive: true })
-    writeFileSync(resolve(sourceDir, 'gitlab', 'SKILL.md'), '# gitlab skill', 'utf8')
+describe('generateCodexSkillFiles', () => {
+  it('生成 Codex skill bundle', () => {
+    const sourceDir = makeTempDir('codex-src-')
+    const targetDir = makeTempDir('codex-dst-')
+    writeFileSync(resolve(sourceDir, 'hx-run.md'), [
+      '---',
+      'name: hx-run',
+      'description: Phase 04 · 执行任务',
+      'usage: hx-run <feature> <task-id> [--profile <name>]',
+      'claude: /hx-run',
+      'codex: hx-run',
+      '---',
+      '',
+      '# hx-run',
+      ''
+    ].join('\n'), 'utf8')
 
     const summary = { created: [], updated: [], skipped: [], warnings: [] }
-    syncSkillDirs(sourceDir, targetDir, summary, {})
+    generateCodexSkillFiles(sourceDir, targetDir, '/fw', '/user-hx', summary, {})
 
-    expect(existsSync(resolve(targetDir, 'gitlab', 'SKILL.md'))).toBe(true)
-    expect(summary.created).toContain('.claude/skills/gitlab/')
+    expect(existsSync(resolve(targetDir, 'SKILL.md'))).toBe(true)
+    expect(existsSync(resolve(targetDir, 'commands.json'))).toBe(true)
+    expect(summary.created).toContain('~/.codex/skills/hxflow/SKILL.md')
+    expect(summary.created).toContain('~/.codex/skills/hxflow/commands.json')
   })
 
-  it('默认情况下跳过已存在的 skill 目录', () => {
-    const sourceDir = makeTempDir('sync-skip-src-')
-    const targetDir = makeTempDir('sync-skip-dst-')
-    mkdirSync(resolve(sourceDir, 'gitlab'), { recursive: true })
-    writeFileSync(resolve(sourceDir, 'gitlab', 'SKILL.md'), '# new', 'utf8')
-    mkdirSync(resolve(targetDir, 'gitlab'), { recursive: true })
-    writeFileSync(resolve(targetDir, 'gitlab', 'SKILL.md'), '# existing', 'utf8')
+  it('skill 内容包含 canonical contract 和解析顺序', () => {
+    const sourceDir = makeTempDir('codex-content-src-')
+    const targetDir = makeTempDir('codex-content-dst-')
+    writeFileSync(resolve(sourceDir, 'hx-run.md'), [
+      '---',
+      'name: hx-run',
+      'description: Phase 04 · 执行任务',
+      'usage: hx-run <feature> <task-id> [--profile <name>]',
+      'claude: /hx-run',
+      'codex: hx-run',
+      '---',
+      '',
+      '# hx-run',
+      ''
+    ].join('\n'), 'utf8')
 
     const summary = { created: [], updated: [], skipped: [], warnings: [] }
-    syncSkillDirs(sourceDir, targetDir, summary, {})
+    generateCodexSkillFiles(sourceDir, targetDir, '/framework', '/user-hx', summary, {})
 
-    expect(summary.skipped).toContain('.claude/skills/gitlab/ (已存在)')
-    expect(readFileSync(resolve(targetDir, 'gitlab', 'SKILL.md'), 'utf8')).toBe('# existing')
-  })
-
-  it('sourceDir 不存在时静默返回', () => {
-    const targetDir = makeTempDir('sync-nosrc-dst-')
-    const summary = { created: [], updated: [], skipped: [], warnings: [] }
-    syncSkillDirs('/nonexistent/skills', targetDir, summary, {})
-
-    expect(summary.created.length).toBe(0)
-    expect(summary.warnings.length).toBe(0)
-  })
-
-  it('dryRun=true 时不实际创建目录', () => {
-    const sourceDir = makeTempDir('sync-dry-src-')
-    const targetDir = makeTempDir('sync-dry-dst-')
-    mkdirSync(resolve(sourceDir, 'gitlab'), { recursive: true })
-    writeFileSync(resolve(sourceDir, 'gitlab', 'SKILL.md'), '# skill', 'utf8')
-
-    const summary = { created: [], updated: [], skipped: [], warnings: [] }
-    syncSkillDirs(sourceDir, targetDir, summary, { dryRun: true })
-
-    expect(existsSync(resolve(targetDir, 'gitlab'))).toBe(false)
-    expect(summary.created).toContain('.claude/skills/gitlab/')
-  })
-
-  it('sourceDir 为空目录时不报错', () => {
-    const sourceDir = makeTempDir('sync-empty-src-')
-    const targetDir = makeTempDir('sync-empty-dst-')
-
-    const summary = { created: [], updated: [], skipped: [], warnings: [] }
-    expect(() => syncSkillDirs(sourceDir, targetDir, summary, {})).not.toThrow()
-    expect(summary.created.length).toBe(0)
-  })
-
-  it('createDir=true 时自动创建 targetDir', () => {
-    const sourceDir = makeTempDir('sync-mkdir-src-')
-    const parent = makeTempDir('sync-mkdir-parent-')
-    const targetDir = resolve(parent, 'skills')
-    mkdirSync(resolve(sourceDir, 'gitlab'), { recursive: true })
-    writeFileSync(resolve(sourceDir, 'gitlab', 'SKILL.md'), '# skill', 'utf8')
-
-    const summary = { created: [], updated: [], skipped: [], warnings: [] }
-    syncSkillDirs(sourceDir, targetDir, summary, { createDir: true })
-
-    expect(existsSync(targetDir)).toBe(true)
-    expect(existsSync(resolve(targetDir, 'gitlab', 'SKILL.md'))).toBe(true)
+    const content = readFileSync(resolve(targetDir, 'SKILL.md'), 'utf8')
+    expect(content).toContain('Claude uses slash commands')
+    expect(content).toContain('hx-run <feature> <task-id> [--profile <name>]')
+    expect(content).toContain('/user-hx/commands/<command>.md')
+    expect(content).toContain('/framework/agents/commands/<command>.md')
   })
 })

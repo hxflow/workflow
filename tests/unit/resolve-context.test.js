@@ -24,7 +24,7 @@ function makeTempDir(prefix) {
   return dir
 }
 
-function writeHxConfig(root, content = 'defaultProfile: backend\n') {
+function writeHxConfig(root, content = 'defaultProfile: base\n') {
   mkdirSync(resolve(root, '.hx'), { recursive: true })
   writeFileSync(resolve(root, '.hx', 'config.yaml'), content, 'utf8')
 }

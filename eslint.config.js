@@ -21,7 +21,7 @@ export default [
     },
     rules: {
       // ── TypeScript 严格规则 ──────────────────────────────
-      '@typescript-eslint/no-explicit-any': 'error',              // GP-009
+      '@typescript-eslint/no-explicit-any': 'error',              // GP-BASE-005
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-unsafe-call': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'error',
@@ -36,13 +36,13 @@ export default [
       }],
 
       // ── 黄金原则对应规则 ─────────────────────────────────
-      'no-console': 'error',                                       // GP-001
+      'no-console': 'error',                                       // GP-BASE-001
       'no-restricted-syntax': [
         'error',
         {
-          // GP-003: 禁止裸 throw new Error
+          // GP-BASE-003: 禁止裸 throw new Error
           selector: "ThrowStatement > NewExpression[callee.name='Error']",
-          message: '[GP-003] 使用 AppError 类，不允许 throw new Error(\'...\')。参考 docs/golden-principles.md'
+          message: '[GP-BASE-003] 使用 AppError 类，不允许 throw new Error(\'...\')。参考 base golden-rules.md'
         }
       ],
 

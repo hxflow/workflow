@@ -2631,11 +2631,11 @@
     <div class="hero-inner">
       <div class="hero-tag">需求开发规范 · v1.0</div>
       <h1 class="hero-title">Harness<br><em>Engineering</em></h1>
-      <p class="hero-sub">前端、后端与移动端工程师操作手册 · 从需求到上线的完整执行指南</p>
+      <p class="hero-sub">基于 base + 自定义 Profile 的工程操作手册 · 从需求到上线的完整执行指南</p>
       <div class="hero-roles">
-        <div class="role-badge fe"><span class="dot"></span>Frontend</div>
-        <div class="role-badge be"><span class="dot"></span>Backend</div>
-        <div class="role-badge mb"><span class="dot"></span>Mobile</div>
+        <div class="role-badge fe"><span class="dot"></span>Framework</div>
+        <div class="role-badge be"><span class="dot"></span>User</div>
+        <div class="role-badge mb"><span class="dot"></span>Project</div>
       </div>
       <div class="hero-actions">
         <a class="hero-link primary" href="hx-guide.html">进入 HXFlow 文档</a>
@@ -2647,8 +2647,8 @@
         <div class="hstat-l">开发阶段</div>
       </div>
       <div class="hstat">
-        <div class="hstat-n">5</div>
-        <div class="hstat-l">团队 Profile</div>
+        <div class="hstat-n">1</div>
+        <div class="hstat-l">内置 Profile</div>
       </div>
       <div class="hstat">
         <div class="hstat-n">0</div>
@@ -2685,7 +2685,7 @@
           <div class="level">
             <div class="level-n">Phase 01 — 03</div>
             <div class="level-title">准备阶段</div>
-            <div class="level-body">从 DevOps 平台拉取任务 → 结构化需求文档 → 执行计划拆分 → 上下文校验。确保 Agent 拿到的输入完整、准确、无歧义。</div>
+            <div class="level-body">从 DevOps 平台拉取任务 → 结构化需求文档 → 执行计划拆分 → 执行前预检。确保 Agent 拿到的输入完整、准确、无歧义。</div>
           </div>
           <div class="level">
             <div class="level-n">Phase 04 — 06</div>
@@ -2709,7 +2709,7 @@
           <div class="install-method">
             <div class="im-step">需求来源</div>
             <div class="im-title">DevOps 协作平台</div>
-            <div class="im-body">通过 <code>wushuang-devops</code> skill 从公司 DevOps 平台拉取任务详情，自动预填需求文档的来源、背景和 AC 候选项。</div>
+            <div class="im-body">`/hx-doc --task <id>` 应直接拉取公司 DevOps 平台的任务详情，自动预填需求文档的来源、背景和 AC 候选项，并在内部生成项目唯一主键；未接入任务系统时再回退到手工整理模式。</div>
           </div>
           <div class="install-method">
             <div class="im-step">执行引擎</div>
@@ -2721,7 +2721,7 @@
           <div class="install-method">
             <div class="im-step">代码交付</div>
             <div class="im-title">GitLab MR + CI</div>
-            <div class="im-body">通过 <code>gitlab</code> skill 自动创建 Merge Request、后台监控 CI 状态。CI 失败时 Agent
+            <div class="im-body">如已安装 <code>gitlab</code> skill，可自动创建 Merge Request、后台监控 CI 状态。CI 失败时 Agent
               自动修复并重新提交，最终产出可合并的 MR。</div>
           </div>
         </div>
@@ -2819,8 +2819,7 @@
             <div class="phase-time">⏱ 0.5 ~ 1h / 需求</div>
           </div>
           <div class="phase-body">
-            <p class="phase-lead">每一条需求都必须产出一个结构化文档，放入 <code>docs/requirement/</code>。需求来源是公司 DevOps 协作平台，通过
-              <code>wushuang-devops</code> skill 拉取任务详情，再转化为 Agent 可执行的标准格式。
+            <p class="phase-lead">每一条需求都必须产出一个结构化文档，写入 <code>paths.requirementDoc</code> 对应位置（默认在 <code>docs/requirement/</code>）。需求来源通常是公司 DevOps 协作平台；优先通过 <code>/hx-doc --task &lt;id&gt;</code> 拉取任务详情，再转化为 Agent 可执行的标准格式。
             </p>
 
             <div class="cl-legend">
@@ -2833,13 +2832,13 @@
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                     <polyline points="1,5 4,8 9,2" />
                   </svg></div>
-                <div>通过 <code>wushuang-devops</code> skill 从 DevOps 平台获取任务详情（任务 ID、标题、描述、优先级、关联需求），作为需求文档的输入来源</div>
+                <div>传入 <code>--task &lt;id&gt;</code> 时，<code>/hx-doc</code> 应从 DevOps 平台获取任务详情（任务 ID、标题、描述、优先级、关联需求），并在内部生成项目内唯一、可复用的主键，作为需求文档的关联标识</div>
               </li>
               <li class="must">
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                     <polyline points="1,5 4,8 9,2" />
                   </svg></div>
-                <div>以 Markdown 写需求文档，文件命名 <code>docs/requirement/[feature-name].md</code>，文档头部记录来源任务 ID 以保持双向追溯</div>
+                <div>以 Markdown 写需求文档，文件命名遵循 <code>paths.requirementDoc</code> 模板；若使用默认值，则为 <code>docs/requirement/[feature-key].md</code>。文档头部记录来源任务 ID 与 Feature Key 以保持双向追溯</div>
               </li>
               <li class="must">
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
@@ -2864,15 +2863,16 @@
                     <line x1="5" y1="1" x2="5" y2="9" />
                     <line x1="1" y1="5" x2="9" y2="5" />
                   </svg></div>
-                <div>同步更新 <code>docs/map.md</code>，将这条需求挂入系统架构地图</div>
+                <div>同步更新执行计划与进度文件，让后续命令可以直接从文档和状态文件恢复上下文</div>
               </li>
             </ul>
 
             <div class="codeblock gold" style="margin-top:28px">
               <div
                 style="font-family:var(--mono);font-size:10px;color:var(--txt3);margin-bottom:12px;letter-spacing:.1em">
-                需求文档模板 · docs/requirement/[feature-name].md</div>
+                需求文档模板 · 默认路径示例：docs/requirement/[feature-key].md</div>
               <pre><span class="ck"># 需求：用户登录接口</span>
+<span class="cm">&gt; 内部主键（Feature Key）：user-login</span>
 
 <span class="cs">## 来源</span>
 <span class="cm">DevOps 任务: #12345 — 用户登录接口开发</span>
@@ -2939,7 +2939,7 @@
                   <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                       <polyline points="1,5 4,8 9,2" />
                     </svg></div>
-                  <div>定义每个组件的 Props 接口（TypeScript 类型），写入 <code>docs/requirement/[feature].md</code>，不允许 Agent 自行推断接口形态
+                  <div>定义每个组件的 Props 接口（TypeScript 类型），写入本特性的需求文档（由 <code>paths.requirementDoc</code> 定位），不允许 Agent 自行推断接口形态
                   </div>
                 </li>
                 <li class="must">
@@ -2962,7 +2962,7 @@
                 </li>
               </ul>
               <div class="codeblock fe">
-                <pre><span class="cm"># 前端执行计划示例 · docs/plans/user-login-ui.md</span>
+                <pre><span class="cm"># 前端执行计划示例 · 默认路径示例：docs/plans/user-login-ui.md</span>
 
 <span class="ck">任务列表：</span>
 <span class="cs">TASK-FE-01:</span> <span class="cv">创建 LoginForm 组件</span>
@@ -2997,7 +2997,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                   <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                       <polyline points="1,5 4,8 9,2" />
                     </svg></div>
-                  <div>明确数据库 Schema 变更：新增表/字段/索引，写入 <code>docs/requirement/</code>，附上 migration 文件命名规范</div>
+                  <div>明确数据库 Schema 变更：新增表/字段/索引，写入对应需求文档（默认在 <code>docs/requirement/</code>），附上 migration 文件命名规范</div>
                 </li>
                 <li class="must">
                   <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
@@ -3019,7 +3019,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                 </li>
               </ul>
               <div class="codeblock be">
-                <pre><span class="cm"># 后端执行计划示例 · docs/plans/auth-login-api.md</span>
+                <pre><span class="cm"># 后端执行计划示例 · 默认路径示例：docs/plans/auth-login-api.md</span>
 
 <span class="ck">任务列表（按依赖顺序执行）：</span>
 <span class="cs">TASK-BE-01:</span> <span class="cp">定义 Types 层</span>
@@ -3080,7 +3080,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                 </li>
               </ul>
               <div class="codeblock mb">
-                <pre><span class="cm"># 移动端执行计划示例 · docs/plans/user-login-mobile.md</span>
+                <pre><span class="cm"># 移动端执行计划示例 · 默认路径示例：docs/plans/user-login-mobile.md</span>
 
 <span class="ck">任务列表（按 Clean Architecture 依赖顺序）：</span>
 <span class="cs">TASK-MB-01:</span> <span class="cv">Domain 层</span>
@@ -3130,7 +3130,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                     <polyline points="1,5 4,8 9,2" />
                   </svg></div>
-                <div>确认 <code>AGENTS.md</code> 中对应模块的条目存在且为最新。AGENTS.md 是 Agent 每次启动时读取的目录索引，保持在 100 行以内，指向具体文档</div>
+                <div>确认本次执行依赖的需求文档、执行计划与 progress JSON 都存在且内容最新，避免 Agent 依据过期上下文工作</div>
               </li>
               <li class="must">
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
@@ -3142,7 +3142,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                     <polyline points="1,5 4,8 9,2" />
                   </svg></div>
-                <div>如果在会议讨论中做过与本需求相关的决策，必须先提炼写入 <code>docs/requirement/[feature].md</code>，并同步更新 DevOps 平台对应任务的描述，再启动执行
+                <div>如果在会议讨论中做过与本需求相关的决策，必须先提炼写入本特性的需求文档（由 <code>paths.requirementDoc</code> 定位），并同步更新 DevOps 平台对应任务的描述，再启动执行
                 </div>
               </li>
               <li class="rec">
@@ -3156,7 +3156,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                     <line x1="5" y1="1" x2="5" y2="9" />
                     <line x1="1" y1="5" x2="9" y2="5" />
                   </svg></div>
-                <div>复杂特性可以用 JSON 文件追踪子任务进度（<code>docs/plans/[feature]-progress.json</code>），Agent 对结构化数据的读写比 Markdown
+                <div>复杂特性可以用 JSON 文件追踪子任务进度（由 <code>paths.progressFile</code> 定位；默认示例为 <code>docs/plans/[feature-key]-progress.json</code>），Agent 对结构化数据的读写比 Markdown
                   更稳定</div>
               </li>
             </ul>
@@ -3164,23 +3164,21 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
             <div class="codeblock gold" style="margin-top:28px">
               <div
                 style="font-family:var(--mono);font-size:10px;color:var(--txt3);margin-bottom:12px;letter-spacing:.1em">
-                AGENTS.md 结构示例（目录索引，≤100行）</div>
-              <pre><span class="ck"># AGENTS.md — 代理上下文目录</span>
+                最小执行上下文示例（以下使用默认目录举例，实际路径以 <code>paths.*</code> 为准）</div>
+              <pre><span class="ck"># 当前执行需要的最小输入</span>
 
-<span class="cs">## 架构概述</span>
-→ docs/map.md
+<span class="cs">## Profile</span>
+→ .hx/config.yaml <span class="cm">（defaultProfile / paths）</span>
+→ src/profiles/base/golden-rules.md
+→ 当前 Profile 的 profile.yaml / golden-rules.md
 
-<span class="cs">## 黄金原则（必读）</span>
-→ docs/golden-principles.md
-
-<span class="cs">## 当前活跃特性</span>
+<span class="cs">## 文档</span>
 → docs/plans/auth-login-api.md <span class="cm">（TASK-BE-01 ~ 05，进行中）</span>
-→ docs/plans/user-login-ui.md <span class="cm">（TASK-FE-01 完成，02 进行中）</span>
-
-<span class="cs">## 核心模块文档</span>
-→ docs/requirement/user-schema.md
 → docs/requirement/auth-system.md
 → docs/requirement/error-codes.md
+
+<span class="cs">## 状态</span>
+→ docs/plans/auth-login-api-progress.json
 
 <span class="cs">## 执行规则</span>
 - 所有代码必须通过 npm run lint 和 npm run test
@@ -3322,7 +3320,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                       <line x1="5" y1="1" x2="5" y2="9" />
                       <line x1="1" y1="5" x2="9" y2="5" />
                     </svg></div>
-                  <div>执行失败时：先检查 AGENTS.md 和文档是否准确描述了现有代码结构，再调整文档，再重新执行</div>
+                  <div>执行失败时：先检查需求文档、执行计划和 progress 文件是否准确描述了现有代码结构，再调整文档，再重新执行</div>
                 </li>
               </ul>
             </div>
@@ -3483,7 +3481,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                     <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                         <polyline points="1,5 4,8 9,2" />
                       </svg></div>
-                    <div>文档漂移检查：新增的接口参数是否已同步更新到 <code>docs/requirement/</code> 中对应的文档</div>
+                    <div>文档漂移检查：新增的接口参数是否已同步更新到对应需求文档（由 <code>paths.requirementDoc</code> 定位）</div>
                   </li>
                   <li class="note">
                     <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
@@ -3631,7 +3629,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                   <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                       <polyline points="1,5 4,8 9,2" />
                     </svg></div>
-                  <div>压测关键接口：QPS 目标、超时配置、限流阈值是否符合 <code>docs/requirement/</code> 中定义的平台可靠性要求</div>
+                  <div>压测关键接口：QPS 目标、超时配置、限流阈值是否符合对应需求文档中定义的平台可靠性要求</div>
                 </li>
                 <li class="note">
                   <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
@@ -3712,14 +3710,14 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                     <polyline points="1,5 4,8 9,2" />
                   </svg></div>
                 <div><strong style="color:var(--txt)">错误 → 规则化（最重要）</strong>：每发现一个 Agent 重复犯的错误，立即将正确做法写入 Lint 规则或
-                  <code>docs/golden-principles.md</code>。下次 Agent 执行时这个错误就不会再出现
+                  当前 Profile 的 <code>golden-rules.md</code>。下次 Agent 执行时这个错误就不会再出现
                 </div>
               </li>
               <li class="must">
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                     <polyline points="1,5 4,8 9,2" />
                   </svg></div>
-                <div>每双周让 Agent 扫描一次文档新鲜度：对照代码检查 <code>docs/requirement/</code> 中的内容是否仍然准确，陈旧文档自动开 Cleanup PR</div>
+                <div>每双周让 Agent 扫描一次文档新鲜度：对照代码检查需求文档内容是否仍然准确，陈旧文档自动开 Cleanup PR</div>
               </li>
               <li class="rec">
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
@@ -3731,7 +3729,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                     <polyline points="1,5 4,8 9,2" />
                   </svg></div>
-                <div>更新 <code>docs/quality-grades.md</code>：为核心模块打分（A/B/C），C 级模块在下个 Sprint 优先处理</div>
+                <div>更新团队自己的质量基线文档或清理扫描报告归档：为核心模块打分（A/B/C），C 级模块在下个 Sprint 优先处理</div>
               </li>
               <li class="note">
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
@@ -3745,7 +3743,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
             <div class="codeblock gold" style="margin-top:24px">
               <div
                 style="font-family:var(--mono);font-size:10px;color:var(--txt3);margin-bottom:12px;letter-spacing:.1em">
-                黄金原则库示例 · docs/golden-principles.md</div>
+                黄金规则库示例 · src/profiles/base/golden-rules.md</div>
               <pre><span class="ck"># 黄金原则（Golden Principles）</span>
 <span class="cm"># 由团队共同维护，每条原则对应一个 Lint 规则</span>
 
@@ -3786,7 +3784,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
             <div class="phase-time">⏱ 自动</div>
           </div>
           <div class="phase-body">
-            <p class="phase-lead">使用内置的 <code>gitlab</code> skill 完成从 commit 到 MR 创建的全流程。CI 监控在后台运行，失败时自动触发修复循环。</p>
+            <p class="phase-lead">如已安装 <code>gitlab</code> skill，可借助它完成从 commit 到 MR 创建的全流程。CI 监控在后台运行，失败时自动触发修复循环。</p>
 
             <ul class="cl">
               <li class="must">
@@ -3831,14 +3829,14 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
 <span class="ck">/hx-mr user-login --project lehu/bffservice</span>
 
 <span class="cm"># 或在全自动流水线中自动执行</span>
-<span class="ck">/hx-go user-login --task 46474 --profile backend</span>
+<span class="ck">/hx-go user-login --task 46474 --profile go-ddd</span>
 <span class="cm"># → Phase 01~07 完成后自动进入 Phase 08</span>
 
-<span class="cm"># 手动查看 MR 状态</span>
-<span class="cs">.claude/skills/gitlab/scripts/gitlab mr checks -p lehu/bffservice -i 123</span>
+<span class="cm"># 如已安装 gitlab skill，可使用其提供的命令查看 MR 状态</span>
+<span class="cs"># 具体命令与参数以该 skill 自身文档为准</span>
 
-<span class="cm"># 查看后台监控日志</span>
-<span class="cs">.claude/skills/gitlab/scripts/gitlab mr watch-log -p lehu/bffservice -i 123</span>
+<span class="cm"># 如已安装 gitlab skill，可使用其提供的命令查看后台监控日志</span>
+<span class="cs"># 具体命令与参数以该 skill 自身文档为准</span>
 </pre>
             </div>
           </div>
@@ -3861,26 +3859,26 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
             <div class="wf-step shared-s">
               <div class="wf-snum">01</div>
               <div class="wf-stitle">写需求文档</div>
-              <div class="wf-sbody">新建 <code>docs/requirement/[feat].md</code>，填写 AC、影响层级、边界约束</div>
+              <div class="wf-sbody">按 <code>paths.requirementDoc</code> 新建需求文档；若使用默认值，则为 <code>docs/requirement/[feat].md</code></div>
               <span class="wf-cmd">/hx-doc [feat]</span>
             </div>
             <div class="wf-step shared-s">
               <div class="wf-snum">02</div>
               <div class="wf-stitle">写执行计划</div>
-              <div class="wf-sbody">新建 <code>docs/plans/[feat].md</code>，拆分为 TASK-XX 子任务</div>
+              <div class="wf-sbody">按 <code>paths.planDoc</code> 新建执行计划；若未显式传 feature，则优先从当前需求文档自动续接</div>
               <span class="wf-cmd">/hx-plan [feat]</span>
             </div>
             <div class="wf-step shared-s">
               <div class="wf-snum">03</div>
-              <div class="wf-stitle">更新 AGENTS.md</div>
-              <div class="wf-sbody">将新文档路径挂入 AGENTS.md，确认上下文完整</div>
-              <span class="wf-cmd">/hx-ctx</span>
+              <div class="wf-stitle">确认执行输入</div>
+              <div class="wf-sbody">确认需求文档、执行计划和 progress JSON 已写入；正常情况下由 /hx-run 在开始执行前自动预检</div>
+              <span class="wf-cmd">/hx-run [feat]</span>
             </div>
             <div class="wf-step gate-s">
               <div class="wf-snum">✓</div>
-              <div class="wf-stitle">上下文检查</div>
-              <div class="wf-sbody">自动校验 AGENTS.md 行数 ≤100、所有 docs 链接有效、无破损引用</div>
-              <span class="wf-cmd">hx ctx --profile [team]</span>
+              <div class="wf-stitle">可选预检诊断</div>
+              <div class="wf-sbody">当 /hx-run 因输入不完整而停止时，额外运行 /hx-ctx 查看缺失项</div>
+              <span class="wf-cmd">/hx-ctx [feat] --profile &lt;name&gt;</span>
             </div>
           </div>
 
@@ -3892,25 +3890,25 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
               <div class="wf-snum">FE</div>
               <div class="wf-stitle">前端任务执行</div>
               <div class="wf-sbody">Agent 读取 TASK-FE-XX，产出组件/Hook/测试</div>
-              <span class="wf-cmd">/hx-run --profile frontend</span>
+              <span class="wf-cmd">/hx-run --profile web-team</span>
             </div>
             <div class="wf-step be-s">
               <div class="wf-snum">BE</div>
               <div class="wf-stitle">后端任务执行</div>
               <div class="wf-sbody">Agent 读取 TASK-BE-XX，产出 Service/Repo/Controller</div>
-              <span class="wf-cmd">/hx-run --profile backend</span>
+              <span class="wf-cmd">/hx-run --profile api-team</span>
             </div>
             <div class="wf-step mb-s">
               <div class="wf-snum">MB</div>
               <div class="wf-stitle">移动端任务执行</div>
               <div class="wf-sbody">Agent 读取 TASK-MB-XX，按 Clean Architecture 产出 Domain/Data/UI</div>
-              <span class="wf-cmd">/hx-run --profile mobile:ios</span>
+              <span class="wf-cmd">/hx-run --profile ios-team</span>
             </div>
             <div class="wf-step gate-s">
               <div class="wf-snum">✓</div>
               <div class="wf-stitle">本地门控</div>
               <div class="wf-sbody">按 Profile 执行对应门控命令。失败则自动修复后重跑</div>
-              <span class="wf-cmd">/hx-gate --profile [team]</span>
+              <span class="wf-cmd">/hx-qa --profile &lt;name&gt;</span>
             </div>
           </div>
 
@@ -3951,14 +3949,14 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
             <div class="wf-step shared-s">
               <div class="wf-snum">07</div>
               <div class="wf-stitle">更新进度文件</div>
-              <div class="wf-sbody">标记 TASK-XX 状态为「完成」，同步 quality-grades</div>
-              <span class="wf-cmd">/hx-done [task-id]</span>
+              <div class="wf-sbody">由 /hx-run 在任务执行完成后自动标记 TASK-XX 状态为「完成」并回写进度文件</div>
+              <span class="wf-cmd">/hx-run [&lt;feature-key&gt;] [--task TASK-XX] [--profile &lt;name&gt;]</span>
             </div>
             <div class="wf-step shared-s">
               <div class="wf-snum">08</div>
               <div class="wf-stitle">熵检查</div>
               <div class="wf-sbody">发现新规律 → 写入 golden-principles.md 或新增 Lint 规则</div>
-              <span class="wf-cmd">/hx-entropy</span>
+              <span class="wf-cmd">/hx-clean</span>
             </div>
           </div>
         </div>
@@ -3974,16 +3972,17 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
           视而不见或走歪。本章覆盖结构、触发描述、内容原则与迭代方法。</p>
 
         <div class="dn">
-          <strong>一句话定义：</strong>Skill = 放在 <code>mnt/skills/</code> 下的目录，包含一个 <code>SKILL.md</code>
-          文件以及可选的脚本、参考文档和资产文件。Agent 每次会话读取所有 Skill 的 <strong>frontmatter</strong>（name + description），决定是否调用某个 Skill
-          的完整内容。
+          <strong>一句话定义：</strong>Skill = 由 Claude/Codex 自身机制加载的能力目录，包含一个 <code>SKILL.md</code>
+          文件以及可选的脚本、参考文档和资产文件。Skill 可安装在 <code>.claude/skills/</code>、<code>~/.claude/skills/</code>，
+          或以软链方式指向共享仓库 <code>~/qiyuan-common-skills/skills/</code>。Agent 每次会话读取所有 Skill 的
+          <strong>frontmatter</strong>（name + description），决定是否调用某个 Skill 的完整内容。
         </div>
 
         <!-- INSTALL -->
         <div class="sh-tag" style="margin-top:48px">Skill 安装与管理</div>
 
         <div class="dn" style="margin-bottom:8px">
-          Skill 可以安装在两个级别：<strong>项目级</strong>（仅当前项目可用）和<strong>用户级</strong>（所有项目共享）。选择取决于 Skill 的通用程度。
+          Skill 由 Agent 自身机制安装和发现，不属于 <code>hx setup</code> / <code>hx upgrade</code> 的职责。Skill 可以安装在两个级别：<strong>项目级</strong>（仅当前项目可用）和<strong>用户级</strong>（所有项目共享）。选择取决于 Skill 的通用程度。
         </div>
 
         <div class="install-scope">
@@ -4236,7 +4235,7 @@ compatibility: # 可选
 
 <span class="cs">## 前置条件</span>
 <span class="cm">在开始之前，先用 `view` 工具读取以下文件（如果存在）：
-- [依赖文档路径，如 docs/golden-principles.md]</span>
+- [依赖文档路径，如 src/profiles/base/golden-rules.md]</span>
 
 <span class="cs">## 执行步骤</span>
 
@@ -4268,11 +4267,11 @@ compatibility: # 可选
         <div class="hook-tabs" id="skillExTabs">
           <div class="htab active" onclick="switchSkill('skill-api',this)">API 文档生成</div>
           <div class="htab" onclick="switchSkill('skill-review',this)">PR Review</div>
-          <div class="htab" onclick="switchSkill('skill-entropy',this)">熵扫描报告</div>
+          <div class="htab" onclick="switchSkill('skill-clean',this)">清理扫描报告</div>
         </div>
 
         <div class="hook-panel active" id="hook-skill-api">
-          <div class="hook-file-path"><span>mnt/skills/team/api-docs/SKILL.md</span><button class="cmd-copy"
+          <div class="hook-file-path"><span>~/qiyuan-common-skills/skills/team/api-docs/SKILL.md</span><button class="cmd-copy"
               onclick="copyHook('skill-api-content',this)">复制</button></div>
           <pre id="skill-api-content"><span class="cm">---
 name: api-docs
@@ -4289,7 +4288,7 @@ description: |
 <span class="cs">## 前置条件</span>
 <span class="cm">1. 确认输出格式：Markdown（默认）或 OpenAPI YAML
 2. 如果用户未提供文件，请求 Controller 文件路径
-3. 读取 `docs/requirement/error-codes.md` 获取错误码定义</span>
+3. 读取需求文档中定义的错误码文档（默认示例：`docs/requirement/error-codes.md`）获取错误码定义</span>
 
 <span class="cs">## 执行步骤</span>
 
@@ -4317,18 +4316,18 @@ description: |
 | Code | HTTP | 说明 |</span>
 
 <span class="cs">## 输出规范</span>
-<span class="cm">- 路径: `/mnt/user-data/outputs/api-[feature-name].md`
+<span class="cm">- 路径: `/mnt/user-data/outputs/api-[feature-key].md`
 - 完成后调用 `present_files`
 - 同时建议用户将文件纳入 `docs/` 版本控制，并在对应需求文档中建立引用</span>
 
 <span class="cs">## 不适用场景</span>
 <span class="cm">- 前端组件接口文档 → 手动维护 Props 定义
-- 数据库 Schema 文档 → 参考 docs/requirement/[schema].md</span>
+- 数据库 Schema 文档 → 参考对应需求文档（默认示例：docs/requirement/[schema].md）</span>
 </pre>
         </div>
 
         <div class="hook-panel" id="hook-skill-review">
-          <div class="hook-file-path"><span>mnt/skills/team/pr-review/SKILL.md</span><button class="cmd-copy"
+          <div class="hook-file-path"><span>~/qiyuan-common-skills/skills/team/pr-review/SKILL.md</span><button class="cmd-copy"
               onclick="copyHook('skill-review-content',this)">复制</button></div>
           <pre id="skill-review-content"><span class="cm">---
 name: pr-review
@@ -4343,8 +4342,8 @@ description: |
 <span class="ck"># PR Review Checklist 生成</span>
 
 <span class="cs">## 前置条件</span>
-<span class="cm">1. 读取 `docs/golden-principles.md` 获取最新黄金原则
-2. 读取 `docs/map.md` 了解架构层级定义
+<span class="cm">1. 读取 `src/profiles/base/golden-rules.md` 获取基础黄金规则
+2. 读取当前 Profile 的 `profile.yaml` 了解架构层级定义
 3. 判断 PR 类型：前端 / 后端 / 全栈</span>
 
 <span class="cs">## 执行步骤</span>
@@ -4369,7 +4368,7 @@ description: |
 - 组件文件中是否直接调用了 fetch/axios（GP-005）？</span>
 
 <span class="cv">### 第四步：文档同步</span>
-<span class="cm">- 接口/类型变更是否已更新 docs/requirement/ 中对应文档？</span>
+<span class="cm">- 接口/类型变更是否已更新对应需求文档？</span>
 
 <span class="cs">## 输出规范</span>
 <span class="cm">在会话中直接输出 Markdown 清单，按优先级分组：
@@ -4379,25 +4378,25 @@ description: |
 </pre>
         </div>
 
-        <div class="hook-panel" id="hook-skill-entropy">
-          <div class="hook-file-path"><span>mnt/skills/team/entropy-report/SKILL.md</span><button class="cmd-copy"
-              onclick="copyHook('skill-entropy-content',this)">复制</button></div>
-          <pre id="skill-entropy-content"><span class="cm">---
-name: entropy-report
+        <div class="hook-panel" id="hook-skill-clean">
+          <div class="hook-file-path"><span>~/qiyuan-common-skills/skills/team/clean-report/SKILL.md</span><button class="cmd-copy"
+              onclick="copyHook('skill-clean-content',this)">复制</button></div>
+          <pre id="skill-clean-content"><span class="cm">---
+name: clean-report
 description: |
-  扫描仓库，生成双周熵管理报告，识别 AI Slop 模式、文档漂移和架构偏差。
-  当用户说"跑一下熵扫描"、"生成清理报告"、"最近代码质量怎么样"、
+  扫描仓库，生成双周清理扫描报告，识别 AI Slop 模式、文档漂移和架构偏差。
+  当用户说"跑一下清理扫描"、"生成清理报告"、"最近代码质量怎么样"、
   "有没有积累问题"、"该清理了"，或到了双周清理节点时使用。
   不适用于单次 PR 代码审查（用 pr-review skill）。
 ---</span>
 
-<span class="ck"># 双周熵管理报告</span>
+<span class="ck"># 双周清理扫描报告</span>
 
 <span class="cs">## 执行步骤</span>
 
 <span class="cv">### 第一步：运行自动化扫描</span>
 <span class="cm">```bash
-hx entropy # AI Slop 模式扫描
+hx clean # AI Slop 模式扫描
 ```</span>
 
 <span class="cv">### 第二步：分析 Git 历史</span>
@@ -4410,7 +4409,7 @@ git log --since="14 days ago" --format="" --name-only \
 ```</span>
 
 <span class="cv">### 第三步：质量评级对比</span>
-<span class="cm">读取 `docs/quality-grades.md`，与本次扫描结果对比，找出评分下降的模块。</span>
+<span class="cm">读取最近一次清理扫描报告或团队质量基线文档，与本次扫描结果对比，找出评分下降的模块。</span>
 
 <span class="cv">### 第四步：生成报告</span>
 <span class="cm">报告四个区块：
@@ -4420,8 +4419,8 @@ git log --since="14 days ago" --format="" --name-only \
 4. 行动项：按优先级排列，标注「建议新增 Lint 规则」或「建议更新文档」</span>
 
 <span class="cs">## 输出规范</span>
-<span class="cm">- 路径: `/mnt/user-data/outputs/entropy-[YYYY-MM-DD].md`
-- 同时更新 `docs/quality-grades.md` 中各模块评分
+<span class="cm">- 路径: `/mnt/user-data/outputs/clean-[YYYY-MM-DD].md`
+- 如团队维护质量基线文档，同时更新其中各模块评分
 - 调用 `present_files` 呈现报告</span>
 </pre>
         </div>
@@ -4484,7 +4483,7 @@ git log --since="14 days ago" --format="" --name-only \
           <div class="rcard">
             <div class="rcard-tag gold">▸ 稳定标准</div>
             <div class="rcard-title">连续 3 次符合预期即可入库</div>
-            <div class="rcard-body">连续 3 次不同测试用例产出都符合预期，Skill 就可以提交进 <code>mnt/skills/team/</code>。后续使用中发现问题，按熵管理流程迭代更新。
+            <div class="rcard-body">连续 3 次不同测试用例产出都符合预期，Skill 就可以提交进 <code>~/qiyuan-common-skills/skills/team/</code>。后续使用中发现问题，按熵管理流程迭代更新。
             </div>
           </div>
         </div>
@@ -4589,7 +4588,7 @@ git log --since="14 days ago" --format="" --name-only \
           </div>
           <div class="pa-row opt-row">
             <div class="pa-label ex">⑤ 验收动作</div>
-            <div class="pa-content">「完成后运行 <code>hx gate --profile backend</code>，所有检查通过后开 PR，并更新进度文件中 TASK-BE-03 状态为完成」
+            <div class="pa-content">「完成后运行 <code>/hx-qa --profile go-ddd</code>，所有检查通过后开 PR，并更新进度文件中 TASK-BE-03 状态为完成」
             </div>
             <div class="pa-note">告诉 Agent 「完成」的标准是什么，以及完成后做什么。没有这一步，Agent 不知道何时停止。</div>
           </div>
@@ -4634,10 +4633,10 @@ git log --since="14 days ago" --format="" --name-only \
 
 <span class="cm"># ⑤ 全局规范（始终引用，不要每次重写）</span>
 错误处理遵循 <span class="cv">docs/requirement/error-codes.md</span>
-日志字段遵循 <span class="cv">docs/golden-principles.md</span> 中的 GP-002
+日志字段遵循 <span class="cv">src/profiles/base/golden-rules.md</span> 中的 GP-BASE-002
 
 <span class="cm"># ⑥ 验收动作</span>
-完成后运行 <span class="ck">hx gate --profile {team}</span>，全部通过后开 PR
+完成后运行 <span class="ck">/hx-qa --profile {profile}</span>，全部通过后开 PR
 并将 <span class="cv">{TASK-ID}</span> 在 <span class="cv">{进度文件路径}</span> 中标记为「done」
 </pre>
           </div>
@@ -4669,7 +4668,7 @@ git log --since="14 days ago" --format="" --name-only \
 <span class="ck">修复要求：</span>
 - 不改变 <span class="cv">{不能动的接口/类型}</span> 的签名
 - 修复后写一个能复现此 Bug 的回归测试
-- 运行 <span class="ck">hx gate --profile {team}</span> 确认测试通过后开 PR
+- 运行 <span class="ck">/hx-qa --profile {profile}</span> 确认测试通过后开 PR
 
 <span class="cm"># 注意：不要写"我觉得问题是……"——让 Agent 自己读日志定位
   # 你的猜测可能是错的，会误导 Agent</span>
@@ -4792,8 +4791,8 @@ git log --since="14 days ago" --format="" --name-only \
   ---</span>
 
 <span class="ck">审查依据（必须读取后再审查）：</span>
-- <span class="cv">docs/golden-principles.md</span>（黄金原则）
-- <span class="cv">docs/map.md</span>（架构层级规则）
+- <span class="cv">src/profiles/base/golden-rules.md</span>（基础黄金规则）
+- <span class="cv">当前 Profile 的 profile.yaml</span>（架构层级规则）
 - <span class="cv">docs/requirement/error-codes.md</span>（错误码体系）
 
 <span class="ck">重点检查（AI 代码的常见失效模式）：</span>
@@ -4860,7 +4859,7 @@ git log --since="14 days ago" --format="" --name-only \
               <div class="anti-label bad">避免</div>只描述「做什么」，不说「做完后做什么」——Agent 不知道何时停止，容易持续修改或重复执行
             </div>
             <div class="anti-fix">
-              <div class="anti-label fix">替换为</div>「完成后运行 <code>hx gate --profile backend</code>，全部通过后开 PR，并更新 TASK-XX
+              <div class="anti-label fix">替换为</div>「完成后运行 <code>/hx-qa --profile go-ddd</code>，全部通过后开 PR，并更新 TASK-XX
               进度为 done」
             </div>
           </div>
@@ -4904,8 +4903,8 @@ git log --since="14 days ago" --format="" --name-only \
           </div>
           <div class="pt-card gold-c">
             <div class="pt-n">规则 03</div>
-            <div class="pt-title">AGENTS.md 保持精简</div>
-            <div class="pt-body">AGENTS.md 是每次会话都加载的文件，必须 ≤ 100 行。只放索引和关键约束，不放详细规则。详细规则放 references/ 按需读取，不要全量预加载。</div>
+            <div class="pt-title">主上下文保持精简</div>
+            <div class="pt-body">不要再维护额外的索引文件。让 `.hx/config.yaml`、需求文档、执行计划和 progress JSON 成为唯一上下文入口，避免多一份需要同步的状态。</div>
           </div>
           <div class="pt-card teal-c">
             <div class="pt-n">规则 04</div>
@@ -4916,7 +4915,7 @@ git log --since="14 days ago" --format="" --name-only \
             <div class="pt-n">规则 05</div>
             <div class="pt-title">复杂任务先规划再执行</div>
             <div class="pt-body">对 5 个子任务以上的需求，先单独开一个会话让 Agent 生成执行计划（输出到
-              <code>docs/plans/</code>），再分别开会话执行每个子任务。规划会话和执行会话分离。
+              <code>paths.planDoc</code> 对应位置，默认在 <code>docs/plans/</code>），再分别开会话执行每个子任务。规划会话和执行会话分离。
             </div>
           </div>
           <div class="pt-card teal-c">
@@ -4952,7 +4951,7 @@ git log --since="14 days ago" --format="" --name-only \
           <div class="dd-col">
             <div class="dd-head do">✓ 会提升质量的写法</div>
             <div class="dd-body">
-              <span class="ok">「按照 TASK-BE-03，完成后 hx gate --profile backend 通过」</span>
+              <span class="ok">「按照 TASK-BE-03，完成后 /hx-qa --profile go-ddd 通过」</span>
               <span class="cm">// 具体任务 + 具体验收，可复现</span>
 
               <span class="ok">「满足 AC-001、AC-002、AC-003」</span>
@@ -4961,7 +4960,7 @@ git log --since="14 days ago" --format="" --name-only \
               <span class="ok">「文件 ≤ 400 行，无 any，测试覆盖率 ≥ 80%」</span>
               <span class="cm">// 可量化的约束，Agent 能自验</span>
 
-              <span class="ok">「如果对 X 有疑问，先读 docs/requirement/xxx.md」</span>
+              <span class="ok">「如果对 X 有疑问，先读对应需求文档（例如默认路径下的 docs/requirement/xxx.md）」</span>
               <span class="cm">// 预埋决策入口，减少来回确认</span>
 
               <span class="ok">「不允许新增外部依赖，只用 Node.js 内置模块」</span>
@@ -5550,7 +5549,7 @@ git log --since="14 days ago" --format="" --name-only \
 
     function switchSkill(id, el) {
       document.querySelectorAll('#skillExTabs .htab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('#hook-skill-api, #hook-skill-review, #hook-skill-entropy').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('#hook-skill-api, #hook-skill-review, #hook-skill-clean').forEach(p => p.classList.remove('active'));
       el.classList.add('active');
       document.getElementById('hook-' + id).classList.add('active');
     }

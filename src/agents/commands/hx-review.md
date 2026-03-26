@@ -1,6 +1,14 @@
+---
+name: hx-review
+description: Phase 05 · 代码审查
+usage: hx-review [--profile <name>]
+claude: /hx-review
+codex: hx-review
+---
+
 # Phase 05 · 代码审查
 
-参数: `$ARGUMENTS`（可选: `--profile <team[:platform]>`）
+参数: `$ARGUMENTS`（可选: `--profile <name>`）
 
 ## 执行步骤
 

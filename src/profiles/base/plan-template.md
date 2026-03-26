@@ -1,6 +1,6 @@
-# 执行计划：{feature-name}
+# 执行计划：{feature-key}
 
-> 创建于 {date}｜团队：{team}｜关联需求文档: {requirement-path}
+> 创建于 {date}｜Profile：{team}｜关联需求文档: {requirement-path}
 
 ## 执行规则
 
@@ -25,4 +25,4 @@
 
 ## 进度追踪
 
-进度文件: `{feature-name}-progress.json`
+进度文件: `{feature-key}-progress.json`

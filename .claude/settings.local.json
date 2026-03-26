@@ -56,7 +56,16 @@
       "Bash(npm version:*)",
       "Bash(git tag:*)",
       "Bash(brew list:*)",
-      "Bash(brew uninstall:*)"
+      "Bash(brew uninstall:*)",
+      "Bash(hx upgrade:*)",
+      "Bash(hx --version)",
+      "Bash(npm show:*)",
+      "Bash(mkdir -p /opt/homebrew/lib/node_modules/@hxflow/cli/src/pipelines)",
+      "Bash(cp /Users/eleven/qiyuan-harness-workflow/src/pipelines/default.yaml /opt/homebrew/lib/node_modules/@hxflow/cli/src/pipelines/default.yaml)",
+      "Bash(tmux display-message:*)",
+      "Bash(tmux split-window:*)",
+      "Bash(tmux capture-pane:*)",
+      "Bash(tmux list-panes:*)"
     ]
   },
   "hooks": {

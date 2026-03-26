@@ -108,11 +108,9 @@ hx setup</code></pre>
             <pre><code>~/.hx/config.yaml
 ~/.hx/commands/
 ~/.hx/profiles/
-~/.hx/skills/
 ~/.hx/pipelines/
-~/.claude/commands/  ← 转发器
-~/.claude/skills/</code></pre>
-            <p class="card-body">转发器不含命令逻辑，运行时按三层优先级路由到实体命令文件。</p>
+~/.claude/commands/  ← 转发器</code></pre>
+            <p class="card-body">转发器不含命令逻辑，运行时按三层优先级路由到实体命令文件；skill 由 Agent 自身机制管理。</p>
           </article>
         </div>
       </div>
@@ -122,12 +120,12 @@ hx setup</code></pre>
       <div class="wrap">
         <div class="section-tag">Init</div>
         <h2 class="section-title">项目初始化（Claude 命令）</h2>
-        <p class="section-desc">在 Claude Code 中运行 <code>/hx-init</code>；可选 <code>--profile</code> 指定团队规范。</p>
+        <p class="section-desc">在 Claude Code 中运行 <code>/hx-init</code>；可选 <code>--profile</code> 指定要使用的 Profile 名称。框架默认内置 <code>base</code>。</p>
         <pre><code><span class="cg"># 在 Claude Code 中运行（自动分析项目结构）</span>
 /hx-init
 
 <span class="cg"># 或显式指定 profile</span>
-/hx-init --profile frontend</code></pre>
+/hx-init --profile base</code></pre>
         <div class="grid grid-2">
           <article class="card">
             <div class="card-meta">输出</div>
@@ -138,7 +136,7 @@ CLAUDE.md             ← 注入 harness 标记块
           </article>
           <article class="card">
             <div class="card-meta">约束</div>
-            <h3 class="card-title"><code>AGENTS.md</code> 默认在项目根目录</h3>
+            <h3 class="card-title">项目主入口是 <code>.hx/config.yaml</code></h3>
             <p class="card-body">Claude 自动分析技术栈、门控命令和目录结构，推断 paths 配置。与默认值相同的 paths 字段不写入，保持简洁。</p>
           </article>
         </div>
@@ -152,61 +150,52 @@ CLAUDE.md             ← 注入 harness 标记块
         <p class="section-desc">支持一键自动化（/hx-go）和手动逐步执行两种模式。</p>
         <div class="callout tip">
           <span class="icon">✓</span>
-          <div><strong>推荐：</strong>使用 <code>/hx-go user-login --profile frontend</code> 一键执行全流程，4 个检查点等待人工确认。</div>
+          <div><strong>推荐：</strong>使用 <code>/hx-go user-login --profile base</code> 一键执行全流程，4 个检查点等待人工确认。这里的 <code>user-login</code> 就是系统内部的 feature key。</div>
         </div>
         <div class="timeline">
           <div class="timeline-item">
             <div class="timeline-step">01</div>
             <div>
               <div class="timeline-title">创建需求文档</div>
-              <div class="timeline-body">执行 <code>/hx-doc user-login --profile frontend</code> 创建需求文档；可用 <code>--task &lt;id&gt;</code> 写入任务号。</div>
+              <div class="timeline-body">执行 <code>/hx-doc --profile base</code> 创建需求文档；可用 <code>--task &lt;id&gt;</code> 直接从任务系统拉取需求来源。feature key 由系统自动生成，正常情况下不用关心。</div>
             </div>
           </div>
           <div class="timeline-item">
             <div class="timeline-step">02</div>
             <div>
               <div class="timeline-title">生成执行计划</div>
-              <div class="timeline-body">补全验收标准后执行 <code>/hx-plan user-login --profile frontend</code>，生成计划 Markdown 和 <code>*-progress.json</code>。</div>
+              <div class="timeline-body">补全验收标准后执行 <code>/hx-plan --profile base</code>；系统会自动从当前需求文档续接并生成计划 Markdown 和 <code>*-progress.json</code>。</div>
             </div>
           </div>
           <div class="timeline-item">
             <div class="timeline-step">03</div>
             <div>
-              <div class="timeline-title">上下文校验</div>
-              <div class="timeline-body">执行 <code>/hx-ctx --profile frontend</code>，校验 <code>AGENTS.md</code>、需求文档、计划文件和 Profile 资源。</div>
+              <div class="timeline-title">执行需求</div>
+              <div class="timeline-body">执行 <code>/hx-run --profile base</code>，按计划顺序完成当前需求下的全部 pending 任务；命令会先自动完成当前需求的执行前预检。仅在调试/恢复时才传 <code>--task</code>。</div>
             </div>
           </div>
           <div class="timeline-item">
             <div class="timeline-step">04</div>
             <div>
-              <div class="timeline-title">生成执行 Prompt</div>
-              <div class="timeline-body">执行 <code>/hx-run user-login TASK-FE-01 --profile frontend</code> 生成 Prompt。</div>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-step">05</div>
-            <div>
-              <div class="timeline-title">门控通过后标记完成</div>
-              <div class="timeline-body">执行 <code>/hx-gate --profile frontend</code> 运行门控，通过后用 <code>/hx-done TASK-FE-01</code> 回写进度。</div>
+              <div class="timeline-title">门控与收口</div>
+              <div class="timeline-body">执行 <code>/hx-qa --profile base</code> 运行质量校验。正常情况下进度已由 <code>/hx-run</code> 自动回写，无需额外手动标记任务完成状态。</div>
             </div>
           </div>
         </div>
         <pre><code><span class="cg"># 手动逐步执行</span>
-/hx-doc user-login --profile frontend
-/hx-plan user-login --profile frontend
-/hx-ctx --profile frontend
-/hx-run user-login TASK-FE-01 --profile frontend
-/hx-gate --profile frontend
-/hx-done TASK-FE-01
+/hx-doc --task 12345 --profile base
+/hx-plan --profile base
+/hx-run --profile base
+/hx-qa --profile base
 
 <span class="cg"># 或一键执行</span>
-/hx-go user-login --profile frontend
+/hx-go user-login --profile base
 
 <span class="cg"># 从指定步骤恢复</span>
-/hx-go user-login --from run --profile frontend</code></pre>
+/hx-go user-login --from run --profile base</code></pre>
         <div class="callout tip">
           <span class="icon">✓</span>
-          <div><strong>基线检查：</strong>执行前运行 /hx-ctx，校验文档、Profile 与 AGENTS.md 一致性。</div>
+          <div><strong>可选诊断：</strong>若 <code>/hx-run</code> 因输入不完整而停止，可额外执行 <code>/hx-ctx --profile base</code> 查看具体缺失项。</div>
         </div>
       </div>
     </section>

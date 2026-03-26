@@ -5,8 +5,8 @@
  *
  * 检测内容：
  *   1. 运行环境（node 版本、hx 安装）
- *   2. 全局安装（~/.hx/profiles、~/.claude/commands）
- *   3. 当前项目（.hx/config.yaml、AGENTS.md、docs/）
+ *   2. 全局安装（~/.hx/profiles、Claude/Codex 适配层）
+ *   3. 当前项目（.hx/config.yaml、需求/计划目录）
  *   4. Profile 健康（能否加载、gate_commands 是否配置）
  */
 
@@ -18,6 +18,9 @@ import { createRequire } from 'module'
 import { FRAMEWORK_ROOT } from './lib/resolve-context.js'
 
 const require = createRequire(import.meta.url)
+const DEFAULT_REQUIREMENT_DOC = 'docs/requirement/{feature}.md'
+const DEFAULT_PLAN_DOC = 'docs/plans/{feature}.md'
+const DEFAULT_PROGRESS_FILE = 'docs/plans/{feature}-progress.json'
 
 // ── 收集结果 ──────────────────────────────────────────────────────
 
@@ -53,23 +56,42 @@ section('全局安装')
 
 const HX_DIR     = resolve(homedir(), '.hx')
 const CLAUDE_DIR = resolve(homedir(), '.claude')
+const CODEX_DIR  = resolve(homedir(), '.codex')
 
-const requiredProfiles = ['base', 'backend', 'frontend', 'mobile']
+const requiredProfiles = ['base']
 for (const name of requiredProfiles) {
   const p = resolve(FRAMEWORK_ROOT, 'profiles', name)
   existsSync(p) ? ok(`profiles/${name}/`) : fail(`profiles/${name}/ 缺失（系统层损坏，检查 ${FRAMEWORK_ROOT}）`)
 }
 
-const commandsDir = resolve(CLAUDE_DIR, 'commands')
-if (existsSync(commandsDir)) {
-  const commands = readdirSync(commandsDir).filter(f => f.startsWith('hx-') && f.endsWith('.md'))
+let hasAgentAdapter = false
+
+const claudeCommandsDir = resolve(CLAUDE_DIR, 'commands')
+if (existsSync(claudeCommandsDir)) {
+  const commands = readdirSync(claudeCommandsDir).filter(f => f.startsWith('hx-') && f.endsWith('.md'))
   if (commands.length > 0) {
     ok(`~/.claude/commands/（${commands.length} 个命令）`)
+    hasAgentAdapter = true
   } else {
-    fail('~/.claude/commands/ 存在但无 hx-*.md 命令，运行 hx setup 修复')
+    warn('~/.claude/commands/ 存在但无 hx-*.md 命令')
   }
 } else {
-  fail('~/.claude/commands/ 缺失，运行 hx setup 修复')
+  warn('~/.claude/commands/ 缺失')
+}
+
+const codexSkillDir = resolve(CODEX_DIR, 'skills', 'hxflow')
+const codexFiles = ['SKILL.md', 'commands.json'].filter((file) => existsSync(resolve(codexSkillDir, file)))
+if (codexFiles.length === 2) {
+  ok('~/.codex/skills/hxflow/（Codex skill 已安装）')
+  hasAgentAdapter = true
+} else if (existsSync(codexSkillDir)) {
+  warn('~/.codex/skills/hxflow/ 不完整，建议运行 hx setup 修复')
+} else {
+  warn('~/.codex/skills/hxflow/ 缺失')
+}
+
+if (!hasAgentAdapter) {
+  fail('未检测到任何 agent 适配层，运行 hx setup 修复')
 }
 
 // ── 当前项目 ──────────────────────────────────────────────────────
@@ -80,7 +102,7 @@ const ROOT = process.cwd()
 const hxConfig = resolve(ROOT, '.hx', 'config.yaml')
 
 if (!existsSync(hxConfig)) {
-  warn('.hx/config.yaml 不存在（未初始化，在 Claude Code 中运行 /hx-init）')
+  warn('.hx/config.yaml 不存在（未初始化，可在 Claude 中运行 /hx-init，或在 Codex 中运行 hx-init）')
 } else {
   ok('.hx/config.yaml')
 
@@ -94,14 +116,9 @@ if (!existsSync(hxConfig)) {
   }
 
   // 项目文件检查
-  const projectFiles = [
-    ['AGENTS.md', 'AGENTS.md'],
-    ['docs/requirement/', 'docs/requirement/'],
-    ['docs/plans/', 'docs/plans/'],
-    ['.claude/commands/', '.claude/commands/'],
-  ]
-  for (const [path, label] of projectFiles) {
-    existsSync(resolve(ROOT, path.replace(/\/$/, '')))
+  const projectFiles = collectProjectPaths(config)
+  for (const { path, label } of projectFiles) {
+    existsSync(resolve(ROOT, path))
       ? ok(label)
       : warn(`${label} 缺失`)
   }
@@ -137,4 +154,71 @@ if (issues.length === 0) {
 } else {
   console.log(`  ${issues.length} 个问题需要修复\n`)
   process.exit(1)
+}
+
+function collectProjectPaths(config) {
+  const seen = new Set()
+  const result = []
+  const candidates = [
+    buildProjectPathCheck(config.paths?.requirementDoc || DEFAULT_REQUIREMENT_DOC),
+    buildProjectPathCheck(config.paths?.planDoc || DEFAULT_PLAN_DOC),
+    buildProjectPathCheck(config.paths?.progressFile || DEFAULT_PROGRESS_FILE),
+    { path: '.claude/commands', label: '.claude/commands/' },
+  ]
+
+  for (const candidate of candidates) {
+    const dedupeKey = candidate ? `${candidate.path}::${candidate.label}` : ''
+    if (!candidate || seen.has(dedupeKey)) continue
+    seen.add(dedupeKey)
+    result.push(candidate)
+  }
+
+  return result
+}
+
+function buildProjectPathCheck(template) {
+  const directory = toDirectoryPath(template)
+  if (!directory) return null
+
+  const stablePrefix = toStablePrefixPath(directory)
+  if (!stablePrefix) return null
+
+  return {
+    path: stablePrefix,
+    label: ensureTrailingSlash(directory),
+  }
+}
+
+function toDirectoryPath(template) {
+  if (typeof template !== 'string') return null
+
+  const normalized = template.trim().replace(/\\/g, '/')
+  if (!normalized) return null
+
+  const lastSlash = normalized.lastIndexOf('/')
+  if (lastSlash === -1) {
+    return normalized
+  }
+
+  return normalized.slice(0, lastSlash + 1)
+}
+
+function toStablePrefixPath(directory) {
+  const segments = directory
+    .replace(/\/$/, '')
+    .split('/')
+    .filter(Boolean)
+
+  const stableSegments = []
+  for (const segment of segments) {
+    if (/\{[^}]+\}/.test(segment)) break
+    stableSegments.push(segment)
+  }
+
+  if (stableSegments.length === 0) return null
+  return stableSegments.join('/')
+}
+
+function ensureTrailingSlash(value) {
+  return value.endsWith('/') ? value : `${value}/`
 }

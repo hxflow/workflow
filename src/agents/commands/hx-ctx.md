@@ -1,44 +1,56 @@
-# Phase 03 · 上下文完整性校验
+---
+name: hx-ctx
+description: Phase 03 · 当前需求执行前预检（可选）
+usage: hx-ctx [<feature-key>] [--profile <name>]
+claude: /hx-ctx
+codex: hx-ctx
+---
 
-参数: `$ARGUMENTS`（可选: `--profile <team[:platform]>`）
+# Phase 03 · 当前需求执行前预检（可选）
+
+参数: `$ARGUMENTS`（格式: `[<feature-key>] [--profile <name>]`）
 
 ## 执行步骤
 
-1. 解析 Profile（可选）：优先 `--profile`，否则读 `.hx/config.yaml` 的 `defaultProfile`
-2. 解析路径：读取 `.hx/config.yaml`（项目层）和 `~/.hx/config.yaml`（用户层）合并后的 `paths` 字段：
+1. 解析参数：可选 `feature-key`、可选 `--profile <name>`
+2. 确定目标 feature：
+   - 若传入 `feature-key`，直接作为当前需求的内部主键使用
+   - 若未传入，则优先从当前会话最近一次 `hx-doc` / `hx-plan` 的目标文档自动续接
+   - 若仍无法唯一定位目标 feature，则停止并要求用户补充 `feature-key`
+3. 解析 Profile（可选）：优先 `--profile`，否则读 `.hx/config.yaml` 的 `defaultProfile`
+4. 解析路径：读取 `.hx/config.yaml`（项目层）和 `~/.hx/config.yaml`（用户层）合并后的 `paths` 字段：
 
    | 字段 | 默认值 |
    |------|--------|
    | `paths.requirementDoc` | `docs/requirement/{feature}.md` |
+   | `paths.planDoc` | `docs/plans/{feature}.md` |
    | `paths.progressFile` | `docs/plans/{feature}-progress.json` |
 
-3. 检查 `AGENTS.md`（或 `paths.agents`）：
-   - 必须存在
-   - 行数 ≤ 100
-   - 所有 `→` 引用的文件路径必须存在
-4. 检查活跃特性的需求文档：
-   - 读取 AGENTS.md 中列出的活跃特性
-   - 每个特性按 `requirementDoc` 模板解析路径，路径必须存在
-5. 检查进度文件：
-   - 按 `progressFile` 模板匹配的文件是否可解析
-5. 检查基础文档：
-   - `docs/golden-principles.md` 必须存在且非空
-   - `docs/map.md` 必须存在且非空
-6. 如果指定了 profile：
-   - 找到 profile.yaml 并验证可读取
+5. 检查当前需求的最小执行上下文：
+   - `requirementDoc` 必须存在，且至少包含 1 条 AC（验收标准）
+   - `planDoc` 必须存在且可读取
+   - `progressFile` 必须存在且可解析
+   - `progressFile` 中至少存在 1 个任务
+   - 若所有任务均非 `pending`，明确提示当前需求已无待执行任务
+6. 检查当前 profile 运行所需资源：
+   - base profile 的 `golden-rules.md` 必须存在且非空
+   - 当前 profile 的 `golden-rules.md` 必须存在且非空
+   - 当前 profile.yaml 必须可读取
    - `gate_commands` 中至少有一个非空命令
-   - 继承的 profile（`extends:`）也完整
+   - 若存在 `extends:`，其继承链也必须完整
+7. 输出预检结果：
+   - 成功时只说明“当前需求可执行”
+   - 失败时列出缺失文档、不可解析文件或 profile 问题
 
 ## 输出格式
 
 ```
-── 上下文校验 ──────────────────────────────
-  ✓ AGENTS.md: XX 行
-  ✓ 文档引用: N/N 个有效
-  ✓ 进度文件: N 个已检查
-  ✓ 黄金原则: 存在
-  ✓ 架构地图: 存在
-  ✓ Profile: <name> 完整
+── 执行前预检 ──────────────────────────────
+  ✓ 需求文档: 已就绪
+  ✓ 执行计划: 已就绪
+  ✓ 进度文件: 已就绪
+  ✓ Profile: <name> 可加载
+  ✓ 当前需求: 可以开始执行
 ```
 
-任何检查失败时，列出具体问题并停止，不输出"可以开始执行"。
+任何检查失败时，列出具体问题并停止。正常主流程优先直接运行 `hx-run`；仅在排查输入问题时单独执行 `hx-ctx`。

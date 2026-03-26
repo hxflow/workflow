@@ -1,12 +1,5 @@
 [
   {
-    "name": "CLAUDE",
-    "path": "CLAUDE.md",
-    "type": "md",
-    "category": "根目录"
-  }
-,
-  {
     "name": "README",
     "path": "README.md",
     "type": "md",
@@ -70,10 +63,10 @@
   }
 ,
   {
-    "name": "AGENTS",
-    "path": "src/agents/AGENTS.md",
+    "name": "hx-clean",
+    "path": "src/agents/commands/hx-clean.md",
     "type": "md",
-    "category": "src/agents"
+    "category": "src/agents/commands"
   }
 ,
   {
@@ -91,29 +84,8 @@
   }
 ,
   {
-    "name": "hx-done",
-    "path": "src/agents/commands/hx-done.md",
-    "type": "md",
-    "category": "src/agents/commands"
-  }
-,
-  {
-    "name": "hx-entropy",
-    "path": "src/agents/commands/hx-entropy.md",
-    "type": "md",
-    "category": "src/agents/commands"
-  }
-,
-  {
     "name": "hx-fix",
     "path": "src/agents/commands/hx-fix.md",
-    "type": "md",
-    "category": "src/agents/commands"
-  }
-,
-  {
-    "name": "hx-gate",
-    "path": "src/agents/commands/hx-gate.md",
     "type": "md",
     "category": "src/agents/commands"
   }
@@ -147,15 +119,15 @@
   }
 ,
   {
-    "name": "hx-review",
-    "path": "src/agents/commands/hx-review.md",
+    "name": "hx-qa",
+    "path": "src/agents/commands/hx-qa.md",
     "type": "md",
     "category": "src/agents/commands"
   }
 ,
   {
-    "name": "hx-run-all",
-    "path": "src/agents/commands/hx-run-all.md",
+    "name": "hx-review",
+    "path": "src/agents/commands/hx-review.md",
     "type": "md",
     "category": "src/agents/commands"
   }
@@ -175,101 +147,10 @@
   }
 ,
   {
-    "name": "SKILL",
-    "path": "src/agents/skills/api-docs/SKILL.md",
-    "type": "md",
-    "category": "src/agents/skills/api-docs"
-  }
-,
-  {
-    "name": "SKILL",
-    "path": "src/agents/skills/gitlab/SKILL.md",
-    "type": "md",
-    "category": "src/agents/skills/gitlab"
-  }
-,
-  {
-    "name": "SKILL",
-    "path": "src/agents/skills/wushuang-devops/SKILL.md",
-    "type": "md",
-    "category": "src/agents/skills/wushuang-devops"
-  }
-,
-  {
-    "name": "golden-principles",
-    "path": "src/docs/golden-principles.md",
-    "type": "md",
-    "category": "src/docs"
-  }
-,
-  {
-    "name": "map",
-    "path": "src/docs/map.md",
-    "type": "md",
-    "category": "src/docs"
-  }
-,
-  {
-    "name": "_template",
-    "path": "src/docs/plans/_template.md",
-    "type": "md",
-    "category": "src/docs/plans"
-  }
-,
-  {
-    "name": "quality-grades",
-    "path": "src/docs/quality-grades.md",
-    "type": "md",
-    "category": "src/docs"
-  }
-,
-  {
-    "name": "_template",
-    "path": "src/docs/requirement/_template.md",
-    "type": "md",
-    "category": "src/docs/requirement"
-  }
-,
-  {
     "name": "README",
     "path": "src/profiles/README.md",
     "type": "md",
     "category": "src/profiles"
-  }
-,
-  {
-    "name": "README",
-    "path": "src/profiles/backend/README.md",
-    "type": "md",
-    "category": "src/profiles/backend"
-  }
-,
-  {
-    "name": "golden-rules",
-    "path": "src/profiles/backend/golden-rules.md",
-    "type": "md",
-    "category": "src/profiles/backend"
-  }
-,
-  {
-    "name": "plan-template",
-    "path": "src/profiles/backend/plan-template.md",
-    "type": "md",
-    "category": "src/profiles/backend"
-  }
-,
-  {
-    "name": "requirement-template",
-    "path": "src/profiles/backend/requirement-template.md",
-    "type": "md",
-    "category": "src/profiles/backend"
-  }
-,
-  {
-    "name": "review-checklist",
-    "path": "src/profiles/backend/review-checklist.md",
-    "type": "md",
-    "category": "src/profiles/backend"
   }
 ,
   {
@@ -305,75 +186,5 @@
     "path": "src/profiles/base/review-checklist.md",
     "type": "md",
     "category": "src/profiles/base"
-  }
-,
-  {
-    "name": "README",
-    "path": "src/profiles/frontend/README.md",
-    "type": "md",
-    "category": "src/profiles/frontend"
-  }
-,
-  {
-    "name": "golden-rules",
-    "path": "src/profiles/frontend/golden-rules.md",
-    "type": "md",
-    "category": "src/profiles/frontend"
-  }
-,
-  {
-    "name": "plan-template",
-    "path": "src/profiles/frontend/plan-template.md",
-    "type": "md",
-    "category": "src/profiles/frontend"
-  }
-,
-  {
-    "name": "requirement-template",
-    "path": "src/profiles/frontend/requirement-template.md",
-    "type": "md",
-    "category": "src/profiles/frontend"
-  }
-,
-  {
-    "name": "review-checklist",
-    "path": "src/profiles/frontend/review-checklist.md",
-    "type": "md",
-    "category": "src/profiles/frontend"
-  }
-,
-  {
-    "name": "README",
-    "path": "src/profiles/mobile/README.md",
-    "type": "md",
-    "category": "src/profiles/mobile"
-  }
-,
-  {
-    "name": "golden-rules",
-    "path": "src/profiles/mobile/golden-rules.md",
-    "type": "md",
-    "category": "src/profiles/mobile"
-  }
-,
-  {
-    "name": "plan-template",
-    "path": "src/profiles/mobile/plan-template.md",
-    "type": "md",
-    "category": "src/profiles/mobile"
-  }
-,
-  {
-    "name": "requirement-template",
-    "path": "src/profiles/mobile/requirement-template.md",
-    "type": "md",
-    "category": "src/profiles/mobile"
-  }
-,
-  {
-    "name": "review-checklist",
-    "path": "src/profiles/mobile/review-checklist.md",
-    "type": "md",
-    "category": "src/profiles/mobile"
   }
 ]

@@ -1,12 +1,24 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 
 // ── CLAUDE.md 标记块 ──────────────────────────────────────────────────────────
 
 export const HARNESS_MARKER_START = '<!-- hxflow:start -->'
 export const HARNESS_MARKER_END = '<!-- hxflow:end -->'
+export const SUPPORTED_AGENTS = ['claude', 'codex']
+export const DEFAULT_REQUIREMENT_DOC = 'docs/requirement/{feature}.md'
+export const DEFAULT_PLAN_DOC = 'docs/plans/{feature}.md'
 
-export function buildHarnessBlock(profile) {
+export function buildHarnessBlock(profile, opts = {}) {
+  const requirementDir = extractTemplateDir(
+    opts.requirementDoc || DEFAULT_REQUIREMENT_DOC,
+    'docs/requirement/'
+  )
+  const planDir = extractTemplateDir(
+    opts.planDoc || DEFAULT_PLAN_DOC,
+    'docs/plans/'
+  )
+
   return `${HARNESS_MARKER_START}
 ## Harness Workflow
 
@@ -14,18 +26,77 @@ export function buildHarnessBlock(profile) {
 
 - 配置: \`.hx/config.yaml\`
 - Profile: \`${profile}\`
-- 需求文档: \`docs/requirement/\`
-- 执行计划: \`docs/plans/\`
-- Agent 索引: \`AGENTS.md\`
+- 需求文档: \`${requirementDir}\`
+- 执行计划: \`${planDir}\`
 
-可用命令: \`/hx-go\` \`/hx-doc\` \`/hx-plan\` \`/hx-run\` \`/hx-review\` \`/hx-gate\` \`/hx-entropy\` \`/hx-mr\`
+标准命令: \`hx-go\` \`hx-doc\` \`hx-plan\` \`hx-run\` \`hx-review\` \`hx-qa\` \`hx-clean\` \`hx-mr\`
 
-执行规则和上下文详见 \`AGENTS.md\`
+- Claude: 使用 \`/hx-*\`
+- Codex: 使用 \`hx-*\`
 ${HARNESS_MARKER_END}`
+}
+
+function extractTemplateDir(template, fallback) {
+  if (typeof template !== 'string' || template.trim() === '') {
+    return fallback
+  }
+
+  const normalized = template.replace(/\\/g, '/')
+  const lastSlash = normalized.lastIndexOf('/')
+  if (lastSlash === -1) {
+    return normalized
+  }
+
+  return normalized.slice(0, lastSlash + 1)
 }
 
 export function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+export function resolveAgentTargets(agentOption) {
+  if (!agentOption || agentOption === true || agentOption === 'all') {
+    return [...SUPPORTED_AGENTS]
+  }
+
+  const agents = String(agentOption)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+  if (agents.includes('all')) {
+    return [...SUPPORTED_AGENTS]
+  }
+
+  const invalid = agents.filter((agent) => !SUPPORTED_AGENTS.includes(agent))
+  if (invalid.length > 0) {
+    throw new Error(`无效的 agent: ${invalid.join(', ')}。可用值: ${SUPPORTED_AGENTS.join(', ')}, all`)
+  }
+
+  return [...new Set(agents)]
+}
+
+export function loadCommandSpecs(sourceDir) {
+  if (!existsSync(sourceDir)) {
+    return []
+  }
+
+  return readdirSync(sourceDir)
+    .filter((file) => file.startsWith('hx-') && file.endsWith('.md'))
+    .sort()
+    .map((file) => {
+      const commandName = file.replace(/\.md$/, '')
+      const raw = readFileSync(resolve(sourceDir, file), 'utf8')
+      const metadata = parseCommandFrontmatter(raw)
+
+      return {
+        name: metadata.name || commandName,
+        description: metadata.description || (FORWARDER_DESCRIPTIONS[commandName] ?? commandName),
+        usage: metadata.usage || commandName,
+        claude: metadata.claude || `/${commandName}`,
+        codex: metadata.codex || commandName,
+      }
+    })
 }
 
 // ── 转发器生成 ────────────────────────────────────────────────────────────────
@@ -56,14 +127,15 @@ export function generateForwarderFiles(sourceDir, targetDir, frameworkRoot, user
     }
   }
 
-  const files = readdirSync(sourceDir).filter((f) => f.startsWith('hx-') && f.endsWith('.md'))
+  const specs = loadCommandSpecs(sourceDir)
 
-  for (const file of files) {
-    const commandName = file.replace(/\.md$/, '')
+  for (const spec of specs) {
+    const commandName = spec.name
+    const file = `${commandName}.md`
     const dstPath = resolve(targetDir, file)
     const label = `~/.claude/commands/${file}`
 
-    const content = buildForwarderContent(commandName, frameworkRoot, userHxDir)
+    const content = buildForwarderContent(spec, frameworkRoot, userHxDir)
     const existing = existsSync(dstPath) ? readFileSync(dstPath, 'utf8') : null
 
     if (existing === content) {
@@ -78,96 +150,142 @@ export function generateForwarderFiles(sourceDir, targetDir, frameworkRoot, user
 
 const FORWARDER_DESCRIPTIONS = {
   'hx-go':      '全自动流水线，从需求到交付（Phase 01→08）',
-  'hx-doc':     'Phase 01 · 创建需求文档',
+  'hx-doc':     'Phase 01 · 获取需求并创建需求文档',
   'hx-plan':    'Phase 02 · 生成执行计划，拆分 TASK',
-  'hx-ctx':     'Phase 03 · 校验上下文与 Profile 文件完整性',
-  'hx-run':     'Phase 04 · 按 TASK-ID 驱动 Agent 执行',
+  'hx-ctx':     'Phase 03 · 当前需求执行前预检（可选诊断）',
+  'hx-run':     'Phase 04 · 默认执行整个需求，按计划顺序完成所有 pending 任务',
   'hx-review':  'Phase 05 · 按团队清单审查代码',
   'hx-fix':     'Phase 05 · 按 Review 意见修复代码',
-  'hx-gate':    'Phase 06 · 运行团队质量门控检查',
-  'hx-entropy': 'Phase 07 · 代码熵扫描',
+  'hx-qa':      'Phase 06 · 运行团队质量校验',
+  'hx-clean':   'Phase 07 · 工程清理扫描',
   'hx-mr':      'Phase 08 · 输出 Merge Request 创建上下文',
-  'hx-run-all': '批量执行所有 pending TASK + 审查 + 门控',
-  'hx-done':    '标记任务完成，更新进度',
   'hx-init':    '初始化项目，分析结构，写入 .hx/config.yaml',
   'hx-status':  '查看当前项目任务执行进度',
 }
 
-function buildForwarderContent(commandName, frameworkRoot, userHxDir) {
-  const systemPath = resolve(frameworkRoot, 'agents', 'commands', `${commandName}.md`)
-  const description = FORWARDER_DESCRIPTIONS[commandName] ?? commandName
-  return `---
-description: ${description}
----
-<!-- hx-forwarder: ${commandName} — 由 hx setup 自动生成，请勿手动修改 -->
-
-按以下优先级找到第一个存在的文件，读取其完整内容作为指令执行（$ARGUMENTS 原样透传）：
-
-1. 从当前目录向上查找含 \`.hx/config.yaml\` 或 \`.git\` 的项目根目录，读取 \`<项目根>/.hx/commands/${commandName}.md\`
-2. \`${userHxDir}/commands/${commandName}.md\`
-3. \`${systemPath}\`
-
-若三处均不存在，报错：\`${commandName} 命令实体文件未找到，请运行 hx setup 修复。\`
-`
-}
-
-// ── Skills 同步 ───────────────────────────────────────────────────────────────
-
-export function syncSkillDirs(sourceDir, targetDir, summary, opts = {}) {
-  const { createDir = false, overwrite = false, dryRun = false } = opts
+export function generateCodexSkillFiles(sourceDir, targetDir, frameworkRoot, userHxDir, summary, opts = {}) {
+  const { createDir = false, dryRun = false } = opts
 
   if (!existsSync(sourceDir)) {
-    if (overwrite) summary.warnings.push('框架 skills 目录不存在，跳过 skills 升级')
+    summary.warnings.push('框架命令目录不存在，跳过 Codex skill 生成')
     return
   }
 
-  const skills = readdirSync(sourceDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name)
-
-  if (skills.length === 0) return
-
   if (!existsSync(targetDir)) {
     if (createDir) {
-      mkdirSync(targetDir, { recursive: true })
+      if (!dryRun) mkdirSync(targetDir, { recursive: true })
     } else {
-      summary.warnings.push('.claude/skills/ 目录不存在，请先运行 hx init')
+      summary.warnings.push('~/.codex/skills/ 目录不存在，请先运行 hx setup')
       return
     }
   }
 
-  for (const skill of skills) {
-    const srcSkillDir = resolve(sourceDir, skill)
-    const dstSkillDir = resolve(targetDir, skill)
-    const label = `.claude/skills/${skill}/`
-
-    if (!existsSync(dstSkillDir)) {
-      if (!dryRun) cpSync(srcSkillDir, dstSkillDir, { recursive: true })
-      if (overwrite) summary.updated.push(`${label} (新增)`)
-      else summary.created.push(label)
-      continue
-    }
-
-    if (!overwrite) {
-      summary.skipped.push(`${label} (已存在)`)
-      continue
-    }
-
-    const srcFiles = readdirSync(srcSkillDir, { recursive: true })
-      .filter((f) => typeof f === 'string' && statSync(resolve(srcSkillDir, f)).isFile())
-    let changed = false
-    for (const file of srcFiles) {
-      if (!existsSync(resolve(dstSkillDir, file))) { changed = true; break }
-      if (readFileSync(resolve(srcSkillDir, file)).toString() !== readFileSync(resolve(dstSkillDir, file)).toString()) {
-        changed = true; break
-      }
-    }
-
-    if (changed) {
-      if (!dryRun) cpSync(srcSkillDir, dstSkillDir, { recursive: true })
-      summary.updated.push(label)
-    } else {
-      summary.skipped.push(`${label} (无变化)`)
-    }
+  const specs = loadCommandSpecs(sourceDir)
+  const files = {
+    'SKILL.md': buildCodexSkillContent(specs, frameworkRoot, userHxDir),
+    'commands.json': buildCodexCommandsManifest(specs, frameworkRoot, userHxDir),
   }
+
+  for (const [fileName, content] of Object.entries(files)) {
+    const dstPath = resolve(targetDir, fileName)
+    const label = `~/.codex/skills/hxflow/${fileName}`
+    const existing = existsSync(dstPath) ? readFileSync(dstPath, 'utf8') : null
+
+    if (existing === content) {
+      summary.skipped.push(`${label} (无变化)`)
+      continue
+    }
+
+    if (!dryRun) writeFileSync(dstPath, content, 'utf8')
+    summary[existing ? 'updated' : 'created'].push(label)
+  }
+}
+
+function buildForwarderContent(spec, frameworkRoot, userHxDir) {
+  const systemPath = resolve(frameworkRoot, 'agents', 'commands', `${spec.name}.md`)
+  return `---
+description: ${spec.description}
+---
+<!-- hx-forwarder: ${spec.name} — 由 hx setup 自动生成，请勿手动修改 -->
+
+按以下优先级找到第一个存在的文件，读取其完整内容作为指令执行（$ARGUMENTS 原样透传）：
+
+1. 从当前目录向上查找含 \`.hx/config.yaml\` 或 \`.git\` 的项目根目录，读取 \`<项目根>/.hx/commands/${spec.name}.md\`
+2. \`${userHxDir}/commands/${spec.name}.md\`
+3. \`${systemPath}\`
+
+若三处均不存在，报错：\`${spec.name} 命令实体文件未找到，请运行 hx setup 修复。\`
+`
+}
+
+function parseCommandFrontmatter(content) {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n/)
+  if (!match) {
+    return {}
+  }
+
+  return match[1]
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .reduce((metadata, line) => {
+      const separator = line.indexOf(':')
+      if (separator === -1) {
+        return metadata
+      }
+
+      const key = line.slice(0, separator).trim()
+      let value = line.slice(separator + 1).trim()
+      value = value.replace(/^['"]|['"]$/g, '')
+      metadata[key] = value
+      return metadata
+    }, {})
+}
+
+function buildCodexSkillContent(specs, frameworkRoot, userHxDir) {
+  const commandList = specs
+    .map((spec) => `- \`${spec.codex}\` -> \`${spec.usage}\` · ${spec.description}`)
+    .join('\n')
+
+  return `---
+name: hxflow
+description: Execute canonical hx-* workflow commands in Codex using the same command contract as Claude.
+---
+
+# hxflow
+
+Use this skill when the user invokes a canonical Harness Workflow command such as \`hx-init\`, \`hx-go\`, \`hx-run\`, \`hx-qa\`, or asks to use Harness Workflow in Codex.
+
+## Command Contract
+
+- Preserve the literal command token and trailing arguments exactly. Example: \`hx-run user-login --profile base\`
+- Claude uses slash commands such as \`/hx-run\`; Codex uses the canonical command form \`hx-run\`
+- Canonical command definitions live in the same markdown files used by Claude
+
+## Resolution Order
+
+1. Walk up from the current working directory until finding \`.hx/config.yaml\` or \`.git\`
+2. If \`<projectRoot>/.hx/commands/<command>.md\` exists, read it and execute its full content as the command instruction
+3. Else if \`${userHxDir}/commands/<command>.md\` exists, read it and execute its full content
+4. Else read \`${frameworkRoot}/agents/commands/<command>.md\`
+5. Pass the raw trailing text as \`$ARGUMENTS\`
+
+## Available Commands
+
+${commandList}
+`
+}
+
+function buildCodexCommandsManifest(specs, frameworkRoot, userHxDir) {
+  return JSON.stringify({
+    name: 'hxflow',
+    frameworkRoot,
+    userHxDir,
+    resolutionOrder: [
+      '<projectRoot>/.hx/commands/<command>.md',
+      `${userHxDir}/commands/<command>.md`,
+      `${frameworkRoot}/agents/commands/<command>.md`,
+    ],
+    commands: specs,
+  }, null, 2) + '\n'
 }

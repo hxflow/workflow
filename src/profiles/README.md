@@ -1,88 +1,92 @@
 # Harness Profiles — 团队自定义配置
 
-每个团队目录下包含以下文件。CLI 与 Claude 命令会根据选择的 profile 加载对应配置。
+框架内置只保留 `base/`。Profile 由同一套 canonical `hx-*` command contract 读取，Claude 使用 `/hx-*`，Codex 使用 `hx-*`，两边共享同一套 profile 解析规则。
+
+## 三层查找顺序
+
+Profile 按以下优先级查找，命中后再按 `extends` 继续向上合并：
+
+```text
+1. <project>/.hx/profiles/<name>/
+2. ~/.hx/profiles/<name>/
+3. <frameworkRoot>/profiles/<name>/
+```
+
+框架层只保证 `base/` 存在；其他 profile 由用户层或项目层维护。
 
 ## 继承体系
 
-```
-base/                          ← 根基类（通用规则、模板、执行规范）
-├── backend/                   ← extends base（服务端）
-├── frontend/                  ← extends base（前端）
-├── mobile/                    ← extends base（移动端通用）
-│   └── platforms/
-│       ├── ios.yaml           ← extends mobile（iOS 特化）
-│       ├── android.yaml       ← extends mobile（Android 特化）
-│       └── harmony.yaml       ← extends mobile（HarmonyOS 特化）
-└── (用户自定义/)               ← extends 任意 Profile
+```text
+base/                          ← 内置根基类（通用规则、模板、执行规范）
+└── my-team/                   ← 用户/项目自定义 profile，可 extends: base
+    └── my-team-mobile/        ← 继续扩展共享 profile
 ```
 
-## 文件结构
+## 目录结构
 
-```
+```text
 profiles/
-├── base/                      # 根基类
-│   ├── profile.yaml           # 通用配置（执行规则、commit 格式、通用审查项）
-│   ├── golden-rules.md        # 通用黄金原则 GP-BASE-001~009
-│   ├── review-checklist.md    # 通用审查清单
+├── base/
+│   ├── profile.yaml
+│   ├── golden-rules.md
+│   ├── review-checklist.md
 │   ├── requirement-template.md
 │   ├── plan-template.md
 │   └── README.md
-├── backend/
-│   ├── profile.yaml           # extends: base + 架构层级 + 门控命令
-│   ├── golden-rules.md        # GP-BE-001~005（补充 base）
-│   ├── review-checklist.md    # 服务端专项检查（补充 base）
-│   ├── requirement-template.md # 服务端需求模板（覆盖 base）
+├── my-team/
+│   ├── profile.yaml
+│   ├── golden-rules.md
+│   ├── review-checklist.md
+│   ├── requirement-template.md
 │   ├── plan-template.md
 │   └── README.md
-├── frontend/                  # 结构同上
-├── mobile/
-│   ├── profile.yaml           # extends: base + Clean Architecture
-│   ├── ...
-│   └── platforms/             # 平台特化（覆盖 mobile 的差异项）
-│       ├── ios.yaml
-│       ├── android.yaml
-│       └── harmony.yaml
-└── README.md                  # 本文件
+└── README.md
 ```
 
-## Profile 加载优先级
+## 合并规则
 
-```
-1. profiles/base/profile.yaml               — 内置根基类
-2. profiles/{team}/profile.yaml             — 按 extends 链向上合并
-3. profiles/mobile/platforms/{platform}.yaml — 移动端额外加载（覆盖通用）
-4. 全局文档（AGENTS.md、docs/golden-principles.md）— 始终加载
-```
-
-## 覆盖规则
-
-- **对象字段**：deepMerge（子级递归合并到父级）
-- **数组字段**：子级整体替换父级
-- **标量字段**：子级直接覆盖父级
-- **未定义字段**：继承父级的值
+- 对象字段：递归合并，子级覆盖父级同名键
+- 数组字段：子级整体替换父级
+- 标量字段：子级直接覆盖父级
+- 未定义字段：继承父级的值
 
 ## 使用方式
 
-```bash
-npm run hx:doc -- user-login --profile backend
-npm run hx:plan -- user-login --profile frontend
-npm run hx:gate -- --profile mobile:ios
+标准命令统一使用 `hx-*`：
+
+```text
+Claude: /hx-doc user-login --profile base
+Codex:  hx-doc user-login --profile base
+
+Claude: /hx-plan user-login --profile my-team
+Codex:  hx-plan user-login --profile my-team
+
+Claude: /hx-qa --profile my-team
+Codex:  hx-qa --profile my-team
 ```
 
 ## 创建自定义 Profile
 
-如果要新增自定义 profile，直接在 `profiles/` 下创建目录，并在 `profile.yaml` 中声明 `extends`:
+在项目层或用户层创建 `profiles/<name>/profile.yaml`，并显式声明 `extends`：
 
 ```yaml
-name: backend-go-ddd
-label: Go后端(DDD)
-extends: backend          # 继承 backend，backend 继承 base
+extends: base
+label: Go 后端 DDD
 task_prefix: TASK-GO
 
+gate_commands:
+  lint: golangci-lint run ./...
+  test: go test ./... -count=1
+
 architecture:
-  layers:                 # 覆盖 backend 的层级定义
+  layers:
     - id: domain
       path: domain/
       can_import: []
-    # ...
 ```
+
+## 设计约束
+
+- Profile 只描述规则、模板、路径和门控，不承载业务需求内容
+- 需求文档、计划文档、进度文件属于运行时上下文，不参与 profile 合并
+- 自定义 profile 应优先放在 `.hx/profiles/` 或 `~/.hx/profiles/`，不要直接改框架内置 `base/`

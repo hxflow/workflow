@@ -36,18 +36,22 @@ describe('hx setup', () => {
     const result = runHx(['setup', '--help'])
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('hx setup')
+    expect(result.stdout).toContain('--agent <name>')
     expect(result.stdout).toContain('~/.hx/')
     expect(result.stdout).toContain('~/.claude/commands/')
+    expect(result.stdout).toContain('~/.codex/skills/')
   })
 
   it('--dry-run 仅显示安装计划不写入文件', () => {
     const hxDir = makeTempDir('setup-dry-hx-')
     const claudeDir = makeTempDir('setup-dry-claude-')
+    const codexDir = makeTempDir('setup-dry-codex-')
 
     const result = runHx([
       'setup', '--dry-run',
       '--user-hx-dir', hxDir,
-      '--user-claude-dir', claudeDir
+      '--user-claude-dir', claudeDir,
+      '--user-codex-dir', codexDir
     ])
 
     expect(result.status).toBe(0)
@@ -59,26 +63,28 @@ describe('hx setup', () => {
   it('创建 ~/.hx/ 目录结构和 config.yaml', () => {
     const hxDir = makeTempDir('setup-hx-')
     const claudeDir = makeTempDir('setup-claude-')
+    const codexDir = makeTempDir('setup-codex-')
 
     const result = runHx([
       'setup',
       '--user-hx-dir', hxDir,
-      '--user-claude-dir', claudeDir
+      '--user-claude-dir', claudeDir,
+      '--user-codex-dir', codexDir
     ])
 
     expect(result.status).toBe(0)
     expect(existsSync(resolve(hxDir, 'config.yaml'))).toBe(true)
     expect(existsSync(resolve(hxDir, 'commands'))).toBe(true)
     expect(existsSync(resolve(hxDir, 'profiles'))).toBe(true)
-    expect(existsSync(resolve(hxDir, 'skills'))).toBe(true)
     expect(existsSync(resolve(hxDir, 'pipelines'))).toBe(true)
   })
 
   it('config.yaml 中写入 frameworkRoot', () => {
     const hxDir = makeTempDir('setup-config-hx-')
     const claudeDir = makeTempDir('setup-config-claude-')
+    const codexDir = makeTempDir('setup-config-codex-')
 
-    runHx(['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir])
+    runHx(['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir, '--user-codex-dir', codexDir])
 
     const config = readFileSync(resolve(hxDir, 'config.yaml'), 'utf8')
     expect(config).toContain('frameworkRoot:')
@@ -88,14 +94,15 @@ describe('hx setup', () => {
   it('在 ~/.claude/commands/ 中生成 hx-*.md 转发器', () => {
     const hxDir = makeTempDir('setup-cmds-hx-')
     const claudeDir = makeTempDir('setup-cmds-claude-')
+    const codexDir = makeTempDir('setup-cmds-codex-')
 
-    runHx(['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir])
+    runHx(['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir, '--user-codex-dir', codexDir])
 
     const commandsDir = resolve(claudeDir, 'commands')
     expect(existsSync(commandsDir)).toBe(true)
 
     // 框架应至少包含几个核心命令
-    const coreCommands = ['hx-run.md', 'hx-plan.md', 'hx-doc.md', 'hx-gate.md']
+    const coreCommands = ['hx-run.md', 'hx-plan.md', 'hx-doc.md', 'hx-qa.md']
     for (const cmd of coreCommands) {
       expect(existsSync(resolve(commandsDir, cmd)), `${cmd} 应存在`).toBe(true)
     }
@@ -104,8 +111,9 @@ describe('hx setup', () => {
   it('转发器内容包含三层查找路径', () => {
     const hxDir = makeTempDir('setup-fwd-hx-')
     const claudeDir = makeTempDir('setup-fwd-claude-')
+    const codexDir = makeTempDir('setup-fwd-codex-')
 
-    runHx(['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir])
+    runHx(['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir, '--user-codex-dir', codexDir])
 
     const fwdContent = readFileSync(resolve(claudeDir, 'commands', 'hx-run.md'), 'utf8')
     expect(fwdContent).toContain('.hx/commands/hx-run.md')   // 项目层
@@ -114,10 +122,30 @@ describe('hx setup', () => {
     expect(fwdContent).toContain('hx-run.md')
   })
 
+  it('--agent codex 时仅生成 Codex skill bundle', () => {
+    const hxDir = makeTempDir('setup-codex-hx-')
+    const claudeDir = makeTempDir('setup-codex-claude-')
+    const codexDir = makeTempDir('setup-codex-codex-')
+
+    const result = runHx([
+      'setup',
+      '--agent', 'codex',
+      '--user-hx-dir', hxDir,
+      '--user-claude-dir', claudeDir,
+      '--user-codex-dir', codexDir
+    ])
+
+    expect(result.status).toBe(0)
+    expect(existsSync(resolve(codexDir, 'skills', 'hxflow', 'SKILL.md'))).toBe(true)
+    expect(existsSync(resolve(codexDir, 'skills', 'hxflow', 'commands.json'))).toBe(true)
+    expect(existsSync(resolve(claudeDir, 'commands', 'hx-run.md'))).toBe(false)
+  })
+
   it('幂等 — 重复运行时已存在文件放入 skipped', () => {
     const hxDir = makeTempDir('setup-idem-hx-')
     const claudeDir = makeTempDir('setup-idem-claude-')
-    const args = ['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir]
+    const codexDir = makeTempDir('setup-idem-codex-')
+    const args = ['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir, '--user-codex-dir', codexDir]
 
     runHx(args)
     const second = runHx(args)
@@ -129,8 +157,9 @@ describe('hx setup', () => {
   it('报告包含"完成"并以 0 退出', () => {
     const hxDir = makeTempDir('setup-done-hx-')
     const claudeDir = makeTempDir('setup-done-claude-')
+    const codexDir = makeTempDir('setup-done-codex-')
 
-    const result = runHx(['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir])
+    const result = runHx(['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir, '--user-codex-dir', codexDir])
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('完成')
@@ -144,17 +173,22 @@ describe('hx upgrade', () => {
     const result = runHx(['upgrade', '--help'])
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('hx upgrade')
+    expect(result.stdout).toContain('--agent <name>')
     expect(result.stdout).toContain('--dry-run')
   })
 
   it('--dry-run 输出升级计划，不实际写入', () => {
-    const result = runHx(['upgrade', '--dry-run'])
+    const claudeDir = makeTempDir('upgrade-dry-claude-')
+    const codexDir = makeTempDir('upgrade-dry-codex-')
+    const result = runHx(['upgrade', '--dry-run', '--user-claude-dir', claudeDir, '--user-codex-dir', codexDir])
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('dry-run')
   })
 
   it('--dry-run 输出升级报告区块', () => {
-    const result = runHx(['upgrade', '--dry-run'])
+    const claudeDir = makeTempDir('upgrade-report-claude-')
+    const codexDir = makeTempDir('upgrade-report-codex-')
+    const result = runHx(['upgrade', '--dry-run', '--user-claude-dir', claudeDir, '--user-codex-dir', codexDir])
     expect(result.status).toBe(0)
     // 至少包含升级报告中的某一区块
     const hasReport = result.stdout.includes('更新:') ||
@@ -219,7 +253,7 @@ describe('hx uninstall', () => {
     const targetDir = makeTempDir('uninstall-config-')
     const hxDir = resolve(targetDir, '.hx')
     mkdirSync(hxDir, { recursive: true })
-    writeFileSync(resolve(hxDir, 'config.yaml'), 'defaultProfile: backend\n', 'utf8')
+    writeFileSync(resolve(hxDir, 'config.yaml'), 'defaultProfile: base\n', 'utf8')
 
     const result = runHx(['uninstall', '--target', targetDir, '--yes'])
 
@@ -259,9 +293,10 @@ describe('hx uninstall', () => {
   it('完整安装后卸载可清干净所有痕迹', () => {
     const hxDir = makeTempDir('full-cycle-hx-')
     const claudeDir = makeTempDir('full-cycle-claude-')
+    const codexDir = makeTempDir('full-cycle-codex-')
 
     // 先安装
-    const setup = runHx(['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir])
+    const setup = runHx(['setup', '--user-hx-dir', hxDir, '--user-claude-dir', claudeDir, '--user-codex-dir', codexDir])
     expect(setup.status).toBe(0)
     expect(existsSync(resolve(claudeDir, 'commands', 'hx-run.md'))).toBe(true)
 
@@ -300,5 +335,29 @@ describe('hx doctor', () => {
     const result = runHx(['doctor'])
     const output = result.stdout + result.stderr
     expect(output.toLowerCase()).toMatch(/node|版本/)
+  })
+
+  it('按 .hx/config.yaml 的自定义 paths 检查目录', () => {
+    const projectDir = makeTempDir('doctor-custom-paths-')
+    mkdirSync(resolve(projectDir, '.hx'), { recursive: true })
+    mkdirSync(resolve(projectDir, '业务线/香港/需求/资料'), { recursive: true })
+    mkdirSync(resolve(projectDir, '业务线/香港/需求/任务'), { recursive: true })
+    mkdirSync(resolve(projectDir, '.claude/commands'), { recursive: true })
+
+    writeFileSync(resolve(projectDir, '.hx/config.yaml'), [
+      'defaultProfile: base',
+      'paths:',
+      '  requirementDoc: 业务线/香港/需求/{feature}/资料/需求.md',
+      '  planDoc: 业务线/香港/需求/{feature}/任务/{taskId}/任务执行.md',
+      '  progressFile: 业务线/香港/需求/{feature}/任务/{taskId}/progress.json',
+    ].join('\n'), 'utf8')
+
+    const result = runHx(['doctor'], projectDir)
+    const output = result.stdout + result.stderr
+
+    expect(output).toContain('业务线/香港/需求/{feature}/资料/')
+    expect(output).toContain('业务线/香港/需求/{feature}/任务/{taskId}/')
+    expect(output).not.toContain('docs/requirement/ 缺失')
+    expect(output).not.toContain('docs/plans/ 缺失')
   })
 })

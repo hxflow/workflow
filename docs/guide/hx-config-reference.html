@@ -30,7 +30,7 @@
   <div class="nav-group">本页目录</div>
   <a href="#precedence"><span class="nav-num">E1</span><span>优先级与入口</span></a>
   <a href="#schema"><span class="nav-num">E2</span><span>配置字段</span></a>
-  <a href="#paths"><span class="nav-num">E3</span><span>路径与 AGENTS</span></a>
+  <a href="#paths"><span class="nav-num">E3</span><span>路径模板</span></a>
   <a href="#hooks"><span class="nav-num">E4</span><span>Hook 配置</span></a>
   <a href="#profiles"><span class="nav-num">E5</span><span>自定义 Profile</span></a>
   <a href="#compat"><span class="nav-num">E6</span><span>排错</span></a>
@@ -99,15 +99,14 @@
             <div class="card-meta">string</div>
             <h3 class="card-title"><code>defaultProfile</code></h3>
             <p class="card-body">命令未显式传入 <code>--profile</code> 且无法自动推断时使用该值。</p>
-            <pre><code>defaultProfile: frontend</code></pre>
+            <pre><code>defaultProfile: base</code></pre>
           </article>
           <article class="card">
             <div class="card-meta">object</div>
             <h3 class="card-title"><code>paths</code></h3>
-            <p class="card-body">所有字段均为路径模板，支持 {feature} 和 {taskId} 占位符。只需写入与默认值不同的字段。</p>
+            <p class="card-body">所有字段均为路径模板，支持 {feature} 和 {taskId} 占位符。其中 {feature} 表示当前需求的内部 <code>feature key</code>。只需写入与默认值不同的字段。</p>
             <pre><code>paths:
   src: app                           # 源码目录（默认 src）
-  agents: AGENTS.md                  # Agent 索引（默认 AGENTS.md）
   requirementDoc: docs/req/{feature}.md   # 需求文档模板
   planDoc: docs/plans/{feature}.md        # 执行计划模板
   progressFile: docs/plans/{feature}-progress.json  # 进度文件模板
@@ -122,7 +121,7 @@
     pre:
       - .hx/hooks/extra.md
     post:
-      - ~/.hx/skills/review.md</code></pre>
+      - ~/.hx/hooks/review-extra.md</code></pre>
           </article>
         </div>
       </div>
@@ -132,7 +131,7 @@
       <div class="wrap">
         <div class="section-tag">Paths</div>
         <h2 class="section-title">路径模板字段</h2>
-        <p class="section-desc">所有 paths 字段均为路径模板，支持 {feature} 和 {taskId} 占位符替换。</p>
+        <p class="section-desc">所有 paths 字段均为路径模板，支持 {feature} 和 {taskId} 占位符替换。其中 {feature} 表示当前需求的内部 <code>feature key</code>。下面出现的 <code>docs/requirement</code> 与 <code>docs/plans</code> 仅表示默认值，不是强制目录。</p>
         <div class="grid grid-2">
           <article class="card">
             <div class="card-meta">默认值</div>
@@ -141,8 +140,7 @@
 planDoc        → docs/plans/{feature}.md
 progressFile   → docs/plans/{feature}-progress.json
 taskDoc        → （无默认，可选）
-src            → src
-agents         → AGENTS.md</code></pre>
+src            → src</code></pre>
           </article>
           <article class="card">
             <div class="card-meta">覆盖方式</div>
@@ -150,7 +148,7 @@ agents         → AGENTS.md</code></pre>
             <pre><code>paths:
   requirementDoc: 需求/{feature}.md
   taskDoc: 任务/{feature}/{taskId}/执行.md</code></pre>
-            <p class="card-body">与默认值相同的字段无需写入，保持配置简洁。</p>
+            <p class="card-body">与默认值相同的字段无需写入，保持配置简洁。CLI 与 <code>CLAUDE.md</code> 注入块都会按最终合并后的 paths 展示真实目录。</p>
           </article>
         </div>
         <div class="callout warn">
@@ -184,7 +182,7 @@ agents         → AGENTS.md</code></pre>
       - .hx/hooks/doc-pre.md
   run:
     post:
-      - ~/.hx/skills/style.md</code></pre>
+      - ~/.hx/hooks/style-extra.md</code></pre>
             <p class="card-body">用于精确控制命令粒度。</p>
           </article>
         </div>
@@ -204,10 +202,10 @@ Pre Hook
       <div class="wrap">
         <div class="section-tag">Profiles</div>
         <h2 class="section-title">自定义 Profile</h2>
-        <p class="section-desc">CLI 会在多个根目录中按顺序查找同名 Profile。</p>
+        <p class="section-desc">CLI 会在多个根目录中按顺序查找同名 Profile；框架内置只保留 <code>base</code>。</p>
         <pre><code>&lt;project&gt;/.hx/profiles/&lt;name&gt;/
 ~/.hx/profiles/&lt;name&gt;/
-框架内置 profiles/&lt;name&gt;/</code></pre>
+框架内置 profiles/base/</code></pre>
         <div class="grid grid-2">
           <article class="card">
             <div class="card-meta">项目级</div>
@@ -219,6 +217,11 @@ Pre Hook
             <h3 class="card-title">用户级</h3>
             <p class="card-body">在 <code>~/.hx/profiles/&lt;name&gt;/profile.yaml</code> 中创建，跨项目共享。</p>
           </article>
+          <article class="card">
+            <div class="card-meta">框架内置</div>
+            <h3 class="card-title">系统层仅保留 <code>base</code></h3>
+            <p class="card-body">系统层只提供 <code>src/profiles/base/</code> 作为基础模板。团队差异应放在用户级或项目级自定义 Profile 中。</p>
+          </article>
         </div>
       </div>
     </section>
@@ -227,15 +230,15 @@ Pre Hook
       <div class="wrap">
         <div class="section-tag">Troubleshooting</div>
         <h2 class="section-title">排错</h2>
-        <p class="section-desc">排查问题时优先检查配置优先级、Profile 搜索根和 Agent 索引。</p>
+        <p class="section-desc">排查问题时优先检查配置优先级、Profile 搜索根和文档路径模板。</p>
         <div class="grid grid-2">
           <article class="card">
             <div class="card-meta">有效入口</div>
             <h3 class="card-title">正式目录</h3>
             <pre><code>.hx/config.yaml
 .hx/profiles/
-AGENTS.md</code></pre>
-            <p class="card-body">项目级配置、自定义 Profile 和 Agent 索引均应位于此处。</p>
+.hx/pipelines/</code></pre>
+            <p class="card-body">项目级配置、自定义 Profile 和项目级流水线覆盖均应位于此处。</p>
           </article>
           <article class="card">
             <div class="card-meta">Checklist</div>
@@ -243,7 +246,7 @@ AGENTS.md</code></pre>
             <div class="note-list">
               <p>最终生效的是用户级还是项目级配置。</p>
               <p>Profile / Hook 文件是否在被查找的根目录中。</p>
-              <p><code>paths.agents</code>、<code>defaultProfile</code> 与项目实际目录是否一致。</p>
+              <p><code>paths.requirementDoc</code>、<code>paths.planDoc</code>、<code>defaultProfile</code> 与项目实际目录是否一致。</p>
               <p>运行 <code>hx doctor</code> 快速检测所有配置问题。</p>
             </div>
           </article>

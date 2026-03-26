@@ -30,14 +30,14 @@ steps:
 
   - id: ctx
     phase: Phase 03
-    name: 上下文校验
+    name: 执行前预检
     command: hx-ctx
     on_fail: stop
 
   - id: run
     phase: Phase 04
-    name: 逐任务执行
-    command: hx-run-all
+    name: 执行需求
+    command: hx-run
 
   - id: review
     phase: Phase 05
@@ -48,15 +48,15 @@ steps:
 
   - id: gate
     phase: Phase 06
-    name: 最终门控
-    command: hx-gate
+    name: 最终质量校验
+    command: hx-qa
 
-  - id: entropy
+  - id: clean
     phase: Phase 07
-    name: 熵扫描
-    command: hx-entropy
+    name: 工程清理
+    command: hx-clean
     checkpoint:
-      message: 展示熵扫描报告，等待用户确认再继续
+      message: 展示工程清理扫描报告，等待用户确认再继续
 
   - id: mr
     phase: Phase 08

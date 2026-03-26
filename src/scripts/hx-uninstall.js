@@ -5,7 +5,7 @@
  *
  * 移除内容：
  *   1. .hx/config.yaml
- *   2. .CLAUDE.md（若是指向 AGENTS.md 的入口链接）
+ *   2. .CLAUDE.md（若存在旧入口链接）
  *   3. .claude/commands/hx-*.md
  *   4. CLAUDE.md 中的 harness 标记块
  *

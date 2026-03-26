@@ -100,7 +100,7 @@
             <article class="card">
               <div class="card-meta">输入治理</div>
               <h3 class="card-title">结构化工程输入</h3>
-              <p class="card-body">通过 <code>/hx-doc → /hx-plan → /hx-ctx</code> 固化需求、任务边界和上下文。<code>/hx-go</code>
+              <p class="card-body">通过 <code>/hx-doc → /hx-plan → /hx-run</code> 固化需求、任务边界和执行闭环。<code>/hx-go</code>
                 支持一键全流程自动化。</p>
             </article>
             <article class="card">
@@ -112,7 +112,7 @@
               <div class="card-meta">质量闭环</div>
               <h3 class="card-title">形成质量闭环</h3>
               <p class="card-body">
-                <code>/hx-gate</code>、<code>/hx-review</code>、<code>/hx-fix</code>、<code>/hx-entropy</code> 与
+                <code>/hx-qa</code>、<code>/hx-review</code>、<code>/hx-fix</code>、<code>/hx-clean</code> 与
                 <code>/hx-mr</code> 负责校验、修复和交付。</p>
             </article>
           </div>
@@ -144,7 +144,7 @@
               <div class="timeline-step">2</div>
               <div>
                 <div class="timeline-title">需求文档</div>
-                <div class="timeline-body"><code>/hx-doc &lt;feature&gt; --profile &lt;team&gt;</code> 按团队模板创建需求文档。
+                <div class="timeline-body"><code>/hx-doc [&lt;feature-key|标题&gt;] [--task &lt;id&gt;] --profile &lt;name&gt;</code> 按当前 Profile 模板创建需求文档；未传 feature key 时由 AI 基于需求详情自动生成内部主键，正常情况下不需要你手动处理。
                 </div>
               </div>
             </div>
@@ -152,31 +152,30 @@
               <div class="timeline-step">3</div>
               <div>
                 <div class="timeline-title">执行计划</div>
-                <div class="timeline-body"><code>/hx-plan &lt;feature&gt; --profile &lt;team&gt;</code> 生成任务拆分和 progress
-                  JSON；<code>/hx-ctx</code> 校验上下文与 Profile 文件完整性。</div>
+                <div class="timeline-body"><code>/hx-plan [&lt;feature&gt;] --profile &lt;name&gt;</code> 生成任务拆分和 progress
+                  JSON；若省略 feature，会优先从当前需求文档自动续接。需要排查输入问题时，可额外运行 <code>/hx-ctx</code> 做当前需求的预检诊断。</div>
               </div>
             </div>
             <div class="timeline-item">
               <div class="timeline-step">4</div>
               <div>
                 <div class="timeline-title">任务执行</div>
-                <div class="timeline-body"><code>/hx-run &lt;feature&gt; &lt;task-id&gt; --profile &lt;team&gt;</code> 按
-                  TASK-ID 驱动 Agent 执行。也可用 <code>/hx-run-all</code> 批量执行所有 pending 任务。</div>
+                <div class="timeline-body"><code>/hx-run [&lt;feature&gt;] --profile &lt;name&gt;</code> 默认按计划顺序执行整个需求下的 pending 任务；只在调试或恢复时才传 <code>--task</code> 下钻到单任务。</div>
               </div>
             </div>
             <div class="timeline-item">
               <div class="timeline-step">5</div>
               <div>
                 <div class="timeline-title">质量收口</div>
-                <div class="timeline-body"><code>/hx-gate</code> 执行门控，<code>/hx-review</code> 按团队清单审查
-                  diff，<code>/hx-fix</code> 读取意见修复。<code>/hx-done &lt;task-id&gt;</code> 标记完成。</div>
+                <div class="timeline-body"><code>/hx-qa</code> 执行质量校验，<code>/hx-review</code> 按团队清单审查
+                  diff，<code>/hx-fix</code> 读取意见修复。正常情况下进度由 <code>/hx-run</code> 自动更新，无需额外手动收尾命令。</div>
               </div>
             </div>
             <div class="timeline-item">
               <div class="timeline-step">6</div>
               <div>
                 <div class="timeline-title">沉淀与交付</div>
-                <div class="timeline-body"><code>/hx-entropy</code> 运行熵扫描沉淀问题模式，<code>/hx-mr</code> 汇总 MR 上下文并输出交付物。
+                <div class="timeline-body"><code>/hx-clean</code> 运行工程清理扫描沉淀问题模式，<code>/hx-mr</code> 汇总 MR 上下文并输出交付物。
                 </div>
               </div>
             </div>
@@ -184,7 +183,7 @@
           <div class="callout info">
             <span class="icon">i</span>
             <div>
-              <strong>一键模式：</strong><code>/hx-go &lt;feature&gt; --profile &lt;team&gt;</code> 读取 pipeline YAML
+              <strong>一键模式：</strong><code>/hx-go &lt;feature&gt; --profile &lt;name&gt;</code> 读取 pipeline YAML
               驱动全流程（Phase 01→08），支持 <code>--from &lt;step-id&gt;</code> 从指定阶段恢复。
             </div>
           </div>

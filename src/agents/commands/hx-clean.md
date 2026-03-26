@@ -1,11 +1,19 @@
-# Phase 07 · 熵扫描报告
+---
+name: hx-clean
+description: Phase 07 · 工程清理扫描
+usage: hx-clean [--profile <name>]
+claude: /hx-clean
+codex: hx-clean
+---
 
-参数: `$ARGUMENTS`（可选: `--profile <team[:platform]>`）
+# Phase 07 · 工程清理扫描
+
+参数: `$ARGUMENTS`（可选: `--profile <name>`）
 
 ## 执行步骤
 
 1. 解析 Profile：优先 `--profile`，否则读 `.hx/config.yaml` 的 `defaultProfile`
-2. 加载前置 Hook（`entropy-pre.md`，存在则作为额外扫描规则注入）
+2. 加载前置 Hook（`clean-pre.md`，存在则作为额外扫描规则注入）
 3. 扫描 `src/` 目录（排除测试文件）：
 
    **代码质量问题：**
@@ -19,14 +27,14 @@
    - 未处理的 `new Promise`
 
 4. 检查文档一致性：
-   - `AGENTS.md` 中的活跃特性是否都有对应需求文档
+   - `paths.progressFile` 模板匹配的进度文件是否都有对应需求文档
    - `paths.progressFile` 模板匹配的进度文件中 done 的任务数与实际代码是否匹配
-5. 如果 profile.yaml 定义了 `entropyChecks`，执行额外专项检查
-6. 加载后置 Hook 并执行（`entropy-post.md`）
+5. 如果 profile.yaml 定义了 `cleanChecks`，执行额外专项检查
+6. 加载后置 Hook 并执行（`clean-post.md`）
 7. 输出报告：按类别分组，列出文件路径和行号，汇总问题总数
 
 ## Hook 路径
 
-- `~/.hx/hooks/entropy-pre.md` / `.hx/hooks/entropy-pre.md`
-- `~/.hx/hooks/entropy-post.md` / `.hx/hooks/entropy-post.md`
-- `.hx/config.yaml` 的 `hooks.entropy.pre` / `hooks.entropy.post` 列表
+- `~/.hx/hooks/clean-pre.md` / `.hx/hooks/clean-pre.md`
+- `~/.hx/hooks/clean-post.md` / `.hx/hooks/clean-post.md`
+- `.hx/config.yaml` 的 `hooks.clean.pre` / `hooks.clean.post` 列表

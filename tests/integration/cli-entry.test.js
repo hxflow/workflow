@@ -47,7 +47,7 @@ describe('hx cli entry', () => {
   })
 
   it('提示 Claude 命令在 Claude Code 中运行', () => {
-    for (const cmd of ['init', 'doc', 'plan', 'run', 'gate', 'review', 'fix', 'entropy', 'mr']) {
+    for (const cmd of ['init', 'doc', 'plan', 'run', 'qa', 'review', 'fix', 'clean', 'mr']) {
       const result = runHx([cmd])
       expect(result.status).toBe(1)
       expect(result.stderr).toContain(`/hx-${cmd}`)

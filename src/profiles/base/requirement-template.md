@@ -1,6 +1,6 @@
-# 需求：{feature-name}
+# 需求：{title}
 
-> 创建于 {date}｜状态：草稿｜团队：{team}
+> 内部主键（Feature Key）：{feature-key}｜创建于 {date}｜状态：草稿｜Profile：{team}
 
 ## 背景
 

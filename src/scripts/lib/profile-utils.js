@@ -1,20 +1,8 @@
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 
-const DEFAULT_PROFILE = 'frontend'
-const PROFILE_USAGE = 'backend | frontend | mobile:ios | mobile:android | mobile:harmony'
-
-const TEAM_LABELS = {
-  backend: '服务端',
-  frontend: '前端',
-  mobile: '移动端'
-}
-
-const PLATFORM_LABELS = {
-  ios: 'iOS',
-  android: 'Android',
-  harmony: 'HarmonyOS'
-}
+const DEFAULT_PROFILE = 'base'
+const PROFILE_USAGE = '任意存在的 profile 名称（默认 base）'
 
 const SHORT_FLAGS = {
   p: 'profile',
@@ -79,25 +67,16 @@ export function parseProfileSpecifier(specifier) {
     return null
   }
 
-  const [team, platform] = raw.split(':')
-  if (!team || !['backend', 'frontend', 'mobile'].includes(team)) {
+  if (raw.includes('/') || raw.includes('\\') || raw === '.' || raw === '..') {
     throw new Error(`无效的 profile: ${raw}。可用值: ${PROFILE_USAGE}`)
   }
 
-  if (team !== 'mobile' && platform) {
-    throw new Error(`profile ${raw} 不需要平台后缀`)
-  }
-
-  if (team === 'mobile' && platform && !['ios', 'android', 'harmony'].includes(platform)) {
-    throw new Error(`无效的移动端平台: ${platform}。可用值: ios | android | harmony`)
-  }
-
   return {
-    profile: team === 'mobile' && platform ? `${team}:${platform}` : team,
-    team,
-    platform: team === 'mobile' ? platform || null : null,
-    label: TEAM_LABELS[team] || team,
-    platformLabel: team === 'mobile' && platform ? PLATFORM_LABELS[platform] : null
+    profile: raw,
+    team: raw,
+    platform: null,
+    label: raw,
+    platformLabel: null
   }
 }
 
@@ -105,24 +84,14 @@ export function parseProfileSpecifier(specifier) {
  * 加载 profile。
  *
  * @param {string}   frameworkRoot - 框架安装目录（内置 profiles）
- * @param {string}   specifier     - profile 标识符，如 "backend"、"mobile:ios"、"backend-go-ddd"
+ * @param {string}   specifier     - profile 标识符，如 "base"、"my-team"、"go-ddd"
  * @param {object}   [opts]
  * @param {string[]} [opts.searchRoots] - profile 查找根目录列表（优先级高→低），默认 [frameworkRoot]
  */
 export function loadProfile(frameworkRoot, specifier, opts = {}) {
   const searchRoots = opts.searchRoots || [frameworkRoot]
-
-  const isBuiltin = ['backend', 'frontend', 'mobile',
-    'mobile:ios', 'mobile:android', 'mobile:harmony'].includes(specifier || DEFAULT_PROFILE)
-
-  let parsed
-  if (isBuiltin) {
-    parsed = parseProfileSpecifier(specifier || DEFAULT_PROFILE)
-    if (!parsed) throw new Error(`缺少 profile。可用值: ${PROFILE_USAGE}`)
-  } else {
-    const raw = (specifier || '').trim()
-    parsed = { profile: raw, team: raw, platform: null, label: raw, platformLabel: null }
-  }
+  const parsed = parseProfileSpecifier(specifier || DEFAULT_PROFILE)
+  if (!parsed) throw new Error(`缺少 profile。可用值: ${PROFILE_USAGE}`)
 
   const teamRoot = findProfileRoot(searchRoots, parsed.team)
   if (!teamRoot) {
@@ -133,25 +102,15 @@ export function loadProfile(frameworkRoot, specifier, opts = {}) {
   const profilePath = resolve(teamDir, 'profile.yaml')
   const teamConfig = loadProfileWithInheritance(frameworkRoot, parsed.team, new Set(), { searchRoots })
 
-  let platformConfig = {}
-  let platformPath = null
-
-  if (parsed.team === 'mobile' && parsed.platform) {
-    platformPath = resolve(teamDir, 'platforms', `${parsed.platform}.yaml`)
-    if (!existsSync(platformPath)) {
-      throw new Error(`平台 profile 不存在: profiles/mobile/platforms/${parsed.platform}.yaml`)
-    }
-    platformConfig = parseSimpleYaml(readFileSync(platformPath, 'utf8'))
-  }
-
+  const platformConfig = {}
+  const platformPath = null
   const merged = deepMerge(teamConfig, platformConfig)
   const paths = merged.paths || {}
   const layerPaths = merged.layer_paths || {}
   const architecture = normaliseArchitecture(merged.architecture, paths, layerPaths)
   const taskSplit = merged.task_split || { order: [], template: [] }
   const taskPrefix = merged.task_prefix || teamConfig.task_prefix || ''
-  const profileName = parsed.team === 'mobile' && parsed.platform
-    ? `${parsed.team}:${parsed.platform}` : parsed.team
+  const profileName = parsed.profile
   const baseRoot = searchRoots[searchRoots.length - 1]
 
   return {
@@ -163,7 +122,7 @@ export function loadProfile(frameworkRoot, specifier, opts = {}) {
     taskPrefix,
     architecture,
     taskSplit,
-    gateCommands: merged.gate_commands || {},
+    gateCommands: isPlainObject(merged.gate_commands) ? merged.gate_commands : {},
     constraints: merged.constraints || [],
     reviewExtra: merged.review_extra || [],
     qa: merged.qa || {},

@@ -70,17 +70,17 @@
           <article class="card">
             <div class="card-meta">Phase 01-03</div>
             <h3 class="card-title">准备输入</h3>
-            <p class="card-body"><code>/hx-doc</code>、<code>/hx-plan</code>、<code>/hx-ctx</code> 负责准备输入。</p>
+            <p class="card-body"><code>/hx-doc</code>、<code>/hx-plan</code> 负责准备输入；<code>/hx-ctx</code> 是可选的预检诊断工具。</p>
           </article>
           <article class="card">
             <div class="card-meta">Phase 04-06</div>
             <h3 class="card-title">执行与校验</h3>
-            <p class="card-body"><code>/hx-run</code>（或 <code>/hx-run-all</code>）、<code>/hx-gate</code>、<code>/hx-review</code>、<code>/hx-fix</code> 负责执行与复核。</p>
+            <p class="card-body"><code>/hx-run</code>、<code>/hx-qa</code>、<code>/hx-review</code>、<code>/hx-fix</code> 负责执行与复核。</p>
           </article>
           <article class="card">
             <div class="card-meta">Phase 07-08</div>
             <h3 class="card-title">沉淀与交付</h3>
-            <p class="card-body"><code>/hx-entropy</code> 与 <code>/hx-mr</code> 负责沉淀与交付。</p>
+            <p class="card-body"><code>/hx-clean</code> 与 <code>/hx-mr</code> 负责沉淀与交付。</p>
           </article>
         </div>
       </div>
@@ -103,7 +103,7 @@
             <tbody>
               <tr>
                 <td><span class="badge violet">FRAMEWORK_ROOT</span></td>
-                <td><code>src/agents/commands/（命令实体）<br>src/profiles/（内置 Profile）<br>src/pipelines/（内置流水线）</code></td>
+                <td><code>src/agents/commands/（命令实体）<br>src/profiles/base/（内置基础 Profile）<br>src/pipelines/（内置流水线）</code></td>
                 <td>框架内置资源（只读），通过 git pull 升级。命令不直接在此运行，由转发器路由。</td>
               </tr>
               <tr>
@@ -113,7 +113,7 @@
               </tr>
               <tr>
                 <td><span class="badge blue">PROJECT_ROOT</span></td>
-                <td><code>.hx/commands/（项目命令覆盖）<br>.hx/profiles/（项目 Profile）<br>.hx/pipelines/（项目流水线）<br>.hx/config.yaml<br>AGENTS.md</code></td>
+                <td><code>.hx/commands/（项目命令覆盖）<br>.hx/profiles/（项目 Profile）<br>.hx/pipelines/（项目流水线）<br>.hx/config.yaml</code></td>
                 <td>项目专属覆盖，优先级最高。由 /hx-init 初始化 .hx/config.yaml。</td>
               </tr>
             </tbody>
@@ -134,14 +134,14 @@
       <div class="wrap">
         <div class="section-tag">Profiles</div>
         <h2 class="section-title">Profile 解析</h2>
-        <p class="section-desc">Profile 决定架构层级、门控命令、黄金规则与模板资源。</p>
+        <p class="section-desc">Profile 决定架构层级、门控命令、黄金规则与模板资源。当前框架内置只保留 <code>base</code>，其余统一走用户级或项目级自定义 Profile。</p>
         <div class="grid grid-2">
           <article class="card">
             <div class="card-meta">搜索顺序</div>
             <h3 class="card-title">Profile 搜索根目录</h3>
             <pre><code>&lt;project&gt;/.hx/profiles/
 ~/.hx/profiles/
-框架内置 profiles/</code></pre>
+框架内置 profiles/base/</code></pre>
             <p class="card-body">同名 Profile 按该顺序覆盖。</p>
           </article>
           <article class="card">
@@ -155,7 +155,7 @@
         </div>
         <div class="callout warn">
           <span class="icon">!</span>
-          <div><strong>参数范围：</strong>只有读取 Profile 的命令需要 <code>--profile</code>；<code>hx version</code>、<code>hx setup</code>、<code>hx done</code> 不依赖该参数。</div>
+          <div><strong>参数范围：</strong>只有读取 Profile 的命令需要 <code>--profile</code>；<code>hx version</code> 与 <code>hx setup</code> 不依赖该参数。</div>
         </div>
       </div>
     </section>
@@ -169,8 +169,7 @@
           <article class="card">
             <div class="card-meta">主上下文</div>
             <h3 class="card-title"><code>/hx-run</code> 默认读取的文件</h3>
-            <pre><code>AGENTS.md（或 paths.agents）
-docs/golden-principles.md
+            <pre><code>src/profiles/base/golden-rules.md
 当前 Profile 的 golden-rules.md
 当前 Profile 的 profile.yaml
 paths.planDoc 对应文件
@@ -199,11 +198,11 @@ paths.requirementDoc 对应文件</code></pre>
           <article class="card">
             <div class="card-meta">静态校验</div>
             <h3 class="card-title"><code>/hx-ctx</code></h3>
-            <p class="card-body">/hx-ctx 检查文档和 Profile 资源完整性。</p>
+            <p class="card-body">/hx-ctx 面向当前需求做轻量预检，主要用于排查文档、计划、进度文件或 Profile 资源缺失。</p>
           </article>
           <article class="card">
-            <div class="card-meta">执行门控</div>
-            <h3 class="card-title"><code>/hx-gate</code></h3>
+            <div class="card-meta">质量校验</div>
+            <h3 class="card-title"><code>/hx-qa</code></h3>
             <p class="card-body">按固定顺序执行 <code>lint → build → type → test</code>，只跑 Profile 里实际定义过的步骤，遇到失败立即停止。</p>
           </article>
           <article class="card">
@@ -236,7 +235,7 @@ paths.requirementDoc 对应文件</code></pre>
             <pre><code>pending
 in-progress
 done</code></pre>
-            <p class="card-body"><code>/hx-done</code> 更新任务状态；<code>/hx-ctx</code> 检查任务定义完整性。</p>
+            <p class="card-body">任务状态默认由 <code>/hx-run</code> 自动更新；<code>/hx-ctx</code> 负责检查任务定义和进度文件完整性。</p>
           </article>
         </div>
         <div class="foot-nav">
@@ -278,7 +277,7 @@ done</code></pre>
         </div>
         <div class="callout tip">
           <span class="icon">✓</span>
-          <div><strong>断点恢复：</strong>使用 <code>/hx-go user-login --from run --profile frontend</code> 从指定步骤继续，跳过已完成的 doc/plan 阶段。</div>
+          <div><strong>断点恢复：</strong>使用 <code>/hx-go user-login --from run --profile base</code> 从指定步骤继续，跳过已完成的 doc/plan 阶段。</div>
         </div>
         <div class="foot-nav">
           <a class="btn-ghost" href="hx-onboarding.html">查看入门</a>

@@ -1,6 +1,14 @@
+---
+name: hx-fix
+description: Phase 05 · 修复错误
+usage: hx-fix [--profile <name>] [--log <text>] [--file <path>]
+claude: /hx-fix
+codex: hx-fix
+---
+
 # Phase 05 · 修复错误
 
-参数: `$ARGUMENTS`（格式: `[--profile <team[:platform]>] [--log <text>] [--file <path>]`）
+参数: `$ARGUMENTS`（格式: `[--profile <name>] [--log <text>] [--file <path>]`）
 
 ## 执行步骤
 
@@ -11,10 +19,10 @@
    - `--log <text>`：使用提供的文本作为错误信息
    - 自动运行 profile 的 `test` 命令并截取失败输出
 4. 读取以下约束文件：
-   - `docs/golden-principles.md`
+   - base profile 的 `golden-rules.md`
    - profile 的 `golden-rules.md`
 5. 根据错误定位相关源文件并直接修复
-6. 运行 `/hx-gate` 验证门控全部通过
+6. 运行 `hx-qa` 验证质量校验全部通过
 7. 加载后置 Hook 并执行（`fix-post.md`）
 
 ## 修复约束
@@ -22,7 +30,7 @@
 - 不修改已有函数签名（参数与返回类型）
 - 不修改现有测试的期望值（测试是行为契约）
 - 修复后补充一个能复现此 Bug 的回归测试
-- 错误处理遵循 golden-principles 与 golden-rules
+- 错误处理遵循 base/team golden-rules
 
 ## Hook 路径
 

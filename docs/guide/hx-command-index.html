@@ -52,7 +52,7 @@
       </div>
       <div class="hero-stats">
         <div class="metric"><div class="metric-value">5</div><div class="metric-label">CLI 命令</div></div>
-        <div class="metric"><div class="metric-value">14</div><div class="metric-label">Claude 命令</div></div>
+        <div class="metric"><div class="metric-value">13</div><div class="metric-label">Claude 命令</div></div>
         <div class="metric"><div class="metric-value">1</div><div class="metric-label">入口文件 bin/hx.js</div></div>
       </div>
     </div>
@@ -63,7 +63,7 @@
       <div class="wrap">
         <div class="section-tag">Overview</div>
         <h2 class="section-title">命令总览</h2>
-        <p class="section-desc">当前版本包含 5 个 CLI 子命令和 14 个 Claude 工作流命令，数量以 <code>bin/hx.js</code> 的分发映射为准。</p>
+        <p class="section-desc">当前版本包含 5 个 CLI 子命令和 12 个 Claude 工作流命令，数量以 <code>bin/hx.js</code> 的分发映射为准。</p>
         <div class="table-wrap">
           <table>
             <thead>
@@ -81,18 +81,16 @@
               <tr class="grp-install"><td><span class="command-name">hx doctor</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>环境健康检测（Node 版本、全局安装、项目配置）</td></tr>
               <tr class="grp-install"><td><span class="command-name">hx version</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>输出 CLI 版本</td></tr>
               <tr class="grp-init"><td><span class="command-name">/hx-init</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-init">项目初始化</span></td><td>分析项目结构，写入 .hx/config.yaml，注入 CLAUDE.md 标记块</td></tr>
-              <tr class="grp-plan"><td><span class="command-name">/hx-doc</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-plan">文档与计划</span></td><td>创建需求文档（团队模板）</td></tr>
+              <tr class="grp-plan"><td><span class="command-name">/hx-doc</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-plan">文档与计划</span></td><td>获取需求并创建需求文档（团队模板）</td></tr>
               <tr class="grp-plan"><td><span class="command-name">/hx-plan</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-plan">文档与计划</span></td><td>生成执行计划和 progress JSON</td></tr>
-              <tr class="grp-plan"><td><span class="command-name">/hx-ctx</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-plan">文档与计划</span></td><td>校验上下文与 Profile 文件完整性</td></tr>
-              <tr class="grp-plan"><td><span class="command-name">/hx-done</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-plan">文档与计划</span></td><td>标记任务完成，输出下一步提示</td></tr>
+              <tr class="grp-plan"><td><span class="command-name">/hx-ctx</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-plan">文档与计划</span></td><td>当前需求执行前预检（可选诊断）</td></tr>
               <tr class="grp-plan"><td><span class="command-name">/hx-status</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-plan">文档与计划</span></td><td>查看任务进度（进度条 + 状态汇总）</td></tr>
-              <tr class="grp-exec"><td><span class="command-name">/hx-run</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-exec">执行与复核</span></td><td>按 TASK-ID 驱动 Agent 执行</td></tr>
-              <tr class="grp-exec"><td><span class="command-name">/hx-run-all</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-exec">执行与复核</span></td><td>批量执行所有 pending 任务</td></tr>
+              <tr class="grp-exec"><td><span class="command-name">/hx-run</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-exec">执行与复核</span></td><td>默认执行整个需求；必要时可下钻到单个任务</td></tr>
               <tr class="grp-exec"><td><span class="command-name">/hx-go</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-exec">执行与复核</span></td><td>全自动流水线（读取 pipeline YAML 驱动，支持 --from 恢复）</td></tr>
               <tr class="grp-exec"><td><span class="command-name">/hx-review</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-exec">执行与复核</span></td><td>按团队审查清单审查 diff</td></tr>
               <tr class="grp-exec"><td><span class="command-name">/hx-fix</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-exec">执行与复核</span></td><td>读取 Review 意见按团队规范修复</td></tr>
-              <tr class="grp-quality"><td><span class="command-name">/hx-gate</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-quality">质量与交付</span></td><td>运行团队对应的门控命令</td></tr>
-              <tr class="grp-quality"><td><span class="command-name">/hx-entropy</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-quality">质量与交付</span></td><td>熵扫描（全局 + 团队专项）</td></tr>
+              <tr class="grp-quality"><td><span class="command-name">/hx-qa</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-quality">质量与交付</span></td><td>运行团队对应的质量校验命令</td></tr>
+              <tr class="grp-quality"><td><span class="command-name">/hx-clean</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-quality">质量与交付</span></td><td>工程清理扫描（全局 + 团队专项）</td></tr>
               <tr class="grp-quality"><td><span class="command-name">/hx-mr</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-quality">质量与交付</span></td><td>输出 MR 创建上下文</td></tr>
             </tbody>
           </table>
@@ -112,9 +110,10 @@
             <div class="command-syntax">hx setup [--dry-run]</div>
             <p class="card-body">生成 ~/.claude/commands/ 转发器，初始化 ~/.hx/ 目录结构。</p>
             <div class="note-list">
-              <p>会创建 <code>~/.hx/</code>（commands/、profiles/、skills/、pipelines/）目录结构。</p>
+              <p>会创建 <code>~/.hx/</code>（commands/、profiles/、pipelines/）目录结构。</p>
               <p>生成转发器到 <code>~/.claude/commands/</code>，不拷贝命令实体文件。</p>
               <p><code>~/.hx/config.yaml</code> 不存在时创建，写入 frameworkRoot。</p>
+              <p>Skill 由 Agent 自身机制管理，<code>hx setup</code> 不会安装或同步 skill。</p>
             </div>
           </article>
           <article class="card command-card">
@@ -179,52 +178,45 @@
           <article class="card command-card">
             <div class="card-meta">Doc（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-doc</code></h3>
-            <div class="command-syntax">/hx-doc &lt;feature-name&gt; [--profile &lt;team[:platform]&gt;] [--task &lt;id&gt;]</div>
-            <p class="card-body">从 Profile 对应的需求模板创建需求文档。</p>
+            <div class="command-syntax">/hx-doc [&lt;feature-key-or-title&gt;] [--profile &lt;name&gt;] [--task &lt;id&gt;]</div>
+            <p class="card-body">从需求来源生成结构化需求文档；支持手工整理和按任务号拉取。</p>
             <div class="note-list">
-              <p>路径从 <code>.hx/config.yaml</code> 的 paths.planDoc 模板推断。</p>
-              <p><code>--task</code> 可把 DevOps 任务号写进文档头部。</p>
+              <p>路径从 <code>.hx/config.yaml</code> 的 <code>paths.requirementDoc</code> 模板推断。</p>
+              <p><code>--task</code> 表示从任务系统获取需求来源并预填文档，而不是只写一个编号。</p>
+              <p>首个参数可省略；AI 会基于需求详情自动生成中文标题和项目内唯一的内部主键。</p>
+              <p>这个内部主键默认不需要你手动管理；后续命令会优先自动续接。</p>
             </div>
           </article>
           <article class="card command-card">
             <div class="card-meta">Plan（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-plan</code></h3>
-            <div class="command-syntax">/hx-plan &lt;feature-name&gt; [--profile &lt;team[:platform]&gt;]</div>
+            <div class="command-syntax">/hx-plan [&lt;feature-key&gt;] [--profile &lt;name&gt;]</div>
             <p class="card-body">读取需求文档，生成计划 Markdown 与 <code>*-progress.json</code>。</p>
             <div class="note-list">
               <p>路径从 <code>.hx/config.yaml</code> 的 paths.planDoc 模板推断。</p>
-              <p>生成后会把活跃特性写回 <code>AGENTS.md</code>。</p>
+              <p>若省略 <code>feature-key</code>，会优先从当前目标需求文档头部的内部主键自动解析。</p>
+              <p>生成后会写入计划文档和 <code>*-progress.json</code>，后续命令直接以此作为状态来源。</p>
             </div>
           </article>
           <article class="card command-card">
             <div class="card-meta">Ctx（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-ctx</code></h3>
-            <div class="command-syntax">/hx-ctx [--profile &lt;team[:platform]&gt;]</div>
-            <p class="card-body">校验 <code>AGENTS.md</code>、需求文档、计划文件和 Profile 资源是否一致。</p>
+            <div class="command-syntax">/hx-ctx [&lt;feature-key&gt;] [--profile &lt;name&gt;]</div>
+            <p class="card-body">面向当前需求做执行前预检，主要用于排查输入不完整或 Profile 资源缺失。</p>
             <div class="note-list">
-              <p>会检查活跃特性是否缺少需求文档或 AC。</p>
-              <p>也会检查 progress JSON 是否缺少任务信息或引用了不存在的文档。</p>
-            </div>
-          </article>
-          <article class="card command-card">
-            <div class="card-meta">Done（Claude）</div>
-            <h3 class="card-title"><code class="command-name">/hx-done</code></h3>
-            <div class="command-syntax">/hx-done &lt;TASK-ID&gt;</div>
-            <p class="card-body">标记指定任务完成，并输出下一个待办任务。</p>
-            <div class="note-list">
-              <p>从 paths.progressFile 模板扫描对应 progress JSON。</p>
-              <p>全部任务完成后，会提示继续运行 <code>/hx-entropy</code>。</p>
+              <p>正常主流程不用先单独运行；<code>/hx-run</code> 会自动完成同等预检。</p>
+              <p>仅在 <code>/hx-run</code> 因文档、计划或 progress 文件异常而停止时，用它查看具体缺失项。</p>
             </div>
           </article>
           <article class="card command-card">
             <div class="card-meta">Status（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-status</code></h3>
-            <div class="command-syntax">/hx-status [&lt;feature-name&gt;]</div>
+            <div class="command-syntax">/hx-status [&lt;feature-key&gt;]</div>
             <p class="card-body">查看任务进度。</p>
             <div class="note-list">
-              <p>无参数时展示所有 feature 的进度条汇总。</p>
-              <p>指定 feature 名时列出所有任务的详细状态。</p>
-              <p>高亮下一个 pending 任务，提示对应的执行命令。</p>
+              <p>无参数时展示所有需求的进度条汇总。</p>
+              <p>指定 feature key 时列出所有任务的详细状态。</p>
+              <p>高亮下一个 pending 任务，并默认提示继续运行当前 feature key 对应的需求。</p>
             </div>
           </article>
         </div>
@@ -240,48 +232,40 @@
           <article class="card command-card">
             <div class="card-meta">Run（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-run</code></h3>
-            <div class="command-syntax">/hx-run &lt;feature-name&gt; &lt;TASK-ID&gt; [--profile &lt;team[:platform]&gt;]</div>
-            <p class="card-body">按 TASK-ID 驱动 Agent 执行。</p>
+            <div class="command-syntax">/hx-run [&lt;feature-key&gt;] [--task &lt;TASK-ID&gt;] [--profile &lt;name&gt;]</div>
+            <p class="card-body">默认执行当前需求下的全部 pending 任务；<code>--task</code> 仅用于高级模式。</p>
             <div class="note-list">
               <p>从 <code>.hx/config.yaml</code> 的 paths.* 字段读取需求文档、执行计划和进度文件路径。</p>
-              <p>任务已是 <code>done</code> 状态时跳过执行。</p>
-            </div>
-          </article>
-          <article class="card command-card">
-            <div class="card-meta">Run All（Claude）</div>
-            <h3 class="card-title"><code class="command-name">/hx-run-all</code></h3>
-            <div class="command-syntax">/hx-run-all &lt;feature-name&gt; [--profile &lt;team[:platform]&gt;]</div>
-            <p class="card-body">批量执行所有 pending 任务。</p>
-            <div class="note-list">
-              <p>跳过 Phase 01-02，直接从上下文校验开始执行。</p>
-              <p>每完成一个任务立即更新 progress.json 状态。</p>
-              <p>每个任务完成后自动运行 <code>/hx-gate</code>，失败则按 <code>/hx-fix</code> 修复后继续。</p>
+              <p>省略 <code>feature-key</code> 时，会优先从当前需求/计划上下文自动续接。</p>
+              <p>默认按计划顺序逐任务推进，并在每个任务完成后自动更新 progress。</p>
+              <p>需要调试、重试或断点恢复时，再传 <code>--task</code> 下钻到单任务。</p>
             </div>
           </article>
           <article class="card command-card">
             <div class="card-meta">Go（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-go</code></h3>
-            <div class="command-syntax">/hx-go &lt;feature-name&gt; [--from &lt;step-id&gt;] [--profile &lt;team[:platform]&gt;]</div>
+            <div class="command-syntax">/hx-go [&lt;feature-key&gt;] [--task &lt;TASK-ID&gt;] [--from &lt;step-id&gt;] [--profile &lt;name&gt;]</div>
             <p class="card-body">全自动流水线，从需求到交付一条龙。</p>
             <div class="note-list">
               <p>读取 pipeline YAML（<code>.hx/pipelines/default.yaml</code> → <code>~/.hx/pipelines/default.yaml</code> → 框架内置），按步骤驱动执行。</p>
               <p><code>--from &lt;step-id&gt;</code> 支持从指定步骤恢复（如 <code>--from run</code> 跳过 doc/plan）。</p>
+              <p><code>run</code> 步骤默认执行整个需求；传 <code>--task</code> 时才下钻到单任务。</p>
               <p>4 个检查点等待用户确认后继续。</p>
             </div>
           </article>
           <article class="card command-card">
             <div class="card-meta">Review（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-review</code></h3>
-            <div class="command-syntax">/hx-review [--profile &lt;team[:platform]&gt;]</div>
+            <div class="command-syntax">/hx-review [--profile &lt;name&gt;]</div>
             <p class="card-body">按团队审查清单审查 diff。</p>
             <div class="note-list">
-              <p>Profile 配置了 <code>reviewExtra</code> 时，会在清单后追加平台检查项。</p>
+              <p>Profile 配置了额外审查项时，会在基础清单后追加团队专属检查项。</p>
             </div>
           </article>
           <article class="card command-card">
             <div class="card-meta">Fix（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-fix</code></h3>
-            <div class="command-syntax">/hx-fix [--profile &lt;team[:platform]&gt;]</div>
+            <div class="command-syntax">/hx-fix [--profile &lt;name&gt;]</div>
             <p class="card-body">读取 Review 意见按团队规范修复。</p>
             <div class="note-list">
               <p>会加载团队黄金规则和 fix Hook。</p>
@@ -298,20 +282,20 @@
         <p class="section-desc">该组命令在 Claude Code 中运行，负责执行后的校验和交付。</p>
         <div class="command-grid">
           <article class="card command-card">
-            <div class="card-meta">Gate（Claude）</div>
-            <h3 class="card-title"><code class="command-name">/hx-gate</code></h3>
-            <div class="command-syntax">/hx-gate [--profile &lt;team[:platform]&gt;]</div>
-            <p class="card-body">从 Profile 的 <code>gate_commands</code> 中按顺序执行门控。</p>
+            <div class="card-meta">QA（Claude）</div>
+            <h3 class="card-title"><code class="command-name">/hx-qa</code></h3>
+            <div class="command-syntax">/hx-qa [--profile &lt;name&gt;]</div>
+            <p class="card-body">从 Profile 的 <code>gate_commands</code> 中按顺序执行质量校验。</p>
             <div class="note-list">
               <p>固定顺序 <code>lint → build → type → test</code>，只执行已定义步骤。</p>
               <p>任一步骤失败后停止，输出失败详情供 <code>/hx-fix</code> 使用。</p>
             </div>
           </article>
           <article class="card command-card">
-            <div class="card-meta">Entropy（Claude）</div>
-            <h3 class="card-title"><code class="command-name">/hx-entropy</code></h3>
-            <div class="command-syntax">/hx-entropy [--profile &lt;team[:platform]&gt;]</div>
-            <p class="card-body">熵扫描（全局 + 团队专项）。</p>
+            <div class="card-meta">Clean（Claude）</div>
+            <h3 class="card-title"><code class="command-name">/hx-clean</code></h3>
+            <div class="command-syntax">/hx-clean [--profile &lt;name&gt;]</div>
+            <p class="card-body">工程清理扫描（全局 + 团队专项）。</p>
             <div class="note-list">
               <p>扫描 <code>src/</code> 下的 <code>console.log</code>、<code>: any</code>、裸 <code>throw new Error</code>、TODO 等模式。</p>
               <p>团队 Profile 可追加专项扫描规则。</p>
@@ -320,10 +304,11 @@
           <article class="card command-card">
             <div class="card-meta">MR（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-mr</code></h3>
-            <div class="command-syntax">/hx-mr &lt;feature-name&gt; [--project &lt;path&gt;]</div>
+            <div class="command-syntax">/hx-mr [&lt;feature-key&gt;] [--project &lt;path&gt;]</div>
             <p class="card-body">输出 MR 创建上下文。</p>
             <div class="note-list">
               <p>汇总需求文档、任务完成情况、git log 和 diff stat。</p>
+              <p>省略 <code>feature-key</code> 时，会优先从最近一次执行上下文自动续接。</p>
               <p>默认目标分支是 <code>main</code>。</p>
             </div>
           </article>

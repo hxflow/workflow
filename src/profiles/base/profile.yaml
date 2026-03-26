@@ -45,7 +45,7 @@ qa:
 execution_rules:
   - 每个 TASK 独立开 Agent 会话执行，不在同一会话连续执行多个 TASK
   - 所有代码必须通过团队对应的门控检查
-  - 执行前必须读取 AGENTS.md + golden-principles.md + 团队 golden-rules.md
+  - 执行前必须读取 base golden-rules.md + 当前 profile 的 golden-rules.md + 对应需求/计划文档
   - 上下文使用率超过 40% 时，新开会话并把进度写入 progress.json
 
 # ── Commit 消息格式 ──
