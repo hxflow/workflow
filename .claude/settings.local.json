@@ -1,4 +1,7 @@
 {
+  "env": {
+    "GITLAB_TOKEN": "wxqkoAWu76AFJXzxCwTP"
+  },
   "permissions": {
     "allow": [
       "Bash(git init:*)",
@@ -79,7 +82,11 @@
       "Bash(zsh -i -c \"echo $NO_COLOR; whence -v NO_COLOR 2>/dev/null; typeset -p NO_COLOR 2>/dev/null\")",
       "Bash(tmux show-environment:*)",
       "Bash(tmux set-environment:*)",
-      "Bash(bash scan-docs.sh)"
+      "Bash(bash scan-docs.sh)",
+      "Bash(launchctl load:*)",
+      "Bash(launchctl list:*)",
+      "Bash(launchctl start:*)",
+      "Bash(launchctl unload:*)"
     ]
   },
   "hooks": {

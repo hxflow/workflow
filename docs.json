@@ -119,6 +119,13 @@
   }
 ,
   {
+    "name": "hx-issue",
+    "path": "src/agents/commands/hx-issue.md",
+    "type": "md",
+    "category": "src/agents/commands"
+  }
+,
+  {
     "name": "hx-mr",
     "path": "src/agents/commands/hx-mr.md",
     "type": "md",
