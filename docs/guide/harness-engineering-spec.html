@@ -2688,16 +2688,15 @@
             <div class="level-body">从 DevOps 平台拉取任务 → 结构化需求文档 → 执行计划拆分 → 执行前预检。确保 Agent 拿到的输入完整、准确、无歧义。</div>
           </div>
           <div class="level">
-            <div class="level-n">Phase 04 — 06</div>
-            <div class="level-title">执行阶段</div>
-            <div class="level-body">Agent 按 TASK 逐个执行 → 自动代码审查（全局 + 团队规则）→ 质量门控（lint / type / test /
-              arch）。每一步都有自动修复和重试机制。</div>
+            <div class="level-n">Phase 04 + 06</div>
+            <div class="level-title">执行与校验</div>
+            <div class="level-body">Agent 按 TASK 顺序执行当前需求 → 自动回写 progress 状态 → 运行质量校验（lint / type / test /
+              arch）。这是默认主路径。</div>
           </div>
           <div class="level">
-            <div class="level-n">Phase 07 — 08</div>
-            <div class="level-title">交付阶段</div>
-            <div class="level-body">熵扫描确保代码质量 → git commit（关联 DevOps 任务 ID）→ 自动创建 GitLab MR → 后台 CI 监控 → 失败自动修复。从代码到 MR
-              全程自动化。</div>
+            <div class="level-n">Phase 08 + Auxiliary</div>
+            <div class="level-title">交付与补充治理</div>
+            <div class="level-body">生成 MR 上下文并交付；<code>/hx-ctx</code>、<code>/hx-review</code>、<code>/hx-fix</code>、<code>/hx-clean</code> 作为按需插入的辅助能力，用于预检、人工审查、失败修复和工程扫描。</div>
           </div>
         </div>
 
@@ -2715,7 +2714,7 @@
             <div class="im-step">执行引擎</div>
             <div class="im-title">Claude Code + Skills</div>
             <div class="im-body">所有 Phase 通过 <code>/hx-*</code> 斜杠命令内置 Profile 系统适配团队差异。一键
-              <code>/hx-go</code> 可跑完 Phase 01→08 全流程。
+              <code>/hx-go</code> 默认跑完主路径 <code>doc → plan → run → qa → mr</code>；辅助步骤可通过项目级 pipeline 按需插入。
             </div>
           </div>
           <div class="install-method">
@@ -3830,7 +3829,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
 
 <span class="cm"># 或在全自动流水线中自动执行</span>
 <span class="ck">/hx-go user-login --task 46474 --profile go-ddd</span>
-<span class="cm"># → Phase 01~07 完成后自动进入 Phase 08</span>
+<span class="cm"># → Phase 01→02→04→06 完成后自动进入 Phase 08</span>
 
 <span class="cm"># 如已安装 gitlab skill，可使用其提供的命令查看 MR 状态</span>
 <span class="cs"># 具体命令与参数以该 skill 自身文档为准</span>
@@ -3854,108 +3853,84 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
         <p class="sh-desc">一条需求从接入到合并的完整路径，以及每个节点对应的命令和自动化门控。</p>
 
         <div class="wf-diagram">
-          <div class="wf-row-label">▸ 准备阶段（人工）</div>
+          <div class="wf-row-label">▸ 主路径 · 准备阶段</div>
           <div class="wf-row">
             <div class="wf-step shared-s">
               <div class="wf-snum">01</div>
               <div class="wf-stitle">写需求文档</div>
-              <div class="wf-sbody">按 <code>paths.requirementDoc</code> 新建需求文档；若使用默认值，则为 <code>docs/requirement/[feat].md</code></div>
-              <span class="wf-cmd">/hx-doc [feat]</span>
+              <div class="wf-sbody">按 <code>paths.requirementDoc</code> 新建需求文档；若使用默认值，则为 <code>docs/requirement/[feature-key].md</code></div>
+              <span class="wf-cmd">/hx-doc [feature-key|标题]</span>
             </div>
             <div class="wf-step shared-s">
               <div class="wf-snum">02</div>
               <div class="wf-stitle">写执行计划</div>
-              <div class="wf-sbody">按 <code>paths.planDoc</code> 新建执行计划；若未显式传 feature，则优先从当前需求文档自动续接</div>
-              <span class="wf-cmd">/hx-plan [feat]</span>
+              <div class="wf-sbody">按 <code>paths.planDoc</code> 新建执行计划；若未显式传 feature key，则优先从当前需求文档自动续接</div>
+              <span class="wf-cmd">/hx-plan [feature-key]</span>
             </div>
             <div class="wf-step shared-s">
               <div class="wf-snum">03</div>
-              <div class="wf-stitle">确认执行输入</div>
-              <div class="wf-sbody">确认需求文档、执行计划和 progress JSON 已写入；正常情况下由 /hx-run 在开始执行前自动预检</div>
-              <span class="wf-cmd">/hx-run [feat]</span>
+              <div class="wf-stitle">执行需求</div>
+              <div class="wf-sbody">由 /hx-run 自动完成执行前预检，并按计划顺序执行整个需求下的 pending 任务</div>
+              <span class="wf-cmd">/hx-run [feature-key]</span>
             </div>
             <div class="wf-step gate-s">
               <div class="wf-snum">✓</div>
-              <div class="wf-stitle">可选预检诊断</div>
-              <div class="wf-sbody">当 /hx-run 因输入不完整而停止时，额外运行 /hx-ctx 查看缺失项</div>
-              <span class="wf-cmd">/hx-ctx [feat] --profile &lt;name&gt;</span>
-            </div>
-          </div>
-
-          <div class="wf-arrow">↓</div>
-
-          <div class="wf-row-label">▸ 执行阶段（Agent · 按 Profile 并行）</div>
-          <div class="wf-row">
-            <div class="wf-step fe-s">
-              <div class="wf-snum">FE</div>
-              <div class="wf-stitle">前端任务执行</div>
-              <div class="wf-sbody">Agent 读取 TASK-FE-XX，产出组件/Hook/测试</div>
-              <span class="wf-cmd">/hx-run --profile web-team</span>
-            </div>
-            <div class="wf-step be-s">
-              <div class="wf-snum">BE</div>
-              <div class="wf-stitle">后端任务执行</div>
-              <div class="wf-sbody">Agent 读取 TASK-BE-XX，产出 Service/Repo/Controller</div>
-              <span class="wf-cmd">/hx-run --profile api-team</span>
-            </div>
-            <div class="wf-step mb-s">
-              <div class="wf-snum">MB</div>
-              <div class="wf-stitle">移动端任务执行</div>
-              <div class="wf-sbody">Agent 读取 TASK-MB-XX，按 Clean Architecture 产出 Domain/Data/UI</div>
-              <span class="wf-cmd">/hx-run --profile ios-team</span>
-            </div>
-            <div class="wf-step gate-s">
-              <div class="wf-snum">✓</div>
-              <div class="wf-stitle">本地门控</div>
-              <div class="wf-sbody">按 Profile 执行对应门控命令。失败则自动修复后重跑</div>
+              <div class="wf-stitle">质量校验</div>
+              <div class="wf-sbody">按 Profile 执行对应门控命令；失败则停下等待修复</div>
               <span class="wf-cmd">/hx-qa --profile &lt;name&gt;</span>
             </div>
           </div>
 
           <div class="wf-arrow">↓</div>
 
-          <div class="wf-row-label">▸ 验证阶段（CI + 人工）</div>
+          <div class="wf-row-label">▸ 主路径 · 交付阶段</div>
           <div class="wf-row">
-            <div class="wf-step shared-s">
+            <div class="wf-step fe-s">
               <div class="wf-snum">05</div>
-              <div class="wf-stitle">PR 开启</div>
-              <div class="wf-sbody">Agent 自动开 PR，标题格式：<code>[feat/fix] TASK-XX: 描述</code></div>
-              <span class="wf-cmd">自动触发</span>
+              <div class="wf-stitle">生成 MR 上下文</div>
+              <div class="wf-sbody">汇总需求文档、计划完成情况、git log 与 diff stat，生成可直接提交的 MR 描述</div>
+              <span class="wf-cmd">/hx-mr [feature-key]</span>
             </div>
-            <div class="wf-step gate-s">
+            <div class="wf-step be-s">
+              <div class="wf-snum">MR</div>
+              <div class="wf-stitle">交付</div>
+              <div class="wf-sbody">将产出的 MR 上下文提交到 GitLab / GitHub，后续交由 CI 和人工审核</div>
+              <span class="wf-cmd">人工提交 / skill 自动化</span>
+            </div>
+            <div class="wf-step mb-s">
               <div class="wf-snum">CI</div>
               <div class="wf-stitle">CI 流水线</div>
               <div class="wf-sbody">lint + typecheck + test + 架构结构测试，全通过才可合并</div>
               <span class="wf-cmd">自动阻断</span>
             </div>
-            <div class="wf-step shared-s">
-              <div class="wf-snum">06</div>
-              <div class="wf-stitle">人工 Review</div>
-              <div class="wf-sbody">按 Phase 05 清单检查架构合规性、AI 特征问题</div>
-              <span class="wf-cmd">/hx-review</span>
-            </div>
-            <div class="wf-step block-s">
-              <div class="wf-snum">✗</div>
-              <div class="wf-stitle">Review 发现问题</div>
-              <div class="wf-sbody">写入评论 → Agent 读取评论自动修复 → 重新触发门控</div>
-              <span class="wf-cmd">/hx-fix</span>
-            </div>
           </div>
 
           <div class="wf-arrow">↓</div>
 
-          <div class="wf-row-label">▸ 收尾（合并后）</div>
+          <div class="wf-row-label">▸ 辅助能力（按需插入）</div>
           <div class="wf-row">
             <div class="wf-step shared-s">
-              <div class="wf-snum">07</div>
-              <div class="wf-stitle">更新进度文件</div>
-              <div class="wf-sbody">由 /hx-run 在任务执行完成后自动标记 TASK-XX 状态为「完成」并回写进度文件</div>
-              <span class="wf-cmd">/hx-run [&lt;feature-key&gt;] [--task TASK-XX] [--profile &lt;name&gt;]</span>
+              <div class="wf-snum">CTX</div>
+              <div class="wf-stitle">执行前预检</div>
+              <div class="wf-sbody">当 /hx-run 因输入不完整而停止时，额外运行 /hx-ctx 查看缺失项</div>
+              <span class="wf-cmd">/hx-ctx [feature-key] --profile &lt;name&gt;</span>
+            </div>
+            <div class="wf-step gate-s">
+              <div class="wf-snum">RV</div>
+              <div class="wf-stitle">人工 Review</div>
+              <div class="wf-sbody">按团队审查清单检查架构合规性、AI 特征问题</div>
+              <span class="wf-cmd">/hx-review</span>
             </div>
             <div class="wf-step shared-s">
-              <div class="wf-snum">08</div>
-              <div class="wf-stitle">熵检查</div>
-              <div class="wf-sbody">发现新规律 → 写入 golden-principles.md 或新增 Lint 规则</div>
+              <div class="wf-snum">FX</div>
+              <div class="wf-stitle">失败修复</div>
+              <div class="wf-sbody">读取 Review 意见或质量校验失败日志，生成修复 Prompt 并重跑相关步骤</div>
+              <span class="wf-cmd">/hx-fix</span>
+            </div>
+            <div class="wf-step block-s">
+              <div class="wf-snum">CL</div>
+              <div class="wf-stitle">工程清理扫描</div>
+              <div class="wf-sbody">发现新规律、残留 TODO 或工程异味时做额外扫描沉淀</div>
               <span class="wf-cmd">/hx-clean</span>
             </div>
           </div>

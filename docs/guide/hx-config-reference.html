@@ -104,7 +104,7 @@
           <article class="card">
             <div class="card-meta">object</div>
             <h3 class="card-title"><code>paths</code></h3>
-            <p class="card-body">所有字段均为路径模板，支持 {feature} 和 {taskId} 占位符。其中 {feature} 表示当前需求的内部 <code>feature key</code>。只需写入与默认值不同的字段。</p>
+            <p class="card-body">所有字段均为路径模板，支持 {feature} 和 {taskId} 占位符。其中 {feature} 表示当前需求的内部 <code>feature key</code>。初始化后会显式写出默认值，便于后续编辑。</p>
             <pre><code>paths:
   src: app                           # 源码目录（默认 src）
   requirementDoc: docs/req/{feature}.md   # 需求文档模板
@@ -144,16 +144,16 @@ src            → src</code></pre>
           </article>
           <article class="card">
             <div class="card-meta">覆盖方式</div>
-            <h3 class="card-title">只写非默认值</h3>
+            <h3 class="card-title">推荐显式写出最终值</h3>
             <pre><code>paths:
   requirementDoc: 需求/{feature}.md
   taskDoc: 任务/{feature}/{taskId}/执行.md</code></pre>
-            <p class="card-body">与默认值相同的字段无需写入，保持配置简洁。CLI 与 <code>CLAUDE.md</code> 注入块都会按最终合并后的 paths 展示真实目录。</p>
+            <p class="card-body">当前实现会在 <code>.hx/config.yaml</code> 中显式写出默认配置和样板入口；CLI 与 <code>CLAUDE.md</code> 注入块都会按最终合并后的 paths 展示真实目录。</p>
           </article>
         </div>
         <div class="callout warn">
           <span class="icon">!</span>
-          <div><strong>约定：</strong><code>/hx-init</code> 会自动检测项目目录结构，推断并写入非默认的 paths 字段。</div>
+          <div><strong>约定：</strong><code>/hx-init</code> 会自动检测项目目录结构，并把最终生效的 paths 配置显式写入 <code>.hx/config.yaml</code>。</div>
         </div>
       </div>
     </section>

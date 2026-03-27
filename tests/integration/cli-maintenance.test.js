@@ -36,6 +36,8 @@ describe('hx setup', () => {
     const result = runHx(['setup', '--help'])
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('hx setup')
+    expect(result.stdout).toContain('hx-init')
+    expect(result.stdout).not.toContain('hx init')
     expect(result.stdout).toContain('--agent <name>')
     expect(result.stdout).toContain('~/.hx/')
     expect(result.stdout).toContain('~/.claude/commands/')
@@ -163,6 +165,7 @@ describe('hx setup', () => {
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('完成')
+    expect(result.stdout).toContain('hx-init')
   })
 })
 
@@ -196,6 +199,24 @@ describe('hx upgrade', () => {
       result.stdout.includes('警告:')
     expect(hasReport).toBe(true)
   })
+
+  it('未找到 harness 标记块时提示使用 hx-init 重新安装', () => {
+    const projectDir = makeTempDir('upgrade-hx-init-project-')
+    const claudeDir = makeTempDir('upgrade-hx-init-claude-')
+    const codexDir = makeTempDir('upgrade-hx-init-codex-')
+    writeFileSync(resolve(projectDir, 'CLAUDE.md'), '# Project\n', 'utf8')
+
+    const result = runHx([
+      'upgrade',
+      '--dry-run',
+      '--user-claude-dir', claudeDir,
+      '--user-codex-dir', codexDir
+    ], projectDir)
+
+    expect(result.status).toBe(0)
+    expect(result.stdout).toContain('hx-init')
+    expect(result.stdout).not.toContain('hx init')
+  })
 })
 
 // ── hx uninstall ──────────────────────────────────────────────────────────
@@ -211,8 +232,18 @@ describe('hx uninstall', () => {
 
   it('空目录（无安装痕迹）时输出提示并以 0 退出', () => {
     const targetDir = makeTempDir('uninstall-empty-')
+    const hxDir = makeTempDir('uninstall-empty-hx-')
+    const claudeDir = makeTempDir('uninstall-empty-claude-')
+    const codexDir = makeTempDir('uninstall-empty-codex-')
 
-    const result = runHx(['uninstall', '--target', targetDir, '--yes'])
+    const result = runHx([
+      'uninstall',
+      '--target', targetDir,
+      '--yes',
+      '--user-hx-dir', hxDir,
+      '--user-claude-dir', claudeDir,
+      '--user-codex-dir', codexDir
+    ])
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('未发现')
@@ -220,12 +251,22 @@ describe('hx uninstall', () => {
 
   it('--dry-run 列出将要删除的项目但不实际删除', () => {
     const targetDir = makeTempDir('uninstall-dry-')
+    const hxDir = makeTempDir('uninstall-dry-hx-')
+    const claudeDir = makeTempDir('uninstall-dry-claude-')
+    const codexDir = makeTempDir('uninstall-dry-codex-')
     // 模拟安装了 hx-*.md 的项目
     const cmdsDir = resolve(targetDir, '.claude', 'commands')
     mkdirSync(cmdsDir, { recursive: true })
     writeFileSync(resolve(cmdsDir, 'hx-run.md'), '# forwarder', 'utf8')
 
-    const result = runHx(['uninstall', '--target', targetDir, '--dry-run'])
+    const result = runHx([
+      'uninstall',
+      '--target', targetDir,
+      '--dry-run',
+      '--user-hx-dir', hxDir,
+      '--user-claude-dir', claudeDir,
+      '--user-codex-dir', codexDir
+    ])
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('dry-run')
@@ -236,12 +277,22 @@ describe('hx uninstall', () => {
 
   it('--yes 删除 .claude/commands/hx-*.md 文件', () => {
     const targetDir = makeTempDir('uninstall-real-')
+    const hxDir = makeTempDir('uninstall-real-hx-')
+    const claudeDir = makeTempDir('uninstall-real-claude-')
+    const codexDir = makeTempDir('uninstall-real-codex-')
     const cmdsDir = resolve(targetDir, '.claude', 'commands')
     mkdirSync(cmdsDir, { recursive: true })
     writeFileSync(resolve(cmdsDir, 'hx-run.md'), '# forwarder', 'utf8')
     writeFileSync(resolve(cmdsDir, 'hx-plan.md'), '# forwarder', 'utf8')
 
-    const result = runHx(['uninstall', '--target', targetDir, '--yes'])
+    const result = runHx([
+      'uninstall',
+      '--target', targetDir,
+      '--yes',
+      '--user-hx-dir', hxDir,
+      '--user-claude-dir', claudeDir,
+      '--user-codex-dir', codexDir
+    ])
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('卸载完成')
@@ -251,11 +302,21 @@ describe('hx uninstall', () => {
 
   it('--yes 删除 .hx/config.yaml', () => {
     const targetDir = makeTempDir('uninstall-config-')
+    const userHxDir = makeTempDir('uninstall-config-user-hx-')
+    const claudeDir = makeTempDir('uninstall-config-claude-')
+    const codexDir = makeTempDir('uninstall-config-codex-')
     const hxDir = resolve(targetDir, '.hx')
     mkdirSync(hxDir, { recursive: true })
     writeFileSync(resolve(hxDir, 'config.yaml'), 'defaultProfile: base\n', 'utf8')
 
-    const result = runHx(['uninstall', '--target', targetDir, '--yes'])
+    const result = runHx([
+      'uninstall',
+      '--target', targetDir,
+      '--yes',
+      '--user-hx-dir', userHxDir,
+      '--user-claude-dir', claudeDir,
+      '--user-codex-dir', codexDir
+    ])
 
     expect(result.status).toBe(0)
     expect(existsSync(resolve(hxDir, 'config.yaml'))).toBe(false)
@@ -263,6 +324,9 @@ describe('hx uninstall', () => {
 
   it('--yes 从 CLAUDE.md 移除 harness 标记块，保留其余内容', () => {
     const targetDir = makeTempDir('uninstall-claudemd-')
+    const hxDir = makeTempDir('uninstall-claudemd-hx-')
+    const claudeDir = makeTempDir('uninstall-claudemd-claude-')
+    const codexDir = makeTempDir('uninstall-claudemd-codex-')
     const claudePath = resolve(targetDir, 'CLAUDE.md')
 
     writeFileSync(claudePath, [
@@ -281,13 +345,53 @@ describe('hx uninstall', () => {
       ''
     ].join('\n'), 'utf8')
 
-    runHx(['uninstall', '--target', targetDir, '--yes'])
+    runHx([
+      'uninstall',
+      '--target', targetDir,
+      '--yes',
+      '--user-hx-dir', hxDir,
+      '--user-claude-dir', claudeDir,
+      '--user-codex-dir', codexDir
+    ])
 
     const content = readFileSync(claudePath, 'utf8')
     expect(content).toContain('# My Project')
     expect(content).toContain('## Footer')
     expect(content).not.toContain('<!-- hxflow:start -->')
     expect(content).not.toContain('<!-- hxflow:end -->')
+  })
+
+  it('--yes 删除全局安装产物，同时保留 ~/.hx/ 下的自定义内容', () => {
+    const targetDir = makeTempDir('uninstall-global-target-')
+    const hxDir = makeTempDir('uninstall-global-hx-')
+    const claudeDir = makeTempDir('uninstall-global-claude-')
+    const codexDir = makeTempDir('uninstall-global-codex-')
+
+    mkdirSync(resolve(hxDir, 'commands'), { recursive: true })
+    writeFileSync(resolve(hxDir, 'config.yaml'), 'frameworkRoot: /tmp/fw\n', 'utf8')
+    writeFileSync(resolve(hxDir, 'commands', 'keep.md'), '# custom command\n', 'utf8')
+
+    mkdirSync(resolve(claudeDir, 'commands'), { recursive: true })
+    writeFileSync(resolve(claudeDir, 'commands', 'hx-run.md'), '# generated\n', 'utf8')
+
+    mkdirSync(resolve(codexDir, 'skills', 'hxflow'), { recursive: true })
+    writeFileSync(resolve(codexDir, 'skills', 'hxflow', 'SKILL.md'), '# skill\n', 'utf8')
+    writeFileSync(resolve(codexDir, 'skills', 'hxflow', 'commands.json'), '{}\n', 'utf8')
+
+    const result = runHx([
+      'uninstall',
+      '--target', targetDir,
+      '--yes',
+      '--user-hx-dir', hxDir,
+      '--user-claude-dir', claudeDir,
+      '--user-codex-dir', codexDir
+    ])
+
+    expect(result.status).toBe(0)
+    expect(existsSync(resolve(hxDir, 'config.yaml'))).toBe(false)
+    expect(existsSync(resolve(hxDir, 'commands', 'keep.md'))).toBe(true)
+    expect(existsSync(resolve(claudeDir, 'commands', 'hx-run.md'))).toBe(false)
+    expect(existsSync(resolve(codexDir, 'skills', 'hxflow'))).toBe(false)
   })
 
   it('完整安装后卸载可清干净所有痕迹', () => {
@@ -306,9 +410,19 @@ describe('hx uninstall', () => {
     mkdirSync(targetCmds, { recursive: true })
     writeFileSync(resolve(targetCmds, 'hx-run.md'), '# fw', 'utf8')
 
-    const uninstall = runHx(['uninstall', '--target', targetDir, '--yes'])
+    const uninstall = runHx([
+      'uninstall',
+      '--target', targetDir,
+      '--yes',
+      '--user-hx-dir', hxDir,
+      '--user-claude-dir', claudeDir,
+      '--user-codex-dir', codexDir
+    ])
     expect(uninstall.status).toBe(0)
     expect(existsSync(resolve(targetCmds, 'hx-run.md'))).toBe(false)
+    expect(existsSync(resolve(hxDir, 'config.yaml'))).toBe(false)
+    expect(existsSync(resolve(claudeDir, 'commands', 'hx-run.md'))).toBe(false)
+    expect(existsSync(resolve(codexDir, 'skills', 'hxflow'))).toBe(false)
   })
 })
 

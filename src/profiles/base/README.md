@@ -1,6 +1,6 @@
 # Base Profile — 根基类
 
-所有团队 Profile 的公共基类，定义跨团队共享的通用规则和模板。
+所有团队 Profile 的公共基类，定义跨团队共享的通用规则和模板。当前框架的默认主路径是 `hx-doc -> hx-plan -> hx-run -> hx-qa -> hx-mr`，base profile 为这条链路提供最小规则集。
 
 ## 继承关系
 

@@ -11,7 +11,7 @@
 #   checkpoint.message — 若存在，执行后暂停等待用户确认
 #   on_fail  — stop：失败时终止流水线（默认继续）
 
-name: 全自动流水线（从需求到交付）
+name: 全自动流水线（主路径）
 
 steps:
   - id: doc
@@ -28,35 +28,15 @@ steps:
     checkpoint:
       message: 展示任务列表（TASK 数量、名称、层级），等待用户确认后继续
 
-  - id: ctx
-    phase: Phase 03
-    name: 执行前预检
-    command: hx-ctx
-    on_fail: stop
-
   - id: run
     phase: Phase 04
     name: 执行需求
     command: hx-run
 
-  - id: review
-    phase: Phase 05
-    name: 代码审查
-    command: hx-review
-    checkpoint:
-      message: 展示审查报告，等待用户确认（或修复后确认）再继续
-
-  - id: gate
+  - id: qa
     phase: Phase 06
     name: 最终质量校验
     command: hx-qa
-
-  - id: clean
-    phase: Phase 07
-    name: 工程清理
-    command: hx-clean
-    checkpoint:
-      message: 展示工程清理扫描报告，等待用户确认再继续
 
   - id: mr
     phase: Phase 08

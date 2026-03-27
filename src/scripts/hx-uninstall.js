@@ -4,12 +4,13 @@
  * hx uninstall — 干净移除 Harness Workflow 安装痕迹
  *
  * 移除内容：
- *   1. .hx/config.yaml
- *   2. .CLAUDE.md（若存在旧入口链接）
- *   3. .claude/commands/hx-*.md
- *   4. CLAUDE.md 中的 harness 标记块
+ *   1. 用户全局安装产物：~/.hx/config.yaml、~/.claude/commands/hx-*.md、
+ *      ~/.codex/skills/hxflow/
+ *   2. 项目安装痕迹：.hx/config.yaml、.CLAUDE.md、.claude/commands/hx-*.md
+ *   3. CLAUDE.md 中的 harness 标记块
  *
  * 保留内容（完全不动）：
+ *   - ~/.hx/ 下的用户自定义 commands/profiles/pipelines 内容
  *   - 用户原有 .claude/skills/、.claude/agents/、.claude/config/
  *   - CLAUDE.md 中标记块以外的所有内容
  *   - 用户源码、git history、所有其他文件
@@ -17,6 +18,7 @@
 
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { createInterface } from 'readline'
+import { homedir } from 'os'
 import { resolve } from 'path'
 
 import { findProjectRoot } from './lib/resolve-context.js'
@@ -37,6 +39,12 @@ if (options.help) {
         --dry-run       仅显示将要删除的内容，不实际执行
     -h, --help          显示帮助
 
+  同时清理：
+    ~/.hx/config.yaml
+    ~/.claude/commands/hx-*.md
+    ~/.codex/skills/hxflow/
+    以及目标项目内的 workflow 安装痕迹
+
   注意: 此操作会移除 workflow 安装痕迹，请提前确认目标目录。
   `)
   process.exit(0)
@@ -45,12 +53,24 @@ if (options.help) {
 const targetDir = options.target ? resolve(options.target) : process.cwd()
 const skipConfirm = options.yes === true
 const dryRun = options['dry-run'] === true
+const userHxDir = options['user-hx-dir']
+  ? resolve(options['user-hx-dir'])
+  : resolve(homedir(), '.hx')
+const userClaudeDir = options['user-claude-dir']
+  ? resolve(options['user-claude-dir'])
+  : resolve(homedir(), '.claude')
+const userCodexDir = options['user-codex-dir']
+  ? resolve(options['user-codex-dir'])
+  : resolve(homedir(), '.codex')
 
 const projectRoot = findProjectRoot(targetDir)
 
 // ── 预检：收集将要删除的内容 ──
 
-const toRemove = collectRemoveList(projectRoot)
+const toRemove = [
+  ...collectGlobalRemoveList(userHxDir, userClaudeDir, userCodexDir),
+  ...collectProjectRemoveList(projectRoot)
+]
 
 if (toRemove.length === 0) {
   console.log('\n  未发现 Harness Workflow 安装痕迹，无需卸载。\n')
@@ -117,7 +137,41 @@ function runUninstall(projectRoot, items) {
 
 // ── 收集移除列表 ──
 
-function collectRemoveList(projectRoot) {
+function collectGlobalRemoveList(userHxDir, userClaudeDir, userCodexDir) {
+  const items = []
+
+  const hxConfigPath = resolve(userHxDir, 'config.yaml')
+  if (existsSync(hxConfigPath)) {
+    items.push({
+      display: '~/.hx/config.yaml',
+      action: () => rmSync(hxConfigPath, { force: true })
+    })
+  }
+
+  const globalClaudeCommandsDir = resolve(userClaudeDir, 'commands')
+  if (existsSync(globalClaudeCommandsDir)) {
+    const hxFiles = readdirSync(globalClaudeCommandsDir).filter((file) => file.startsWith('hx-') && file.endsWith('.md'))
+    for (const file of hxFiles) {
+      const filePath = resolve(globalClaudeCommandsDir, file)
+      items.push({
+        display: `~/.claude/commands/${file}`,
+        action: () => rmSync(filePath, { force: true })
+      })
+    }
+  }
+
+  const codexSkillDir = resolve(userCodexDir, 'skills', 'hxflow')
+  if (existsSync(codexSkillDir)) {
+    items.push({
+      display: '~/.codex/skills/hxflow/',
+      action: () => rmSync(codexSkillDir, { recursive: true, force: true })
+    })
+  }
+
+  return items
+}
+
+function collectProjectRemoveList(projectRoot) {
   const items = []
 
   const hxConfigPath = resolve(projectRoot, '.hx', 'config.yaml')

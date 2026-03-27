@@ -60,7 +60,7 @@ if (options.help) {
   hx setup 会安装 Claude 转发器和 Codex skill bundle。
   业务侧自定义 skill 仍由用户自行管理。
 
-  安装后，在任意项目中运行 hx init 初始化项目。
+  安装后，在任意项目中运行 hx-init 初始化项目。
   `)
   process.exit(0)
 }
@@ -171,4 +171,4 @@ if (summary.warnings.length > 0) {
   for (const item of summary.warnings) console.log(`    ! ${item}`)
 }
 
-console.log(`\n  ${dryRun ? '[dry-run] 未实际写入。' : '完成。运行 hx init 初始化项目。'}\n`)
+console.log(`\n  ${dryRun ? '[dry-run] 未实际写入。' : '完成。运行 hx-init 初始化项目。'}\n`)

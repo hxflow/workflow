@@ -1,5 +1,12 @@
 [
   {
+    "name": "CLAUDE",
+    "path": "CLAUDE.md",
+    "type": "md",
+    "category": "根目录"
+  }
+,
+  {
     "name": "README",
     "path": "README.md",
     "type": "md",
@@ -16,6 +23,13 @@
   {
     "name": "hx-extensibility",
     "path": "docs/design/hx-extensibility.md",
+    "type": "md",
+    "category": "docs/design"
+  }
+,
+  {
+    "name": "testing-reference",
+    "path": "docs/design/testing-reference.md",
     "type": "md",
     "category": "docs/design"
   }

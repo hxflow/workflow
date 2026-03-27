@@ -65,7 +65,21 @@
       "Bash(tmux display-message:*)",
       "Bash(tmux split-window:*)",
       "Bash(tmux capture-pane:*)",
-      "Bash(tmux list-panes:*)"
+      "Bash(tmux list-panes:*)",
+      "Bash(tmux source-file:*)",
+      "Bash(echo \"TERM: $TERM\")",
+      "Bash(echo \"COLORTERM: $COLORTERM\")",
+      "Bash(tmux display:*)",
+      "Bash(tmux info:*)",
+      "Bash(infocmp tmux-256color:*)",
+      "Bash(infocmp xterm-ghostty:*)",
+      "Bash(tmux show-options:*)",
+      "Bash(tmux set-option:*)",
+      "Bash(zsh -i -c 'echo \"NO_COLOR=$NO_COLOR\"' 2>/dev/null)",
+      "Bash(zsh -i -c \"echo $NO_COLOR; whence -v NO_COLOR 2>/dev/null; typeset -p NO_COLOR 2>/dev/null\")",
+      "Bash(tmux show-environment:*)",
+      "Bash(tmux set-environment:*)",
+      "Bash(bash scan-docs.sh)"
     ]
   },
   "hooks": {

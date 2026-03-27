@@ -5,9 +5,21 @@
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-PANE_ID_FILE="/tmp/hx-test-pane-$(echo "$PROJECT_ROOT" | md5sum | cut -c1-8)"
-RESULT_FILE="/tmp/hx-test-result-$(echo "$PROJECT_ROOT" | md5sum | cut -c1-8)"
-OUTPUT_FILE="/tmp/hx-test-output-$(echo "$PROJECT_ROOT" | md5sum | cut -c1-8)"
+HASH="$(echo "$PROJECT_ROOT" | md5sum | cut -c1-8)"
+PANE_ID_FILE="/tmp/hx-test-pane-$HASH"
+RESULT_FILE="/tmp/hx-test-result-$HASH"
+OUTPUT_FILE="/tmp/hx-test-output-$HASH"
+COOLDOWN_FILE="/tmp/hx-test-cooldown-$HASH"
+
+# ── 0. 冷却期检查（30s 内不重复触发）────────────────────────────
+if [ -f "$COOLDOWN_FILE" ]; then
+  LAST_RUN="$(cat "$COOLDOWN_FILE")"
+  NOW="$(date +%s)"
+  if [ $((NOW - LAST_RUN)) -lt 30 ]; then
+    exit 0
+  fi
+fi
+date +%s > "$COOLDOWN_FILE"
 
 # ── 1. 检查 src/ 下是否有文件改动 ────────────────────────────────
 cd "$PROJECT_ROOT"
@@ -23,19 +35,30 @@ if [ -z "${TMUX:-}" ]; then
   exit 0
 fi
 
-# ── 3. 复用或新建 tmux pane ──────────────────────────────────────
+# ── 3. 复用或新建 tmux pane（确保不使用 Claude Code 所在的 pane）──
+# $TMUX_PANE 是 tmux 注入的当前 pane ID，即 Claude Code 运行的 pane
+CLAUDE_PANE="${TMUX_PANE:-}"
 PANE_ID=""
+
 if [ -f "$PANE_ID_FILE" ]; then
   STORED_PANE="$(cat "$PANE_ID_FILE")"
-  # 验证 pane 是否仍然存在
-  if tmux list-panes -F "#{pane_id}" -a 2>/dev/null | grep -qx "$STORED_PANE"; then
+  # 验证 pane 存在且不是 Claude Code 的 pane
+  if [ "$STORED_PANE" != "$CLAUDE_PANE" ] && \
+     tmux list-panes -F "#{pane_id}" -a 2>/dev/null | grep -qx "$STORED_PANE"; then
     PANE_ID="$STORED_PANE"
+  else
+    # 存储的 pane 无效或与 Claude pane 重合，清除记录
+    rm -f "$PANE_ID_FILE"
   fi
 fi
 
 if [ -z "$PANE_ID" ]; then
-  # 在当前 window 底部新建 pane
+  # 新建 pane，并验证它不是 Claude Code 的 pane
   PANE_ID="$(tmux split-window -v -P -F "#{pane_id}" -c "$PROJECT_ROOT")"
+  if [ "$PANE_ID" = "$CLAUDE_PANE" ]; then
+    echo "[hx-hook] 无法创建独立测试 pane，跳过自动测试" >&2
+    exit 0
+  fi
   echo "$PANE_ID" > "$PANE_ID_FILE"
 fi
 

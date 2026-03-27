@@ -79,8 +79,8 @@
             <div class="metric-label">CLI 子命令</div>
           </div>
           <div class="metric">
-            <div class="metric-value">14</div>
-            <div class="metric-label">Claude 命令</div>
+            <div class="metric-value">12</div>
+            <div class="metric-label">Agent 命令</div>
           </div>
           <div class="metric">
             <div class="metric-value">3</div>
@@ -112,15 +112,14 @@
               <div class="card-meta">质量闭环</div>
               <h3 class="card-title">形成质量闭环</h3>
               <p class="card-body">
-                <code>/hx-qa</code>、<code>/hx-review</code>、<code>/hx-fix</code>、<code>/hx-clean</code> 与
-                <code>/hx-mr</code> 负责校验、修复和交付。</p>
+                <code>/hx-qa</code> 与 <code>/hx-mr</code> 负责主路径收口；<code>/hx-review</code>、<code>/hx-fix</code>、<code>/hx-clean</code> 作为按需启用的辅助能力补充质量治理。</p>
             </article>
           </div>
           <div class="callout info">
             <span class="icon">i</span>
             <div>
               <strong>两类命令：</strong><code>hx</code> CLI（setup / upgrade / uninstall / doctor /
-              version）负责框架维护；<code>/hx-*</code> 是 Claude Code 命令，由 <code>~/.claude/commands/</code> 中的转发器路由到框架实体执行。
+              version）负责框架维护；<code>/hx-*</code> / <code>hx-*</code> 是统一的 Agent 命令契约，由 Claude 转发器或 Codex skill bundle 路由到框架实体执行。
             </div>
           </div>
         </div>
@@ -130,7 +129,7 @@
         <div class="wrap">
           <div class="section-tag">Workflow</div>
           <h2 class="section-title">核心链路</h2>
-          <p class="section-desc">标准链路为"准备输入 → 执行任务 → 质量收口 → 交付"。可使用 <code>/hx-go</code> 一键驱动全流程，也可逐步手动控制。</p>
+          <p class="section-desc">标准链路为“准备输入 → 执行需求 → 质量校验 → 交付”。可使用 <code>/hx-go</code> 一键驱动，也可逐步手动控制；<code>/hx-ctx</code>、<code>/hx-review</code>、<code>/hx-fix</code>、<code>/hx-clean</code> 为按需辅助命令。</p>
           <div class="timeline">
             <div class="timeline-item">
               <div class="timeline-step">1</div>
@@ -152,30 +151,29 @@
               <div class="timeline-step">3</div>
               <div>
                 <div class="timeline-title">执行计划</div>
-                <div class="timeline-body"><code>/hx-plan [&lt;feature&gt;] --profile &lt;name&gt;</code> 生成任务拆分和 progress
-                  JSON；若省略 feature，会优先从当前需求文档自动续接。需要排查输入问题时，可额外运行 <code>/hx-ctx</code> 做当前需求的预检诊断。</div>
+                <div class="timeline-body"><code>/hx-plan [&lt;feature-key&gt;] --profile &lt;name&gt;</code> 生成任务拆分和 progress
+                  JSON；若省略 feature key，会优先从当前需求文档自动续接。需要排查输入问题时，可额外运行 <code>/hx-ctx</code> 做当前需求的预检诊断。</div>
               </div>
             </div>
             <div class="timeline-item">
               <div class="timeline-step">4</div>
               <div>
                 <div class="timeline-title">任务执行</div>
-                <div class="timeline-body"><code>/hx-run [&lt;feature&gt;] --profile &lt;name&gt;</code> 默认按计划顺序执行整个需求下的 pending 任务；只在调试或恢复时才传 <code>--task</code> 下钻到单任务。</div>
+                <div class="timeline-body"><code>/hx-run [&lt;feature-key&gt;] --profile &lt;name&gt;</code> 默认按计划顺序执行整个需求下的 pending 任务；只在调试或恢复时才传 <code>--task</code> 下钻到单任务。</div>
               </div>
             </div>
             <div class="timeline-item">
               <div class="timeline-step">5</div>
               <div>
-                <div class="timeline-title">质量收口</div>
-                <div class="timeline-body"><code>/hx-qa</code> 执行质量校验，<code>/hx-review</code> 按团队清单审查
-                  diff，<code>/hx-fix</code> 读取意见修复。正常情况下进度由 <code>/hx-run</code> 自动更新，无需额外手动收尾命令。</div>
+                <div class="timeline-title">质量校验</div>
+                <div class="timeline-body"><code>/hx-qa</code> 执行主路径质量校验。若需要补充人工审查或失败修复，再按需使用 <code>/hx-review</code> 和 <code>/hx-fix</code>；正常情况下进度由 <code>/hx-run</code> 自动更新。</div>
               </div>
             </div>
             <div class="timeline-item">
               <div class="timeline-step">6</div>
               <div>
-                <div class="timeline-title">沉淀与交付</div>
-                <div class="timeline-body"><code>/hx-clean</code> 运行工程清理扫描沉淀问题模式，<code>/hx-mr</code> 汇总 MR 上下文并输出交付物。
+                <div class="timeline-title">交付与沉淀</div>
+                <div class="timeline-body"><code>/hx-mr</code> 汇总 MR 上下文并输出交付物；<code>/hx-clean</code> 用于需要额外做工程清理扫描时沉淀问题模式。
                 </div>
               </div>
             </div>
@@ -183,8 +181,8 @@
           <div class="callout info">
             <span class="icon">i</span>
             <div>
-              <strong>一键模式：</strong><code>/hx-go &lt;feature&gt; --profile &lt;name&gt;</code> 读取 pipeline YAML
-              驱动全流程（Phase 01→08），支持 <code>--from &lt;step-id&gt;</code> 从指定阶段恢复。
+              <strong>一键模式：</strong><code>/hx-go [&lt;feature-key&gt;] [--task &lt;id&gt;] --profile &lt;name&gt;</code> 读取 pipeline YAML
+              驱动默认主路径（<code>doc -> plan -> run -> qa -> mr</code>），支持 <code>--from &lt;step-id&gt;</code> 从指定阶段恢复。
             </div>
           </div>
         </div>
@@ -211,7 +209,7 @@
             <a class="card link-card" href="hx-command-index.html">
               <div class="card-meta">命令使用</div>
               <h3 class="card-title">命令索引</h3>
-              <p class="card-body">列出全部 CLI 子命令与 Claude 命令、语法、参数和执行边界。</p>
+              <p class="card-body">列出全部 CLI 子命令与 Agent 命令、语法、参数和执行边界。</p>
               <div class="link-line">查看 →</div>
             </a>
             <a class="card link-card" href="hx-config-reference.html">

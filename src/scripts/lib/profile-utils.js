@@ -117,7 +117,7 @@ export function loadProfile(frameworkRoot, specifier, opts = {}) {
     profile: profileName,
     team: parsed.team,
     platform: parsed.platform,
-    label: teamConfig.label || TEAM_LABELS[parsed.team] || parsed.team,
+    label: teamConfig.label || parsed.team,
     platformLabel: platformConfig.label || parsed.platformLabel,
     taskPrefix,
     architecture,

@@ -65,22 +65,22 @@
       <div class="wrap">
         <div class="section-tag">Phases</div>
         <h2 class="section-title">工作流阶段</h2>
-        <p class="section-desc">CLI 以阶段组织能力，而非单个命令。</p>
+        <p class="section-desc">CLI 以“主路径 + 辅助能力”组织能力，而不是把所有命令都视为同等级阶段。</p>
         <div class="grid grid-3">
           <article class="card">
-            <div class="card-meta">Phase 01-03</div>
+            <div class="card-meta">Core 01-02</div>
             <h3 class="card-title">准备输入</h3>
-            <p class="card-body"><code>/hx-doc</code>、<code>/hx-plan</code> 负责准备输入；<code>/hx-ctx</code> 是可选的预检诊断工具。</p>
+            <p class="card-body"><code>/hx-doc</code>、<code>/hx-plan</code> 负责建立需求文档、计划和 progress 状态；<code>/hx-ctx</code> 是可选的预检诊断工具。</p>
           </article>
           <article class="card">
-            <div class="card-meta">Phase 04-06</div>
+            <div class="card-meta">Core 03-04</div>
             <h3 class="card-title">执行与校验</h3>
-            <p class="card-body"><code>/hx-run</code>、<code>/hx-qa</code>、<code>/hx-review</code>、<code>/hx-fix</code> 负责执行与复核。</p>
+            <p class="card-body"><code>/hx-run</code> 默认执行整个需求，<code>/hx-qa</code> 完成主路径质量校验。</p>
           </article>
           <article class="card">
-            <div class="card-meta">Phase 07-08</div>
-            <h3 class="card-title">沉淀与交付</h3>
-            <p class="card-body"><code>/hx-clean</code> 与 <code>/hx-mr</code> 负责沉淀与交付。</p>
+            <div class="card-meta">Auxiliary</div>
+            <h3 class="card-title">辅助能力</h3>
+            <p class="card-body"><code>/hx-review</code>、<code>/hx-fix</code>、<code>/hx-clean</code> 与 <code>/hx-mr</code> 在需要人工复核、失败修复、工程扫描或交付整理时启用。</p>
           </article>
         </div>
       </div>
@@ -125,7 +125,7 @@
         </div>
         <div class="callout info">
           <span class="icon">i</span>
-          <div><strong>转发器机制：</strong>~/.claude/commands/ 中的 hx-*.md 是转发器，不含命令逻辑。Claude Code 运行 /hx-* 时，转发器按优先级查找实体文件（项目层 → 用户层 → 系统层），读取并执行。</div>
+          <div><strong>入口机制：</strong>Claude 通过 <code>~/.claude/commands/</code> 转发器运行 <code>/hx-*</code>；Codex 通过 <code>~/.codex/skills/hxflow/</code> skill bundle 运行 <code>hx-*</code>。两者最终都按项目层 → 用户层 → 系统层的顺序读取同一套实体文件。</div>
         </div>
       </div>
     </section>
@@ -150,7 +150,7 @@
             <pre><code>--profile 参数
 → .hx/config.yaml 的 defaultProfile
 → ~/.hx/config.yaml 的 defaultProfile</code></pre>
-            <p class="card-body">Claude 命令运行时按此顺序确定使用哪个 Profile。</p>
+            <p class="card-body">Agent 命令运行时按此顺序确定使用哪个 Profile。</p>
           </article>
         </div>
         <div class="callout warn">
@@ -164,7 +164,7 @@
       <div class="wrap">
         <div class="section-tag">Context</div>
         <h2 class="section-title">上下文装配</h2>
-        <p class="section-desc"><code>/hx-run</code> 通过固定清单组装上下文与 Hook。</p>
+        <p class="section-desc"><code>/hx-run</code> 通过固定清单组装上下文与 Hook，并围绕当前需求的 <code>feature key</code> 解析所有路径模板。</p>
         <div class="grid grid-2">
           <article class="card">
             <div class="card-meta">主上下文</div>
@@ -173,8 +173,9 @@
 当前 Profile 的 golden-rules.md
 当前 Profile 的 profile.yaml
 paths.planDoc 对应文件
-paths.requirementDoc 对应文件</code></pre>
-            <p class="card-body">路径由 .hx/config.yaml 的 paths.* 模板与 Profile 解析结果决定。</p>
+paths.requirementDoc 对应文件
+paths.progressFile 对应文件</code></pre>
+            <p class="card-body">路径由 .hx/config.yaml 的 paths.* 模板与当前需求的 <code>feature key</code> 决定。</p>
           </article>
           <article class="card">
             <div class="card-meta">Hook 注入</div>
@@ -193,12 +194,12 @@ paths.requirementDoc 对应文件</code></pre>
       <div class="wrap">
         <div class="section-tag">Quality</div>
         <h2 class="section-title">质量控制</h2>
-        <p class="section-desc">质量控制由多个独立命令组成，可按场景组合执行。</p>
+        <p class="section-desc">质量控制由主路径校验和按需辅助能力两部分组成。</p>
         <div class="grid grid-3">
           <article class="card">
-            <div class="card-meta">静态校验</div>
+            <div class="card-meta">可选预检</div>
             <h3 class="card-title"><code>/hx-ctx</code></h3>
-            <p class="card-body">/hx-ctx 面向当前需求做轻量预检，主要用于排查文档、计划、进度文件或 Profile 资源缺失。</p>
+            <p class="card-body">/hx-ctx 面向当前需求做轻量预检，主要用于排查文档、计划、进度文件或 Profile 资源缺失；正常主流程由 <code>/hx-run</code> 自动完成同等检查。</p>
           </article>
           <article class="card">
             <div class="card-meta">质量校验</div>
@@ -206,9 +207,9 @@ paths.requirementDoc 对应文件</code></pre>
             <p class="card-body">按固定顺序执行 <code>lint → build → type → test</code>，只跑 Profile 里实际定义过的步骤，遇到失败立即停止。</p>
           </article>
           <article class="card">
-            <div class="card-meta">复核修复</div>
+            <div class="card-meta">按需补充</div>
             <h3 class="card-title"><code>/hx-review</code> / <code>/hx-fix</code></h3>
-            <p class="card-body"><code>review</code> 输出检查清单；<code>fix</code> 根据日志或测试输出生成修复 Prompt。</p>
+            <p class="card-body"><code>review</code> 输出检查清单；<code>fix</code> 根据日志或测试输出生成修复 Prompt。它们不是每次交付都必须手动走的固定阶段。</p>
           </article>
         </div>
         <div class="callout warn">
@@ -235,7 +236,7 @@ paths.requirementDoc 对应文件</code></pre>
             <pre><code>pending
 in-progress
 done</code></pre>
-            <p class="card-body">任务状态默认由 <code>/hx-run</code> 自动更新；<code>/hx-ctx</code> 负责检查任务定义和进度文件完整性。</p>
+            <p class="card-body">任务状态默认由 <code>/hx-run</code> 自动更新；<code>/hx-ctx</code> 只在需要排错时单独使用。</p>
           </article>
         </div>
         <div class="foot-nav">
@@ -249,7 +250,7 @@ done</code></pre>
       <div class="wrap">
         <div class="section-tag">Pipeline</div>
         <h2 class="section-title">流水线编排</h2>
-        <p class="section-desc"><code>/hx-go</code> 由流水线 YAML 驱动，支持三层覆盖和断点恢复。</p>
+        <p class="section-desc"><code>/hx-go</code> 由流水线 YAML 驱动，支持三层覆盖和断点恢复；默认项目内置主路径是 <code>doc -> plan -> run -> qa -> mr</code>。</p>
         <div class="grid grid-2">
           <article class="card">
             <div class="card-meta">查找顺序</div>
@@ -269,10 +270,10 @@ done</code></pre>
     command: hx-doc
     checkpoint:
       message: 确认后继续
-  - id: ctx
-    command: hx-ctx
+  - id: run
+    command: hx-run
     on_fail: stop</code></pre>
-            <p class="card-body"><code>checkpoint</code> 暂停等待用户确认；<code>on_fail: stop</code> 失败时终止流水线。</p>
+            <p class="card-body"><code>checkpoint</code> 暂停等待用户确认；<code>on_fail: stop</code> 失败时终止流水线。若团队需要，也可以在项目级 pipeline 中显式插入 <code>ctx</code>、<code>review</code> 或 <code>clean</code>。</p>
           </article>
         </div>
         <div class="callout tip">

@@ -65,6 +65,10 @@ Claude: /hx-qa --profile my-team
 Codex:  hx-qa --profile my-team
 ```
 
+说明：
+- `hx-doc` / `hx-plan` / `hx-run` / `hx-mr` 围绕当前需求的内部 `feature key` 工作
+- `hx-qa` / `hx-review` / `hx-fix` / `hx-clean` 主要面向当前工作区、当前 diff 或当前失败结果，不强制显式传 `feature key`
+
 ## 创建自定义 Profile
 
 在项目层或用户层创建 `profiles/<name>/profile.yaml`，并显式声明 `extends`：

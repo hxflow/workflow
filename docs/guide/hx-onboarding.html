@@ -54,7 +54,7 @@
       <div class="hero-stats">
         <div class="metric"><div class="metric-value">2</div><div class="metric-label">安装步骤</div></div>
         <div class="metric"><div class="metric-value">2</div><div class="metric-label">执行模式</div></div>
-        <div class="metric"><div class="metric-value">3</div><div class="metric-label">核心入口</div></div>
+        <div class="metric"><div class="metric-value">5</div><div class="metric-label">核心步骤</div></div>
       </div>
     </div>
   </header>
@@ -88,7 +88,7 @@
       <div class="wrap">
         <div class="section-tag">Install</div>
         <h2 class="section-title">安装</h2>
-        <p class="section-desc">安装 npm 包后执行 <code>hx setup</code> 初始化全局资源，然后在 Claude Code 中运行 <code>/hx-init</code> 初始化项目。</p>
+        <p class="section-desc">安装 npm 包后执行 <code>hx setup</code> 初始化全局资源，然后在 Claude Code 或 Codex 中运行 <code>hx-init</code> 初始化项目。</p>
         <div class="grid grid-2">
           <article class="card">
             <div class="card-meta">终端操作</div>
@@ -109,8 +109,9 @@ hx setup</code></pre>
 ~/.hx/commands/
 ~/.hx/profiles/
 ~/.hx/pipelines/
-~/.claude/commands/  ← 转发器</code></pre>
-            <p class="card-body">转发器不含命令逻辑，运行时按三层优先级路由到实体命令文件；skill 由 Agent 自身机制管理。</p>
+~/.claude/commands/    ← Claude 转发器
+~/.codex/skills/hxflow/ ← Codex skill bundle</code></pre>
+            <p class="card-body">这些入口都不含业务逻辑，运行时按三层优先级路由到实体命令文件；skill 仍由 Agent 自身机制管理。</p>
           </article>
         </div>
       </div>
@@ -119,10 +120,13 @@ hx setup</code></pre>
     <section id="init">
       <div class="wrap">
         <div class="section-tag">Init</div>
-        <h2 class="section-title">项目初始化（Claude 命令）</h2>
-        <p class="section-desc">在 Claude Code 中运行 <code>/hx-init</code>；可选 <code>--profile</code> 指定要使用的 Profile 名称。框架默认内置 <code>base</code>。</p>
+        <h2 class="section-title">项目初始化（Agent 命令）</h2>
+        <p class="section-desc">在 Claude Code 或 Codex 中运行 <code>hx-init</code>；可选 <code>--profile</code> 指定要使用的 Profile 名称。框架默认内置 <code>base</code>。</p>
         <pre><code><span class="cg"># 在 Claude Code 中运行（自动分析项目结构）</span>
 /hx-init
+
+<span class="cg"># 在 Codex 中运行</span>
+hx-init
 
 <span class="cg"># 或显式指定 profile</span>
 /hx-init --profile base</code></pre>
@@ -130,14 +134,17 @@ hx setup</code></pre>
           <article class="card">
             <div class="card-meta">输出</div>
             <h3 class="card-title">写入的文件</h3>
-            <pre><code>.hx/config.yaml       ← defaultProfile + paths
-CLAUDE.md             ← 注入 harness 标记块
-.hx/profiles/&lt;name&gt;/  ← 自定义 profile（如需）</code></pre>
+            <pre><code>.hx/config.yaml            ← 显式默认配置 + paths
+CLAUDE.md                  ← 注入 harness 标记块
+.hx/commands/*.example     ← 自定义命令样板
+.hx/hooks/*.example        ← Hook 样板
+.hx/pipelines/default.yaml ← 项目级流水线样板
+.hx/profiles/&lt;name&gt;/       ← 自定义 profile（如需）</code></pre>
           </article>
           <article class="card">
             <div class="card-meta">约束</div>
             <h3 class="card-title">项目主入口是 <code>.hx/config.yaml</code></h3>
-            <p class="card-body">Claude 自动分析技术栈、门控命令和目录结构，推断 paths 配置。与默认值相同的 paths 字段不写入，保持简洁。</p>
+            <p class="card-body">Agent 会分析技术栈、门控命令和目录结构，显式写入可编辑的默认配置与样板文件，避免用户后续再猜入口位置。</p>
           </article>
         </div>
       </div>
@@ -147,10 +154,10 @@ CLAUDE.md             ← 注入 harness 标记块
       <div class="wrap">
         <div class="section-tag">Workflow</div>
         <h2 class="section-title">执行链路</h2>
-        <p class="section-desc">支持一键自动化（/hx-go）和手动逐步执行两种模式。</p>
+        <p class="section-desc">支持一键自动化（/hx-go）和手动逐步执行两种模式。主路径默认是 <code>/hx-doc → /hx-plan → /hx-run → /hx-qa → /hx-mr</code>。</p>
         <div class="callout tip">
           <span class="icon">✓</span>
-          <div><strong>推荐：</strong>使用 <code>/hx-go user-login --profile base</code> 一键执行全流程，4 个检查点等待人工确认。这里的 <code>user-login</code> 就是系统内部的 feature key。</div>
+          <div><strong>推荐：</strong>优先使用 <code>/hx-go --task 12345 --profile base</code> 一键执行主路径。只有在需要断点恢复或手动指定时，才显式传入 <code>feature key</code>。</div>
         </div>
         <div class="timeline">
           <div class="timeline-item">
@@ -177,8 +184,15 @@ CLAUDE.md             ← 注入 harness 标记块
           <div class="timeline-item">
             <div class="timeline-step">04</div>
             <div>
-              <div class="timeline-title">门控与收口</div>
-              <div class="timeline-body">执行 <code>/hx-qa --profile base</code> 运行质量校验。正常情况下进度已由 <code>/hx-run</code> 自动回写，无需额外手动标记任务完成状态。</div>
+                <div class="timeline-title">质量校验</div>
+                <div class="timeline-body">执行 <code>/hx-qa --profile base</code> 运行主路径质量校验。若需要人工审查、失败修复或工程清理，再按需使用 <code>/hx-review</code>、<code>/hx-fix</code>、<code>/hx-clean</code>。</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-step">05</div>
+            <div>
+              <div class="timeline-title">交付</div>
+              <div class="timeline-body">执行 <code>/hx-mr</code> 生成 Merge Request 上下文；如果前面已建立最近执行上下文，通常不需要再手工输入 <code>feature key</code>。</div>
             </div>
           </div>
         </div>
@@ -187,9 +201,10 @@ CLAUDE.md             ← 注入 harness 标记块
 /hx-plan --profile base
 /hx-run --profile base
 /hx-qa --profile base
+/hx-mr
 
 <span class="cg"># 或一键执行</span>
-/hx-go user-login --profile base
+/hx-go --task 12345 --profile base
 
 <span class="cg"># 从指定步骤恢复</span>
 /hx-go user-login --from run --profile base</code></pre>
@@ -214,12 +229,12 @@ CLAUDE.md             ← 注入 harness 标记块
           <article class="card">
             <div class="card-meta">错误 02</div>
             <h3 class="card-title">误将 <code>/hx-run</code> 视为代码执行器</h3>
-            <p class="card-body"><code>/hx-run</code> 是 Claude 命令，由 Claude Code 读取并执行，不是 Shell 命令行工具。</p>
+            <p class="card-body"><code>/hx-run</code> 是 Agent 命令，由 Claude Code 或 Codex 读取并执行，不是普通 Shell 命令行工具。</p>
           </article>
           <article class="card">
             <div class="card-meta">错误 03</div>
-            <h3 class="card-title">没有先执行 hx setup，或没有在 Claude Code 中运行 /hx-init</h3>
-            <p class="card-body">hx setup 初始化全局转发器；/hx-init 初始化项目配置。两步都必须完成。</p>
+            <h3 class="card-title">没有先执行 hx setup，或没有运行 hx-init</h3>
+            <p class="card-body">hx setup 初始化全局入口与目录结构；hx-init 初始化项目配置。两步都必须完成。</p>
           </article>
           <article class="card">
             <div class="card-meta">错误 04</div>
@@ -228,8 +243,8 @@ CLAUDE.md             ← 注入 harness 标记块
           </article>
           <article class="card">
             <div class="card-meta">错误 05</div>
-            <h3 class="card-title">任务做完了忘记 <code>hx done</code></h3>
-            <p class="card-body">这会导致 <code>*-progress.json</code> 与实际状态不一致，并影响后续执行与交付。</p>
+            <h3 class="card-title">误以为还要手动执行收尾命令</h3>
+            <p class="card-body"><code>/hx-run</code> 会自动回写 <code>*-progress.json</code>。不要再手工维护任务完成状态，除非明确在做调试或恢复。</p>
           </article>
         </div>
       </div>

@@ -45,14 +45,14 @@
     <div class="hero-inner">
       <div class="hero-tag">HXFLOW · COMMAND REFERENCE</div>
       <h1 class="hero-title">命令索引</h1>
-      <p class="hero-sub">按当前实现整理全部 <code>hx</code> CLI 子命令与 Claude 工作流命令，重点说明语法、参数与执行边界。</p>
+      <p class="hero-sub">按当前实现整理全部 <code>hx</code> CLI 子命令与 Agent 工作流命令，重点说明语法、参数与执行边界。</p>
       <div class="hero-actions">
         <a class="btn-primary" href="#overview">总览表</a>
         <a class="btn-ghost" href="hx-config-reference.html">配置参考</a>
       </div>
       <div class="hero-stats">
         <div class="metric"><div class="metric-value">5</div><div class="metric-label">CLI 命令</div></div>
-        <div class="metric"><div class="metric-value">13</div><div class="metric-label">Claude 命令</div></div>
+        <div class="metric"><div class="metric-value">12</div><div class="metric-label">Agent 命令</div></div>
         <div class="metric"><div class="metric-value">1</div><div class="metric-label">入口文件 bin/hx.js</div></div>
       </div>
     </div>
@@ -63,7 +63,7 @@
       <div class="wrap">
         <div class="section-tag">Overview</div>
         <h2 class="section-title">命令总览</h2>
-        <p class="section-desc">当前版本包含 5 个 CLI 子命令和 12 个 Claude 工作流命令，数量以 <code>bin/hx.js</code> 的分发映射为准。</p>
+        <p class="section-desc">当前版本包含 5 个 CLI 子命令和 12 个 Agent 工作流命令，数量以 <code>bin/hx.js</code> 的分发映射为准。主路径命令为 <code>/hx-doc → /hx-plan → /hx-run → /hx-qa → /hx-mr</code>。</p>
         <div class="table-wrap">
           <table>
             <thead>
@@ -75,8 +75,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="grp-install"><td><span class="command-name">hx setup</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>生成转发器到 ~/.claude/commands/，初始化 ~/.hx/ 目录结构</td></tr>
-              <tr class="grp-install"><td><span class="command-name">hx upgrade</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>git pull 更新系统层，重新生成转发器</td></tr>
+              <tr class="grp-install"><td><span class="command-name">hx setup</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>初始化 ~/.hx/ 并生成 Claude / Codex 两侧入口</td></tr>
+              <tr class="grp-install"><td><span class="command-name">hx upgrade</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>git pull 更新系统层，重新生成 Agent 入口</td></tr>
               <tr class="grp-install"><td><span class="command-name">hx uninstall</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>清理安装痕迹（转发器、CLAUDE.md 标记块）</td></tr>
               <tr class="grp-install"><td><span class="command-name">hx doctor</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>环境健康检测（Node 版本、全局安装、项目配置）</td></tr>
               <tr class="grp-install"><td><span class="command-name">hx version</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>输出 CLI 版本</td></tr>
@@ -108,10 +108,10 @@
             <div class="card-meta">Setup</div>
             <h3 class="card-title"><code class="command-name">hx setup</code></h3>
             <div class="command-syntax">hx setup [--dry-run]</div>
-            <p class="card-body">生成 ~/.claude/commands/ 转发器，初始化 ~/.hx/ 目录结构。</p>
+            <p class="card-body">生成 Claude / Codex 两侧入口，初始化 ~/.hx/ 目录结构。</p>
             <div class="note-list">
               <p>会创建 <code>~/.hx/</code>（commands/、profiles/、pipelines/）目录结构。</p>
-              <p>生成转发器到 <code>~/.claude/commands/</code>，不拷贝命令实体文件。</p>
+              <p>生成 Claude 转发器到 <code>~/.claude/commands/</code>，同时生成 Codex skill bundle 到 <code>~/.codex/skills/hxflow/</code>。</p>
               <p><code>~/.hx/config.yaml</code> 不存在时创建，写入 frameworkRoot。</p>
               <p>Skill 由 Agent 自身机制管理，<code>hx setup</code> 不会安装或同步 skill。</p>
             </div>
@@ -120,7 +120,7 @@
             <div class="card-meta">Init（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-init</code></h3>
             <div class="command-syntax">/hx-init [--profile &lt;name&gt;]</div>
-            <p class="card-body">在 Claude Code 中运行。分析项目结构推断 Profile 和路径配置。</p>
+            <p class="card-body">在 Claude Code 或 Codex 中运行。分析项目结构推断 Profile 和路径配置。</p>
             <div class="note-list">
               <p>会写入 <code>.hx/config.yaml</code>（defaultProfile + paths）。</p>
               <p>在 CLAUDE.md 中注入 harness 标记块。</p>
@@ -131,10 +131,10 @@
             <div class="card-meta">Upgrade</div>
             <h3 class="card-title"><code class="command-name">hx upgrade</code></h3>
             <div class="command-syntax">hx upgrade [--dry-run]</div>
-            <p class="card-body">升级系统层并重新生成转发器。</p>
+            <p class="card-body">升级系统层并重新生成 Agent 入口。</p>
             <div class="note-list">
               <p>git pull 更新框架 repo（系统层）。</p>
-              <p>重新生成 <code>~/.claude/commands/</code> 转发器（pick up 新增命令）。</p>
+              <p>重新生成 <code>~/.claude/commands/</code> 转发器和 <code>~/.codex/skills/hxflow/</code> bundle（pick up 新增命令）。</p>
               <p>用户层 (<code>~/.hx/commands/</code>) 和项目层 (<code>.hx/commands/</code>) 不会被修改。</p>
             </div>
           </article>
@@ -154,7 +154,7 @@
             <div class="command-syntax">hx doctor</div>
             <p class="card-body">环境健康检测。</p>
             <div class="note-list">
-              <p>检查 Node 版本、<code>~/.hx/</code> 目录和 <code>~/.claude/commands/</code> 转发器是否完整。</p>
+              <p>检查 Node 版本、<code>~/.hx/</code> 目录、Claude 转发器和 Codex bundle 是否完整。</p>
               <p>检查当前项目 <code>.hx/config.yaml</code> 和 Profile 加载是否正常。</p>
               <p>发现问题时退出码为 1，可集成到 CI 预检。</p>
             </div>
@@ -172,13 +172,13 @@
     <section id="planning">
       <div class="wrap">
         <div class="section-tag">Planning</div>
-        <h2 class="section-title">文档与计划命令（Claude 命令）</h2>
-        <p class="section-desc">该组命令在 Claude Code 中运行，负责需求、计划与上下文准备。</p>
+        <h2 class="section-title">文档与计划命令（Agent 命令）</h2>
+        <p class="section-desc">该组命令在 Claude Code 或 Codex 中运行，负责需求、计划与上下文准备。</p>
         <div class="command-grid">
           <article class="card command-card">
             <div class="card-meta">Doc（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-doc</code></h3>
-            <div class="command-syntax">/hx-doc [&lt;feature-key-or-title&gt;] [--profile &lt;name&gt;] [--task &lt;id&gt;]</div>
+            <div class="command-syntax">/hx-doc [&lt;feature-key-or-title&gt;] [--task &lt;id&gt;] [--profile &lt;name&gt;]</div>
             <p class="card-body">从需求来源生成结构化需求文档；支持手工整理和按任务号拉取。</p>
             <div class="note-list">
               <p>路径从 <code>.hx/config.yaml</code> 的 <code>paths.requirementDoc</code> 模板推断。</p>
@@ -227,7 +227,7 @@
       <div class="wrap">
         <div class="section-tag">Execution</div>
         <h2 class="section-title">执行与复核命令</h2>
-        <p class="section-desc">该组命令在 Claude Code 中运行，负责执行任务与复核结果。</p>
+        <p class="section-desc">该组命令在 Claude Code 或 Codex 中运行，负责执行任务与复核结果。</p>
         <div class="command-grid">
           <article class="card command-card">
             <div class="card-meta">Run（Claude）</div>
@@ -245,12 +245,13 @@
             <div class="card-meta">Go（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-go</code></h3>
             <div class="command-syntax">/hx-go [&lt;feature-key&gt;] [--task &lt;TASK-ID&gt;] [--from &lt;step-id&gt;] [--profile &lt;name&gt;]</div>
-            <p class="card-body">全自动流水线，从需求到交付一条龙。</p>
+            <p class="card-body">全自动流水线，默认串起主路径；项目级 pipeline 可插入 review、clean 等辅助步骤。</p>
             <div class="note-list">
               <p>读取 pipeline YAML（<code>.hx/pipelines/default.yaml</code> → <code>~/.hx/pipelines/default.yaml</code> → 框架内置），按步骤驱动执行。</p>
               <p><code>--from &lt;step-id&gt;</code> 支持从指定步骤恢复（如 <code>--from run</code> 跳过 doc/plan）。</p>
               <p><code>run</code> 步骤默认执行整个需求；传 <code>--task</code> 时才下钻到单任务。</p>
-              <p>4 个检查点等待用户确认后继续。</p>
+              <p>默认主路径为 <code>doc -&gt; plan -&gt; run -&gt; qa -&gt; mr</code>；更多步骤由 pipeline 覆盖控制。</p>
+              <p>默认主路径只保留文档与计划两个确认点，后续可由项目级 pipeline 自行追加。</p>
             </div>
           </article>
           <article class="card command-card">
@@ -279,7 +280,7 @@
       <div class="wrap">
         <div class="section-tag">Quality &amp; Release</div>
         <h2 class="section-title">质量与交付命令</h2>
-        <p class="section-desc">该组命令在 Claude Code 中运行，负责执行后的校验和交付。</p>
+        <p class="section-desc">该组命令在 Claude Code 或 Codex 中运行，负责执行后的校验和交付。</p>
         <div class="command-grid">
           <article class="card command-card">
             <div class="card-meta">QA（Claude）</div>
@@ -304,12 +305,12 @@
           <article class="card command-card">
             <div class="card-meta">MR（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-mr</code></h3>
-            <div class="command-syntax">/hx-mr [&lt;feature-key&gt;] [--project &lt;path&gt;]</div>
+            <div class="command-syntax">/hx-mr [&lt;feature-key&gt;] [--project &lt;group/repo&gt;] [--target &lt;branch&gt;]</div>
             <p class="card-body">输出 MR 创建上下文。</p>
             <div class="note-list">
               <p>汇总需求文档、任务完成情况、git log 和 diff stat。</p>
               <p>省略 <code>feature-key</code> 时，会优先从最近一次执行上下文自动续接。</p>
-              <p>默认目标分支是 <code>main</code>。</p>
+              <p>默认目标分支是 <code>main</code>；<code>--project</code> 用于显式指定目标仓库。</p>
             </div>
           </article>
         </div>
@@ -327,7 +328,7 @@
 
   <footer>
     <div class="footer-inner">
-      <p>HXFLOW · 命令索引 · 5 CLI + 14 Claude 命令</p>
+      <p>HXFLOW · 命令索引 · 5 CLI + 12 Agent 命令</p>
       <p><a href="hx-guide.html">查看总览</a></p>
     </div>
   </footer>

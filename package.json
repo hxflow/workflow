@@ -25,11 +25,15 @@
   ],
   "scripts": {
     "pack:dry-run": "npm pack --dry-run",
-    "release:pack": "npm pack"
+    "release:pack": "npm pack",
+    "hx:test:unit": "vitest run tests/unit",
+    "hx:test:integration": "vitest run tests/integration",
+    "hx:test": "vitest run"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

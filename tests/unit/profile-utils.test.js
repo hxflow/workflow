@@ -220,6 +220,19 @@ describe('loadProfile', () => {
     expect(profile.label).toBe('My Team')
   })
 
+  it('自定义 profile 未声明 label 时回退为 profile 名称', () => {
+    const customRoot = makeTempDir('load-profile-no-label-')
+    const profileDir = resolve(customRoot, 'profiles', 'my-team')
+    mkdirSync(profileDir, { recursive: true })
+    writeFileSync(resolve(profileDir, 'profile.yaml'), 'task_prefix: MT\n', 'utf8')
+
+    const profile = loadProfile(FRAMEWORK_ROOT, 'my-team', {
+      searchRoots: [customRoot, FRAMEWORK_ROOT]
+    })
+
+    expect(profile.label).toBe('my-team')
+  })
+
   it('返回 files 对象，包含 profilePath 等路径', () => {
     const profile = loadProfile(FRAMEWORK_ROOT, 'base')
     expect(profile.files).toBeTruthy()

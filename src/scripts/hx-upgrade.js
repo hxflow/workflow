@@ -153,7 +153,7 @@ function upgradeCLAUDEmd(projectRoot, summary) {
   const content = readFileSync(claudePath, 'utf8')
 
   if (!content.includes(HARNESS_MARKER_START)) {
-    summary.warnings.push('CLAUDE.md 中未找到 harness 标记块，跳过（可运行 hx init 重新安装）')
+    summary.warnings.push('CLAUDE.md 中未找到 harness 标记块，跳过（可运行 hx-init 重新安装）')
     return
   }
 
