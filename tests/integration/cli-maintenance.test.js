@@ -138,7 +138,7 @@ describe('hx setup', () => {
     ])
 
     expect(result.status).toBe(0)
-    expect(existsSync(resolve(codexDir, 'skills', 'hx-run.md'))).toBe(true)
+    expect(existsSync(resolve(codexDir, 'skills', 'hx-run', 'SKILL.md'))).toBe(true)
     expect(existsSync(resolve(codexDir, 'skills', 'hxflow'))).toBe(false)
     expect(existsSync(resolve(claudeDir, 'commands', 'hx-run.md'))).toBe(false)
   })
@@ -374,8 +374,8 @@ describe('hx uninstall', () => {
     mkdirSync(resolve(claudeDir, 'commands'), { recursive: true })
     writeFileSync(resolve(claudeDir, 'commands', 'hx-run.md'), '# generated\n', 'utf8')
 
-    mkdirSync(resolve(codexDir, 'skills'), { recursive: true })
-    writeFileSync(resolve(codexDir, 'skills', 'hx-run.md'), '# skill\n', 'utf8')
+    mkdirSync(resolve(codexDir, 'skills', 'hx-run'), { recursive: true })
+    writeFileSync(resolve(codexDir, 'skills', 'hx-run', 'SKILL.md'), '# skill\n', 'utf8')
 
     const result = runHx([
       'uninstall',
@@ -390,7 +390,7 @@ describe('hx uninstall', () => {
     expect(existsSync(resolve(hxDir, 'config.yaml'))).toBe(false)
     expect(existsSync(resolve(hxDir, 'commands', 'keep.md'))).toBe(true)
     expect(existsSync(resolve(claudeDir, 'commands', 'hx-run.md'))).toBe(false)
-    expect(existsSync(resolve(codexDir, 'skills', 'hx-run.md'))).toBe(false)
+    expect(existsSync(resolve(codexDir, 'skills', 'hx-run'))).toBe(false)
   })
 
   it('完整安装后卸载可清干净所有痕迹', () => {
@@ -421,7 +421,7 @@ describe('hx uninstall', () => {
     expect(existsSync(resolve(targetCmds, 'hx-run.md'))).toBe(false)
     expect(existsSync(resolve(hxDir, 'config.yaml'))).toBe(false)
     expect(existsSync(resolve(claudeDir, 'commands', 'hx-run.md'))).toBe(false)
-    expect(existsSync(resolve(codexDir, 'skills', 'hx-run.md'))).toBe(false)
+    expect(existsSync(resolve(codexDir, 'skills', 'hx-run'))).toBe(false)
   })
 })
 

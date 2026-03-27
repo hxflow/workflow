@@ -5,7 +5,7 @@
  *
  * 移除内容：
  *   1. 用户全局安装产物：~/.hx/config.yaml、~/.claude/commands/hx-*.md、
- *      ~/.codex/skills/hx-*.md
+ *      ~/.codex/skills/hx-<cmd>/ 子目录
  *   2. 项目安装痕迹：.hx/config.yaml、.CLAUDE.md、.claude/commands/hx-*.md
  *   3. CLAUDE.md 中的 harness 标记块
  *
@@ -42,7 +42,7 @@ if (options.help) {
   同时清理：
     ~/.hx/config.yaml
     ~/.claude/commands/hx-*.md
-    ~/.codex/skills/hx-*.md
+    ~/.codex/skills/<hx-cmd>/
     以及目标项目内的 workflow 安装痕迹
 
   注意: 此操作会移除 workflow 安装痕迹，请提前确认目标目录。
@@ -162,12 +162,14 @@ function collectGlobalRemoveList(userHxDir, userClaudeDir, userCodexDir) {
 
   const codexSkillsDir = resolve(userCodexDir, 'skills')
   if (existsSync(codexSkillsDir)) {
-    const hxFiles = readdirSync(codexSkillsDir).filter((file) => file.startsWith('hx-') && file.endsWith('.md'))
-    for (const file of hxFiles) {
-      const filePath = resolve(codexSkillsDir, file)
+    const hxDirs = readdirSync(codexSkillsDir).filter((entry) => {
+      return entry.startsWith('hx-') && existsSync(resolve(codexSkillsDir, entry, 'SKILL.md'))
+    })
+    for (const dir of hxDirs) {
+      const dirPath = resolve(codexSkillsDir, dir)
       items.push({
-        display: `~/.codex/skills/${file}`,
-        action: () => rmSync(filePath, { force: true })
+        display: `~/.codex/skills/${dir}/`,
+        action: () => rmSync(dirPath, { recursive: true, force: true })
       })
     }
   }

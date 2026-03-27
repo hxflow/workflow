@@ -304,10 +304,10 @@ describe('generateCodexSkillFiles', () => {
     const summary = { created: [], updated: [], skipped: [], warnings: [] }
     generateCodexSkillFiles(sourceDir, targetDir, '/fw', '/user-hx', summary, {})
 
-    expect(existsSync(resolve(targetDir, 'hx-run.md'))).toBe(true)
+    expect(existsSync(resolve(targetDir, 'hx-run', 'SKILL.md'))).toBe(true)
     expect(existsSync(resolve(targetDir, 'SKILL.md'))).toBe(false)
     expect(existsSync(resolve(targetDir, 'commands.json'))).toBe(false)
-    expect(summary.created).toContain('~/.codex/skills/hx-run.md')
+    expect(summary.created).toContain('~/.codex/skills/hx-run/SKILL.md')
   })
 
   it('skill 文件包含命令描述和解析顺序', () => {
@@ -329,7 +329,7 @@ describe('generateCodexSkillFiles', () => {
     const summary = { created: [], updated: [], skipped: [], warnings: [] }
     generateCodexSkillFiles(sourceDir, targetDir, '/framework', '/user-hx', summary, {})
 
-    const content = readFileSync(resolve(targetDir, 'hx-run.md'), 'utf8')
+    const content = readFileSync(resolve(targetDir, 'hx-run', 'SKILL.md'), 'utf8')
     expect(content).toContain('name: hx-run')
     expect(content).toContain('description: Phase 04 · 执行任务')
     expect(content).toContain('/user-hx/commands/hx-run.md')

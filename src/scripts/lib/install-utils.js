@@ -184,9 +184,9 @@ export function generateCodexSkillFiles(sourceDir, targetDir, frameworkRoot, use
   const specs = loadCommandSpecs(sourceDir)
 
   for (const spec of specs) {
-    const file = `${spec.name}.md`
-    const dstPath = resolve(targetDir, file)
-    const label = `~/.codex/skills/${file}`
+    const skillDir = resolve(targetDir, spec.name)
+    const dstPath = resolve(skillDir, 'SKILL.md')
+    const label = `~/.codex/skills/${spec.name}/SKILL.md`
 
     const content = buildCodexSkillFileContent(spec, frameworkRoot, userHxDir)
     const existing = existsSync(dstPath) ? readFileSync(dstPath, 'utf8') : null
@@ -196,7 +196,10 @@ export function generateCodexSkillFiles(sourceDir, targetDir, frameworkRoot, use
       continue
     }
 
-    if (!dryRun) writeFileSync(dstPath, content, 'utf8')
+    if (!dryRun) {
+      mkdirSync(skillDir, { recursive: true })
+      writeFileSync(dstPath, content, 'utf8')
+    }
     summary[existing ? 'updated' : 'created'].push(label)
   }
 }

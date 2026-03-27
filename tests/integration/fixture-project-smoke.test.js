@@ -93,7 +93,7 @@ describe('fixture project smoke', () => {
 
     expect(existsSync(resolve(userHxDir, 'config.yaml'))).toBe(true)
     expect(existsSync(resolve(userClaudeDir, 'commands', 'hx-run.md'))).toBe(true)
-    expect(existsSync(resolve(userCodexDir, 'skills', 'hx-run.md'))).toBe(true)
+    expect(existsSync(resolve(userCodexDir, 'skills', 'hx-run', 'SKILL.md'))).toBe(true)
 
     const doctor = runHx(['doctor'], projectDir, homeDir)
     expect(doctor.status).toBe(0)
@@ -108,7 +108,7 @@ describe('fixture project smoke', () => {
     expect(forwarder).toContain('.hx/commands/hx-run.md')
     expect(forwarder).toContain(resolve(userHxDir, 'commands', 'hx-run.md'))
 
-    const skillFile = readFileSync(resolve(userCodexDir, 'skills', 'hx-run.md'), 'utf8')
+    const skillFile = readFileSync(resolve(userCodexDir, 'skills', 'hx-run', 'SKILL.md'), 'utf8')
     expect(skillFile).toContain(`${userHxDir}/commands/hx-run.md`)
     expect(skillFile).toContain(`${ROOT}/src/agents/commands/hx-run.md`)
 
@@ -167,7 +167,7 @@ describe('fixture project smoke', () => {
     expect(claudeMrForwarder).toContain('.hx/commands/hx-mr.md')
     expect(claudeMrForwarder).toContain(resolve(userHxDir, 'commands', 'hx-mr.md'))
 
-    const codexSkillFile = readFileSync(resolve(userCodexDir, 'skills', 'hx-mr.md'), 'utf8')
+    const codexSkillFile = readFileSync(resolve(userCodexDir, 'skills', 'hx-mr', 'SKILL.md'), 'utf8')
     expect(codexSkillFile).toContain('name: hx-mr')
 
     const userPipeline = parseSimpleYaml(readFileSync(resolve(userHxDir, 'pipelines', 'default.yaml'), 'utf8'))

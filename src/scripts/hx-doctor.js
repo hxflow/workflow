@@ -80,14 +80,14 @@ if (existsSync(claudeCommandsDir)) {
 }
 
 const codexSkillsDir = resolve(CODEX_DIR, 'skills')
-const codexHxFiles = existsSync(codexSkillsDir)
-  ? readdirSync(codexSkillsDir).filter((f) => f.startsWith('hx-') && f.endsWith('.md'))
+const codexHxDirs = existsSync(codexSkillsDir)
+  ? readdirSync(codexSkillsDir).filter((entry) => entry.startsWith('hx-') && existsSync(resolve(codexSkillsDir, entry, 'SKILL.md')))
   : []
-if (codexHxFiles.length > 0) {
-  ok(`~/.codex/skills/（Codex skill 已安装，共 ${codexHxFiles.length} 个命令）`)
+if (codexHxDirs.length > 0) {
+  ok(`~/.codex/skills/（Codex skill 已安装，共 ${codexHxDirs.length} 个命令）`)
   hasAgentAdapter = true
 } else {
-  warn('~/.codex/skills/ 中未找到 hx-*.md，建议运行 hx setup 修复')
+  warn('~/.codex/skills/ 中未找到 hx-* skill 目录，建议运行 hx setup 修复')
 }
 
 if (!hasAgentAdapter) {
