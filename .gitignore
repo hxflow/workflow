@@ -18,3 +18,7 @@ build/
 
 # Trae
 .trae/
+
+# Local settings (may contain sensitive tokens)
+.claude/settings.local.json
+**/settings.local.json
