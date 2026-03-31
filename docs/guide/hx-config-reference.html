@@ -71,7 +71,7 @@
             <h3 class="card-title">两个正式入口</h3>
             <pre><code>~/.hx/settings.yaml
 &lt;project&gt;/.hx/config.yaml</code></pre>
-            <p class="card-body">前者承载用户级安装设置，后者承载项目级运行时配置。</p>
+            <p class="card-body">前者承载用户级安装设置与已选择的 agents，后者承载项目级运行时配置。</p>
           </article>
           <article class="card">
             <div class="card-meta">优先级</div>
@@ -79,12 +79,12 @@
             <pre><code>项目级 commands/hooks/pipelines
 → 用户级 commands/hooks/pipelines
 → 框架内置资源</code></pre>
-            <p class="card-body">commands / hooks / pipelines 命中即停止；<code>~/.hx/settings.yaml</code> 不参与项目配置合并。</p>
+            <p class="card-body"><code>commands / pipelines</code> 命中即停止；<code>hooks</code> 不覆盖，而是按固定顺序组成中间件链；<code>~/.hx/settings.yaml</code> 不参与项目配置合并。</p>
           </article>
         </div>
         <div class="callout info">
           <span class="icon">i</span>
-          <div><strong>边界：</strong><code>~/.hx/settings.yaml</code> 只记录安装级设置；项目运行时事实由 <code>.hx/config.yaml</code> 维护。</div>
+          <div><strong>边界：</strong><code>~/.hx/settings.yaml</code> 只记录安装级设置和已选择的 agents；项目运行时事实由 <code>.hx/config.yaml</code> 维护。</div>
         </div>
       </div>
     </section>
@@ -174,18 +174,18 @@ hooks:
 ~/.hx/hooks/post_run.md
 src/hooks/pre_run.md
 src/hooks/post_run.md</code></pre>
-            <p class="card-body">命名规则见 <code>src/hooks/README.md</code>，查找顺序固定为项目层 → 用户层 → 框架层。</p>
+            <p class="card-body">命名规则见 <code>src/hooks/README.md</code>。同名 Hook 可在三层同时存在，并按固定顺序串行执行。</p>
           </article>
         </div>
         <pre><code>启用逻辑:
 读取命令 frontmatter 中的 hooks
 → 对每个已声明阶段查找 pre_&lt;command&gt;.md / post_&lt;command&gt;.md
-→ 项目层 → 用户层 → 框架层
+→ 组装 Hook 链
 
 拼接顺序:
-Pre Hook
+Pre Hook（框架层 → 用户层 → 项目层）
 → 主命令正文
-→ Post Hook</code></pre>
+→ Post Hook（项目层 → 用户层 → 框架层）</code></pre>
       </div>
     </section>
 

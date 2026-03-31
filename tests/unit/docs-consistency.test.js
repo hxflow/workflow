@@ -26,15 +26,23 @@ describe('docs consistency', () => {
   })
 
   it('documents current install/runtime boundaries', () => {
+    const readme = readFileSync(resolve(ROOT, 'README.md'), 'utf8')
     const quickstart = readFileSync(resolve(ROOT, 'docs/guide/hx-quickstart.html'), 'utf8')
     const guide = readFileSync(resolve(ROOT, 'docs/guide/hx-guide.html'), 'utf8')
     const configReference = readFileSync(resolve(ROOT, 'docs/guide/hx-config-reference.html'), 'utf8')
+    const commandIndex = readFileSync(resolve(ROOT, 'docs/guide/hx-command-index.html'), 'utf8')
 
+    expect(readme).toContain('.hx/commands/')
+    expect(readme).not.toContain('.hx/skills/')
+    expect(readme).not.toContain('hx setup [--agent')
     expect(quickstart).toContain('src/commands/')
     expect(quickstart).toContain('~/.hx/settings.yaml')
     expect(guide).toContain('2 个内置命令（setup / version）')
     expect(configReference).toContain('~/.hx/settings.yaml')
     expect(configReference).toContain('.hx/config.yaml')
+    expect(guide).toContain('~/.claude/skills/')
+    expect(guide).not.toContain('~/.claude/commands/')
+    expect(commandIndex).not.toContain('hx setup [--agent')
   })
 
   it('removes task-id driven wording from the main workflow docs', () => {

@@ -1,9 +1,13 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'fs'
 import { basename, resolve } from 'path'
 
-export const SUPPORTED_AGENTS = ['claude', 'codex']
+export const SUPPORTED_AGENTS = ['claude', 'codex', 'cursor', 'gemini', 'kimi', 'windsurf']
 export const BUILTIN_CLI_COMMANDS = ['setup', 'version']
 const TEMPLATE_CACHE = new Map()
+
+export function getAgentSkillDir(agent) {
+  return `.${agent}/skills`
+}
 
 export function resolveAgentTargets(agentOption) {
   if (!agentOption || agentOption === true || agentOption === 'all') {
@@ -66,49 +70,28 @@ export function mergeCommandSpecs(...specGroups) {
   return [...merged.values()].sort((left, right) => left.name.localeCompare(right.name))
 }
 
-// ── 转发器生成 ────────────────────────────────────────────────────────────────
+// ── skill 入口生成 ────────────────────────────────────────────────────────────
 
 /**
- * 在 targetDir 中为 specs 里的每个命令生成转发器。
+ * 在 targetDir 中为 specs 里的每个命令生成 skill 入口。
  *
- * 转发器不包含命令逻辑，只写三层查找路径，由 Claude 在运行时按优先级读取实体文件执行。
- * frameworkRoot 是框架安装目录的绝对路径，在 setup 时写死到转发器内容中。
+ * skill 入口不包含命令逻辑，只写三层查找路径，由 Agent 在运行时按优先级读取实体文件执行。
+ * frameworkRoot 是框架安装目录的绝对路径，在 setup 时写死到 skill 内容中。
  *
  * opts.createDir   true → 目标目录不存在时自动创建
  * opts.dryRun      true → 只报告，不实际写入
  */
 export function generateForwarderFiles(specs, targetDir, frameworkRoot, userHxDir, summary, opts = {}) {
-  generateAgentArtifacts(specs, targetDir, summary, {
-    ...opts,
-    emptyWarning: '未发现可安装命令契约，跳过 Claude 转发器生成',
-    missingTargetWarning: '~/.claude/commands/ 目录不存在，请重新安装包或运行 hx setup',
-    listExistingTargets(dir) {
-      return readdirSync(dir)
-        .filter((file) => file.startsWith('hx-') && file.endsWith('.md'))
-        .map((file) => ({
-          name: file.replace(/\.md$/, ''),
-          label: `~/.claude/commands/${file}`,
-          marker: 'hx-forwarder:',
-          markerPath: resolve(dir, file),
-          removePath: resolve(dir, file),
-        }))
-    },
-    getTarget(spec) {
-      const file = `${spec.name}.md`
-      return {
-        dstPath: resolve(targetDir, file),
-        label: `~/.claude/commands/${file}`,
-        content: buildAgentArtifactContent(spec, frameworkRoot, userHxDir, 'claude'),
-      }
-    },
-  })
+  return generateSkillFilesForAgent('claude', specs, targetDir, frameworkRoot, userHxDir, summary, opts)
 }
 
-export function generateCodexSkillFiles(specs, targetDir, frameworkRoot, userHxDir, summary, opts = {}) {
+export function generateSkillFilesForAgent(agent, specs, targetDir, frameworkRoot, userHxDir, summary, opts = {}) {
+  const skillDirLabel = `~/${getAgentSkillDir(agent)}/`
+
   generateAgentArtifacts(specs, targetDir, summary, {
     ...opts,
-    emptyWarning: '未发现可安装命令契约，跳过 Codex skill 生成',
-    missingTargetWarning: '~/.codex/skills/ 目录不存在，请重新安装包或运行 hx setup',
+    emptyWarning: `未发现可安装 workflow skill，跳过 ${agent} skill 生成`,
+    missingTargetWarning: `${skillDirLabel} 目录不存在，请重新安装包或运行 hx setup`,
     listExistingTargets(dir) {
       return readdirSync(dir)
         .filter((entry) => entry.startsWith('hx-'))
@@ -122,7 +105,7 @@ export function generateCodexSkillFiles(specs, targetDir, frameworkRoot, userHxD
         })
         .map((entryPath) => ({
           name: basename(entryPath),
-          label: `~/.codex/skills/${basename(entryPath)}/`,
+          label: `${skillDirLabel}${basename(entryPath)}/`,
           marker: 'hx-skill:',
           markerPath: resolve(entryPath, 'SKILL.md'),
           removePath: entryPath,
@@ -132,14 +115,22 @@ export function generateCodexSkillFiles(specs, targetDir, frameworkRoot, userHxD
       const skillDir = resolve(targetDir, spec.name)
       return {
         dstPath: resolve(skillDir, 'SKILL.md'),
-        label: `~/.codex/skills/${spec.name}/SKILL.md`,
-        content: buildAgentArtifactContent(spec, frameworkRoot, userHxDir, 'codex'),
+        label: `${skillDirLabel}${spec.name}/SKILL.md`,
+        content: buildAgentArtifactContent(spec, frameworkRoot, userHxDir),
         beforeWrite() {
           mkdirSync(skillDir, { recursive: true })
         },
       }
     },
   })
+}
+
+export function generateClaudeSkillFiles(specs, targetDir, frameworkRoot, userHxDir, summary, opts = {}) {
+  return generateSkillFilesForAgent('claude', specs, targetDir, frameworkRoot, userHxDir, summary, opts)
+}
+
+export function generateCodexSkillFiles(specs, targetDir, frameworkRoot, userHxDir, summary, opts = {}) {
+  return generateSkillFilesForAgent('codex', specs, targetDir, frameworkRoot, userHxDir, summary, opts)
 }
 
 function generateAgentArtifacts(specs, targetDir, summary, options) {
@@ -234,8 +225,8 @@ function parseCommandFrontmatter(content) {
     }, {})
 }
 
-function buildAgentArtifactContent(spec, frameworkRoot, userHxDir, artifactType) {
-  const template = loadArtifactTemplate(frameworkRoot, artifactType, spec.protected)
+function buildAgentArtifactContent(spec, frameworkRoot, userHxDir) {
+  const template = loadArtifactTemplate(frameworkRoot, spec.protected)
   return renderTemplate(template, {
     name: spec.name,
     description: spec.description,
@@ -244,8 +235,8 @@ function buildAgentArtifactContent(spec, frameworkRoot, userHxDir, artifactType)
   })
 }
 
-function loadArtifactTemplate(frameworkRoot, artifactType, isProtected) {
-  const templateName = `${artifactType}-${isProtected ? 'protected' : 'layered'}.md`
+function loadArtifactTemplate(frameworkRoot, isProtected) {
+  const templateName = `skill-${isProtected ? 'protected' : 'layered'}.md`
   const templatePath = resolve(frameworkRoot, 'templates', 'forwarders', templateName)
 
   if (!TEMPLATE_CACHE.has(templatePath)) {

@@ -1,7 +1,7 @@
-# Command Contracts
+# Workflow Skill Contracts
 
-- 这里是命令契约目录，也是命令 frontmatter 的公共约定。
-- 命令是否可覆盖、是否支持 Hook，不应靠正文约定判断，而应以前置元数据为准。
+- 这里是工作流 skill 契约目录，也是 frontmatter 的公共约定。
+- skill 是否可覆盖、是否支持 Hook，不应靠正文约定判断，而应以前置元数据为准。
 
 ## 标准字段
 
@@ -34,6 +34,6 @@
 ## 说明
 
 - `protected` 和 `hooks` 都是框架私有字段。
-- 命令三层覆盖顺序、`protected` 的运行时解析方式，以及 Claude/Codex 适配层职责见 `src/commands/resolution.md`。
+- skill 三层覆盖顺序、`protected` 的运行时解析方式，以及 agent 适配层职责见 `src/commands/resolution.md`。
 - Hook 文件命名、查找顺序和加载规则见 `src/hooks/README.md`。
 - 若要调整私有字段语义，应优先修改这份公共约定，再同步修改消费逻辑。

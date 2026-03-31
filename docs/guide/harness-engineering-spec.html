@@ -2713,7 +2713,7 @@
           <div class="install-method">
             <div class="im-step">执行引擎</div>
             <div class="im-title">Claude Code + Skills</div>
-            <div class="im-body">所有 Phase 通过 <code>/hx-*</code> 命令契约和三层覆盖规则适配团队差异。一键
+            <div class="im-body">所有 Phase 通过 <code>/hx-*</code> workflow skill 契约和三层覆盖规则适配团队差异。一键
               <code>/hx-go</code> 默认跑完主路径 <code>doc → plan → run → qa → mr</code>；辅助步骤可通过项目级 pipeline 按需插入。
             </div>
           </div>
@@ -3946,7 +3946,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
           视而不见或走歪。本章覆盖结构、触发描述、内容原则与迭代方法。</p>
 
         <div class="dn">
-          <strong>一句话定义：</strong>Skill = 由 Claude/Codex 自身机制加载的能力目录，包含一个 <code>SKILL.md</code>
+          <strong>一句话定义：</strong>Skill = 由 agent 自身机制加载的能力目录，包含一个 <code>SKILL.md</code>
           文件以及可选的脚本、参考文档和资产文件。Skill 可安装在 <code>.claude/skills/</code>、<code>~/.claude/skills/</code>，
           或以软链方式指向共享仓库 <code>~/qiyuan-common-skills/skills/</code>。Agent 每次会话读取所有 Skill 的
           <strong>frontmatter</strong>（name + description），决定是否调用某个 Skill 的完整内容。

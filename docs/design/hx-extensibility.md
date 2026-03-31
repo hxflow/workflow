@@ -52,17 +52,17 @@
 
 - `.hx/hooks/`
 
-当前配置入口为 `.hx/config.yaml` 中的：
+Hook 不走 `.hx/config.yaml` 配置项，而是按固定命名规则和命令 frontmatter 启用。
 
-- `hooks.doc`
-- `hooks.plan`
-- `hooks.run`
-- `hooks.review`
-- `hooks.fix`
-- `hooks.clean`
-- `hooks.mr`
+- `pre_<command>.md`
+- `post_<command>.md`
 
-脚本会补齐这些键，但不为项目强行写入实际 hook 内容。
+Hook 不采用覆盖规则，而采用中间件链规则：
+
+- `pre_*`：框架层 → 用户层 → 项目层
+- `post_*`：项目层 → 用户层 → 框架层
+
+这样可以让通用能力、个人偏好和项目业务定制同时生效。
 
 ### Layer 4 · 命令覆写
 
@@ -71,14 +71,14 @@
 ```text
 <project>/.hx/commands/<cmd>.md
 ~/.hx/commands/<cmd>.md
-<frameworkRoot>/agents/commands/<cmd>.md
+<frameworkRoot>/src/commands/<cmd>.md
 ```
 
 当前实现：
 
-- 转发器由 `hx setup` 生成
-- Claude 与 Codex 都通过同一套命令契约路由
-- 项目可以直接放同名命令覆盖框架默认行为
+- skill 入口由 `hx setup` 生成
+- Claude 与 Codex 都通过同一套 skill 契约路由
+- 项目可以直接放同名 skill 覆盖框架默认行为
 
 ### Layer 5 · Pipeline 覆写
 
@@ -104,8 +104,8 @@
 
 - 项目初始化契约：`src/commands/hx-init.md`
 - 规则刷新契约：`src/commands/hx-rules.md`
-- 全局安装与转发器生成：`src/scripts/hx-setup.js`
-- 命令契约入口：`src/commands/hx-*.md`
+- 全局安装与 skill 入口生成：`src/scripts/hx-setup.js`
+- skill 契约入口：`src/commands/hx-*.md`
 - 默认流水线：`src/pipelines/default.yaml`
 
 ---

@@ -18,28 +18,23 @@ describe('template structure', () => {
     expect(configTemplate).toContain('test: {{gates.test}}')
   })
 
-  it('keeps forwarder templates complete for both agents', () => {
+  it('keeps skill entry templates complete', () => {
     const forwarderDir = resolve(ROOT, 'src/templates/forwarders')
     const files = readdirSync(forwarderDir).sort()
 
-    expect(files).toEqual([
-      'claude-layered.md',
-      'claude-protected.md',
-      'codex-layered.md',
-      'codex-protected.md',
-    ])
+    expect(files).toEqual(['skill-layered.md', 'skill-protected.md'])
 
     for (const file of files) {
       const content = readFileSync(resolve(forwarderDir, file), 'utf8')
       expect(content).toContain('{{name}}')
       expect(content).toContain('{{systemPath}}')
-      expect(content).toContain('命令实体文件未找到')
+      expect(content).toContain('skill 实体文件未找到')
 
       if (file.includes('layered')) {
         expect(content).toContain('{{userCommandPath}}')
         expect(content).toContain('<项目根>/.hx/commands/{{name}}.md')
       } else {
-        expect(content).toContain('protected: 此命令由框架锁定')
+        expect(content).toContain('protected: 此 skill 由框架锁定')
       }
     }
   })

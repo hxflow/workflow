@@ -107,7 +107,7 @@
             <article class="card">
               <div class="card-meta">团队治理</div>
               <h3 class="card-title">统一团队差异</h3>
-              <p class="card-body">通过 <code>.hx/rules/*.md</code> 项目规则和 <code>.hx/config.yaml</code> 硬变量配置团队约束与门控命令。三层覆盖按项目 → 用户 → 系统命中即停止，支持无侵入自定义。</p>
+              <p class="card-body">通过 <code>.hx/rules/*.md</code> 项目规则和 <code>.hx/config.yaml</code> 硬变量配置团队约束与门控命令。commands / pipelines 按项目 → 用户 → 系统覆盖解析，hooks 以中间件链方式叠加执行，支持无侵入自定义。</p>
             </article>
             <article class="card">
               <div class="card-meta">质量闭环</div>
@@ -119,7 +119,7 @@
           <div class="callout info">
             <span class="icon">i</span>
             <div>
-              <strong>两类命令：</strong><code>hx</code> CLI 只保留 <code>setup</code> 和 <code>version</code>；<code>/hx-*</code> / <code>$hx-*</code> 是统一的 Agent 命令契约，由 Claude 转发器或 Codex skill 入口路由到框架实体执行。
+              <strong>两类命令：</strong><code>hx</code> CLI 只保留 <code>setup</code> 和 <code>version</code>；<code>/hx-*</code> / <code>$hx-*</code> 是统一的 Agent skill 契约，由各 agent 的 skill 入口路由到框架实体执行。
             </div>
           </div>
         </div>
@@ -167,7 +167,7 @@
               <div class="timeline-step">2</div>
               <div>
                 <div class="timeline-title">需求文档</div>
-                <div class="timeline-body"><code>/hx-doc</code> 创建需求文档；命令会基于当前需求上下文整理需求标题并生成项目内稳定的 <code>feature</code>，正常情况下不需要你手动处理。
+                <div class="timeline-body"><code>/hx-doc</code> 创建需求文档；命令会基于当前需求上下文整理需求内容并生成项目内稳定的 <code>feature</code>，正常情况下不需要你手动处理。
                 </div>
               </div>
             </div>
@@ -259,19 +259,18 @@
             <article class="card">
               <div class="card-meta">命令真源</div>
               <h3 class="card-title">入口和分发以 <code>bin/hx.js</code> 为准</h3>
-              <p class="card-body"><code>hx</code> CLI 只暴露 2 个内置命令（setup / version）；<code>/hx-*</code> 工作流命令由 <code>~/.claude/commands/</code> 中的转发器路由到
+              <p class="card-body"><code>hx</code> CLI 只暴露 2 个内置命令（setup / version）；<code>/hx-*</code> 工作流命令由所选 agent 的 <code>skills</code> 入口路由到
                 <code>src/commands/</code> 实体文件执行。</p>
               <div class="path-strip">
                 <span class="pill">bin/hx.js</span>
                 <span class="pill">src/commands/</span>
-                <span class="pill">~/.claude/commands/</span>
+                <span class="pill">~/.claude/skills/</span>
               </div>
             </article>
             <article class="card">
               <div class="card-meta">配置真源</div>
               <h3 class="card-title">三层配置有固定解析顺序</h3>
-              <p class="card-body">项目层（<code>.hx/</code>）→ 用户层（<code>~/.hx/</code>）→ 系统层（框架内置）。commands / hooks /
-                pipelines 取第一个存在的文件；<code>~/.hx/settings.yaml</code> 只保存安装级设置，项目运行时配置以 <code>.hx/config.yaml</code> 为准。</p>
+              <p class="card-body">项目层（<code>.hx/</code>）→ 用户层（<code>~/.hx/</code>）→ 系统层（框架内置）。commands / pipelines 取第一个存在的文件；hooks 按固定顺序串行执行；<code>~/.hx/settings.yaml</code> 只保存安装级设置，项目运行时配置以 <code>.hx/config.yaml</code> 为准。</p>
               <div class="path-strip">
                 <span class="pill">.hx/</span>
                 <span class="pill">~/.hx/</span>

@@ -10,4 +10,4 @@ description: {{description}}
 2. `{{userCommandPath}}`
 3. `{{systemPath}}`
 
-若文件不存在，报错：`{{name}} 命令实体文件未找到，请重新安装包或运行 hx setup 修复。`
+若文件不存在，报错：`{{name}} skill 实体文件未找到，请重新安装包或运行 hx setup 修复。`

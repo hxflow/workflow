@@ -13,7 +13,7 @@ usage: hx-rules [update]
 1. 若未传入 `update`：
    - 读取 `.hx/config.yaml`
    - 检查 `.hx/rules/golden-rules.md`、`.hx/rules/review-checklist.md`、`.hx/rules/requirement-template.md`、`.hx/rules/plan-template.md`
-   - 输出 `paths.*`、`gates.*`、hooks / commands / pipelines 目录概况
+   - 输出 `paths.*`、`gates.*`、hooks / skills / pipelines 目录概况
    - 若存在缺失项，提示运行 `hx-rules update`
 2. 若传入 `update`：
    - 重新扫描项目真实信号，包括依赖文件、源码目录、文档目录、`.hx/*` 和质量门脚本

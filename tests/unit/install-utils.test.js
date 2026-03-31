@@ -5,8 +5,10 @@ import { resolve } from 'path'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import {
+  generateSkillFilesForAgent,
+  generateClaudeSkillFiles,
   generateCodexSkillFiles,
-  generateForwarderFiles,
+  SUPPORTED_AGENTS,
   loadCommandSpecs,
   mergeCommandSpecs,
   resolveAgentTargets,
@@ -32,8 +34,10 @@ afterEach(() => {
 
 describe('install-utils', () => {
   it('resolves agent targets and rejects invalid values', () => {
-    expect(resolveAgentTargets()).toEqual(['claude', 'codex'])
+    expect(resolveAgentTargets()).toEqual(SUPPORTED_AGENTS)
     expect(resolveAgentTargets('claude')).toEqual(['claude'])
+    expect(resolveAgentTargets('gemini,kimi')).toEqual(['gemini', 'kimi'])
+    expect(resolveAgentTargets('cursor,windsurf')).toEqual(['cursor', 'windsurf'])
     expect(resolveAgentTargets('codex,claude,codex')).toEqual(['codex', 'claude'])
     expect(() => resolveAgentTargets('claude,unknown')).toThrow('无效的 agent')
   })
@@ -91,7 +95,7 @@ describe('install-utils', () => {
     ])
   })
 
-  it('generates forwarder and codex files from templates', () => {
+  it('generates claude and codex skill files from templates', () => {
     const targetDir = createTempDir('hx-adapter-target-')
     const codexDir = createTempDir('hx-codex-target-')
     const frameworkRoot = resolve(process.cwd(), 'src')
@@ -103,64 +107,61 @@ describe('install-utils', () => {
       { name: 'hx-init', description: 'Init Command', protected: true },
     ]
 
-    generateForwarderFiles(specs, targetDir, frameworkRoot, userHxDir, summary, { createDir: true })
+    generateClaudeSkillFiles(specs, targetDir, frameworkRoot, userHxDir, summary, { createDir: true })
     generateCodexSkillFiles(specs, codexDir, frameworkRoot, userHxDir, codexSummary, { createDir: true })
 
-    const forwarder = readFileSync(resolve(targetDir, 'hx-doc.md'), 'utf8')
-    const protectedForwarder = readFileSync(resolve(targetDir, 'hx-init.md'), 'utf8')
+    const claudeSkill = readFileSync(resolve(targetDir, 'hx-doc', 'SKILL.md'), 'utf8')
+    const protectedClaudeSkill = readFileSync(resolve(targetDir, 'hx-init', 'SKILL.md'), 'utf8')
     const codexSkill = readFileSync(resolve(codexDir, 'hx-doc', 'SKILL.md'), 'utf8')
     const protectedCodexSkill = readFileSync(resolve(codexDir, 'hx-init', 'SKILL.md'), 'utf8')
 
-    expect(forwarder).toContain('hx-forwarder: hx-doc')
-    expect(forwarder).toContain('按以下优先级找到第一个存在的文件')
-    expect(forwarder).toContain('`.hx/config.yaml` 或 `.git`')
-    expect(forwarder).toContain('`/tmp/hx-user/commands/hx-doc.md`')
-    expect(forwarder).toContain(`\`${frameworkRoot}/commands/hx-doc.md\``)
-    expect(forwarder).toContain('`/tmp/hx-user/commands/hx-doc.md`')
-    expect(forwarder).toContain('`<项目根>/.hx/commands/hx-doc.md`')
-    expect(forwarder).not.toContain('protected: 此命令由框架锁定')
-    expect(protectedForwarder).toContain('protected: 此命令由框架锁定')
-    expect(protectedForwarder).toContain(`\`${frameworkRoot}/commands/hx-init.md\``)
-    expect(protectedForwarder).not.toContain('/tmp/hx-user/commands/hx-init.md')
-    expect(protectedForwarder).not.toContain('<项目根>/.hx/commands/hx-init.md')
+    expect(claudeSkill).toContain('hx-skill: hx-doc')
+    expect(claudeSkill).toContain('按以下优先级找到第一个存在的文件')
+    expect(claudeSkill).toContain('`.hx/config.yaml` 或 `.git`')
+    expect(claudeSkill).toContain('`/tmp/hx-user/commands/hx-doc.md`')
+    expect(claudeSkill).toContain(`\`${frameworkRoot}/commands/hx-doc.md\``)
+    expect(claudeSkill).toContain('`<项目根>/.hx/commands/hx-doc.md`')
+    expect(claudeSkill).not.toContain('protected: 此 skill 由框架锁定')
+    expect(protectedClaudeSkill).toContain('protected: 此 skill 由框架锁定')
+    expect(protectedClaudeSkill).toContain(`\`${frameworkRoot}/commands/hx-init.md\``)
+    expect(protectedClaudeSkill).not.toContain('/tmp/hx-user/commands/hx-init.md')
+    expect(protectedClaudeSkill).not.toContain('<项目根>/.hx/commands/hx-init.md')
     expect(codexSkill).toContain('hx-skill: hx-doc')
     expect(codexSkill).toContain('name: hx-doc')
     expect(codexSkill).toContain('按以下优先级找到第一个存在的文件')
     expect(codexSkill).toContain(`\`${frameworkRoot}/commands/hx-doc.md\``)
     expect(protectedCodexSkill).toContain('hx-skill: hx-init')
-    expect(protectedCodexSkill).toContain('protected: 此命令由框架锁定')
+    expect(protectedCodexSkill).toContain('protected: 此 skill 由框架锁定')
     expect(protectedCodexSkill).toContain(`\`${frameworkRoot}/commands/hx-init.md\``)
     expect(protectedCodexSkill).not.toContain('/tmp/hx-user/commands/hx-init.md')
+    expect(summary.created).toContain('~/.claude/skills/hx-doc/SKILL.md')
     expect(codexSummary.created).toContain('~/.codex/skills/hx-doc/SKILL.md')
   })
 
-  it('skips writing unchanged adapter files', () => {
-    const targetDir = createTempDir('hx-forwarder-repeat-')
+  it('skips writing unchanged skill files', () => {
+    const targetDir = createTempDir('hx-claude-skill-repeat-')
     const frameworkRoot = resolve(process.cwd(), 'src')
     const userHxDir = '/tmp/hx-user'
     const spec = [{ name: 'hx-doc', description: 'Doc Command', protected: false }]
 
-    generateForwarderFiles(spec, targetDir, frameworkRoot, userHxDir, createSummary(), { createDir: true })
+    generateClaudeSkillFiles(spec, targetDir, frameworkRoot, userHxDir, createSummary(), { createDir: true })
     const secondSummary = createSummary()
-    generateForwarderFiles(spec, targetDir, frameworkRoot, userHxDir, secondSummary, { createDir: true })
+    generateClaudeSkillFiles(spec, targetDir, frameworkRoot, userHxDir, secondSummary, { createDir: true })
 
-    expect(secondSummary.skipped).toContain('~/.claude/commands/hx-doc.md (无变化)')
+    expect(secondSummary.skipped).toContain('~/.claude/skills/hx-doc/SKILL.md (无变化)')
   })
 
-  it('prunes stale managed adapter files for removed commands', () => {
-    const targetDir = createTempDir('hx-forwarder-stale-')
+  it('prunes stale managed skill files for removed commands', () => {
+    const targetDir = createTempDir('hx-claude-skill-stale-')
     const codexDir = createTempDir('hx-codex-stale-')
     const frameworkRoot = resolve(process.cwd(), 'src')
     const userHxDir = '/tmp/hx-user'
     const specs = [{ name: 'hx-doc', description: 'Doc Command', protected: false }]
-    const forwarderSummary = createSummary()
+    const claudeSummary = createSummary()
     const codexSummary = createSummary()
 
-    writeFileSync(
-      resolve(targetDir, 'hx-setup.md'),
-      '<!-- hx-forwarder: hx-setup — 由 hx setup 自动生成，请勿手动修改 -->\n',
-      'utf8'
-    )
+    mkdirSync(resolve(targetDir, 'hx-setup'), { recursive: true })
+    writeFileSync(resolve(targetDir, 'hx-setup', 'SKILL.md'), '<!-- hx-skill: hx-setup — 由 hx setup 自动生成，请勿手动修改 -->\n', 'utf8')
     mkdirSync(resolve(codexDir, 'hx-setup'), { recursive: true })
     writeFileSync(
       resolve(codexDir, 'hx-setup', 'SKILL.md'),
@@ -168,12 +169,27 @@ describe('install-utils', () => {
       'utf8'
     )
 
-    generateForwarderFiles(specs, targetDir, frameworkRoot, userHxDir, forwarderSummary, { createDir: true })
+    generateClaudeSkillFiles(specs, targetDir, frameworkRoot, userHxDir, claudeSummary, { createDir: true })
     generateCodexSkillFiles(specs, codexDir, frameworkRoot, userHxDir, codexSummary, { createDir: true })
 
-    expect(forwarderSummary.removed).toContain('~/.claude/commands/hx-setup.md')
+    expect(claudeSummary.removed).toContain('~/.claude/skills/hx-setup/')
     expect(codexSummary.removed).toContain('~/.codex/skills/hx-setup/')
-    expect(() => readFileSync(resolve(targetDir, 'hx-setup.md'), 'utf8')).toThrow()
+    expect(() => readFileSync(resolve(targetDir, 'hx-setup', 'SKILL.md'), 'utf8')).toThrow()
     expect(() => readFileSync(resolve(codexDir, 'hx-setup', 'SKILL.md'), 'utf8')).toThrow()
+  })
+
+  it('supports additional agent skill directories with the same template', () => {
+    const targetDir = createTempDir('hx-gemini-target-')
+    const frameworkRoot = resolve(process.cwd(), 'src')
+    const userHxDir = '/tmp/hx-user'
+    const summary = createSummary()
+    const specs = [{ name: 'hx-doc', description: 'Doc Command', protected: false }]
+
+    generateSkillFilesForAgent('gemini', specs, targetDir, frameworkRoot, userHxDir, summary, { createDir: true })
+
+    const geminiSkill = readFileSync(resolve(targetDir, 'hx-doc', 'SKILL.md'), 'utf8')
+    expect(geminiSkill).toContain('hx-skill: hx-doc')
+    expect(geminiSkill).toContain('`<项目根>/.hx/commands/hx-doc.md`')
+    expect(summary.created).toContain('~/.gemini/skills/hx-doc/SKILL.md')
   })
 })

@@ -135,9 +135,10 @@ hx setup</code></pre>
 ~/.hx/commands/
 ~/.hx/hooks/
 ~/.hx/pipelines/
-~/.claude/commands/    ← Claude 转发器
-~/.codex/skills/hx-*/   ← Codex skill 目录（每命令一个）</code></pre>
-            <p class="card-body">npm 安装会自动补齐这些入口；<code>hx setup</code> 只用于手动修复。它们都不含业务逻辑，运行时按三层优先级路由到实体命令文件；<code>~/.hx/settings.yaml</code> 只保存用户级安装设置。</p>
+~/.claude/skills/       ← agent skill 入口之一
+~/.codex/skills/
+~/.cursor/skills/       ← 其他 agent 同理</code></pre>
+            <p class="card-body">npm 安装会自动补齐这些入口；<code>hx setup</code> 首次会列出 agent 清单供用户选择，后续修复默认复用 <code>~/.hx/settings.yaml</code> 中记录的 agents。运行时仍按三层优先级路由到实体 command 文件。</p>
           </article>
         </div>
       </div>
@@ -160,7 +161,7 @@ $hx-init</code></pre>
             <pre><code>.hx/config.yaml                 ← 项目级运行时配置
 CLAUDE.md / AGENTS.md          ← 注入 harness 标记块
 .hx/rules/*.md                 ← 项目规则文件骨架
-.hx/commands/README.md         ← 项目级命令目录说明
+.hx/commands/README.md         ← 项目级 skill 目录说明
 .hx/commands/hx-your-command.md.example
 .hx/hooks/README.md            ← Hook 目录说明
 .hx/hooks/pre_run.md.example

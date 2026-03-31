@@ -16,7 +16,7 @@ hooks:
 1. 判断需求来源：
    - 若当前输入已包含完整需求上下文，则按当前输入整理需求
    - 若已连接外部需求来源，则读取来源详情并转成统一需求事实
-2. 基于需求详情整理需求标题，并生成项目内唯一的 `feature` 标识。
+2. 基于需求详情整理需求文档内容，并生成项目内唯一的 `feature` 标识。
 3. 读取 `.hx/config.yaml` 中的 `paths.requirementDoc`。
    - 缺失时默认使用 `docs/requirement/{feature}.md`
 4. 读取 `rules/golden-rules.md` 和 `rules/requirement-template.md`。

@@ -75,7 +75,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="grp-install"><td><span class="command-name">hx setup</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>手动重跑安装，修复 ~/.hx/ 与 Claude / Codex 两侧入口</td></tr>
+              <tr class="grp-install"><td><span class="command-name">hx setup</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>手动重跑安装，修复 ~/.hx/ 与各 agent 的 skill 入口</td></tr>
               <tr class="grp-install"><td><span class="command-name">hx version</span></td><td><span class="badge cli">CLI</span></td><td><span class="grp-text-install">安装与维护</span></td><td>输出 CLI 版本</td></tr>
               <tr class="grp-init"><td><span class="command-name">/hx-init</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-init">项目初始化</span></td><td>分析项目结构，写入 .hx/config.yaml，注入 CLAUDE.md 标记块</td></tr>
               <tr class="grp-install"><td><span class="command-name">/hx-upgrade</span></td><td><span class="badge claude-cmd">Claude</span></td><td><span class="grp-text-install">安装与维护</span></td><td>升级框架并同步安装产物</td></tr>
@@ -108,12 +108,12 @@
             <div class="card-meta">Setup</div>
             <h3 class="card-title"><code class="command-name">hx setup</code></h3>
             <div class="command-syntax">hx setup [--dry-run]</div>
-            <p class="card-body">手动重跑安装逻辑，修复 Claude / Codex 两侧入口，初始化 ~/.hx/ 目录结构。</p>
+            <p class="card-body">手动重跑安装逻辑，修复各 agent 的 skill 入口，初始化 ~/.hx/ 目录结构。</p>
             <div class="note-list">
               <p>会创建 <code>~/.hx/</code>（commands/、hooks/、pipelines/）目录结构。</p>
-              <p>生成 Claude 转发器到 <code>~/.claude/commands/</code>，同时为每个命令生成 Codex skill 目录到 <code>~/.codex/skills/hx-&lt;cmd&gt;/SKILL.md</code>。</p>
-              <p><code>~/.hx/settings.yaml</code> 不存在时创建，写入 frameworkRoot。</p>
-              <p>npm 安装包时会自动执行一次 setup；这个命令主要用于修复或补装。</p>
+              <p>首次无配置时会直接列出 agent 清单让用户选择；同一套 workflow skill 会安装到所选 agent 的 <code>skills</code> 目录，例如 <code>~/.claude/skills/</code>、<code>~/.codex/skills/</code>、<code>~/.cursor/skills/</code>。</p>
+              <p><code>~/.hx/settings.yaml</code> 不存在时创建，写入 frameworkRoot 和已选择的 agents；后续修复默认复用这份记录。</p>
+              <p>安装后需要先手动运行一次 <code>hx setup</code>；后续则主要用于修复或补装。</p>
             </div>
           </article>
           <article class="card command-card">
@@ -156,7 +156,7 @@
             <p class="card-body">从当前输入或已连接需求来源生成结构化需求文档。</p>
             <div class="note-list">
               <p>路径从 <code>.hx/config.yaml</code> 的 <code>paths.requirementDoc</code> 模板推断。</p>
-              <p>命令会基于需求详情自动整理需求标题，并生成项目内稳定的 <code>feature</code> 标识。</p>
+              <p>命令会基于需求详情整理需求文档内容，并生成项目内稳定的 <code>feature</code> 标识。</p>
               <p>这个 <code>feature</code> 默认不需要你手动管理；后续命令会优先自动续接。</p>
             </div>
           </article>

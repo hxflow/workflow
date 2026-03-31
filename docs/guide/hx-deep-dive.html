@@ -104,15 +104,15 @@
               <tr>
                 <td><span class="badge violet">FRAMEWORK_ROOT</span></td>
                 <td>
-                  <div><code>src/commands/</code>（命令实体）</div>
+                  <div><code>src/commands/</code>（内置 skill 实体）</div>
                   <div><code>src/pipelines/</code>（内置流水线）</div>
                 </td>
-                <td>框架内置资源（只读），通过装包或重装同步。命令不直接在此运行，由转发器路由。</td>
+                <td>框架内置资源（只读），通过装包或重装同步。skill 不直接在此运行，由入口文件路由。</td>
               </tr>
               <tr>
                 <td><span class="badge gold">USER_HX_DIR</span></td>
                 <td>
-                  <div><code>~/.hx/commands/</code>（用户命令覆盖）</div>
+                  <div><code>~/.hx/commands/</code>（用户 skill 覆盖）</div>
                   <div><code>~/.hx/hooks/</code>（用户 Hook）</div>
                   <div><code>~/.hx/pipelines/</code>（用户流水线）</div>
                   <div><code>~/.hx/settings.yaml</code></div>
@@ -122,7 +122,7 @@
               <tr>
                 <td><span class="badge blue">PROJECT_ROOT</span></td>
                 <td>
-                  <div><code>.hx/commands/</code>（项目命令覆盖）</div>
+                  <div><code>.hx/commands/</code>（项目 skill 覆盖）</div>
                   <div><code>.hx/rules/</code>（项目规则文件）</div>
                   <div><code>.hx/pipelines/</code>（项目流水线）</div>
                   <div><code>.hx/config.yaml</code></div>
@@ -134,11 +134,11 @@
         </div>
         <div class="callout info">
           <span class="icon">i</span>
-          <div><strong>配置边界：</strong><code>~/.hx/settings.yaml</code> 只保存用户级安装设置；项目运行时配置以 <code>.hx/config.yaml</code> 为准。commands / hooks / pipelines 仍按项目层 → 用户层 → 框架层的顺序解析。</div>
+          <div><strong>配置边界：</strong><code>~/.hx/settings.yaml</code> 只保存用户级安装设置和已选择的 agents；项目运行时配置以 <code>.hx/config.yaml</code> 为准。commands / pipelines 仍按项目层 → 用户层 → 框架层覆盖解析，hooks 按固定顺序串行执行。</div>
         </div>
         <div class="callout info">
           <span class="icon">i</span>
-          <div><strong>入口机制：</strong>Claude 通过 <code>~/.claude/commands/</code> 转发器运行 <code>/hx-*</code>；Codex 通过 <code>~/.codex/skills/hx-&lt;cmd&gt;/SKILL.md</code> 独立 skill 目录运行 <code>$hx-*</code>。两者最终都按项目层 → 用户层 → 系统层的顺序读取同一套实体文件。</div>
+          <div><strong>入口机制：</strong>所选 agent 都通过各自的 <code>skills</code> 目录运行同一套 <code>hx-*</code> workflow skill，例如 <code>~/.claude/skills/</code>、<code>~/.codex/skills/</code>、<code>~/.cursor/skills/</code>。最终都按项目层 → 用户层 → 系统层的顺序读取同一套实体文件。</div>
         </div>
       </div>
     </section>
@@ -199,7 +199,7 @@ hooks:
   - pre
   - post
 ---</code></pre>
-            <p class="card-body">只有命令 frontmatter 声明了 <code>hooks</code>，运行时才会按 <code>pre_run.md</code> / <code>post_run.md</code> 在项目层 → 用户层 → 框架层查找 Hook 文件。</p>
+            <p class="card-body">只有命令 frontmatter 声明了 <code>hooks</code>，运行时才会按 <code>pre_run.md</code> / <code>post_run.md</code> 组装 Hook 链。<code>pre</code> 顺序为框架层 → 用户层 → 项目层，<code>post</code> 顺序相反。</p>
           </article>
         </div>
       </div>

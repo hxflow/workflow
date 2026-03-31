@@ -15,14 +15,12 @@
     "src/hooks/**/*",
     "src/templates/**/*",
     "src/pipelines/**/*",
-    "src/scripts/hx-postinstall.js",
     "src/scripts/hx-setup.js",
     "src/scripts/lib/config-utils.js",
     "src/scripts/lib/install-utils.js",
     "src/scripts/lib/resolve-context.js"
   ],
   "scripts": {
-    "postinstall": "node src/scripts/hx-postinstall.js",
     "pack:dry-run": "npm pack --dry-run",
     "release:pack": "npm pack",
     "hx:test:unit": "vitest run tests/unit",

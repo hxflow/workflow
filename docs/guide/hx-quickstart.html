@@ -241,7 +241,7 @@
     <div class="hero-inner">
       <div class="hero-tag">TEAM TRAINING · BASED ON CURRENT REPO</div>
       <h1 class="hero-title">用一页讲清 <em>HXFlow</em><br><span class="mono">框架是什么、怎么跑、怎么扩展</span></h1>
-      <p class="hero-sub">这份快速入门页基于当前仓库事实整理：<code>@hxflow/cli</code> 是一个 Node 单包 CLI，真正的工作流能力由 Markdown 命令契约、项目规则文件、Pipeline 和用户/项目层覆盖共同组成。目标读者是第一次接手 HXFlow 的工程师。</p>
+      <p class="hero-sub">这份快速入门页基于当前仓库事实整理：<code>@hxflow/cli</code> 是一个 Node 单包 CLI，真正的工作流能力由 Markdown skill 契约、项目规则文件、Pipeline 和用户/项目层覆盖共同组成。目标读者是第一次接手 HXFlow 的工程师。</p>
       <div class="hero-actions">
         <a class="btn-primary" href="#memory">先看三句话</a>
         <a class="btn-ghost" href="#use">直接看怎么用</a>
@@ -250,7 +250,7 @@
       <div class="hero-stats">
         <div class="metric"><div class="metric-value">1</div><div class="metric-label">个 Node CLI 包</div></div>
         <div class="metric"><div class="metric-value">15</div><div class="metric-label">个内置 Agent 命令</div></div>
-        <div class="metric"><div class="metric-value">3</div><div class="metric-label">层命令覆盖</div></div>
+        <div class="metric"><div class="metric-value">3</div><div class="metric-label">层 skill 覆盖</div></div>
         <div class="metric"><div class="metric-value">5</div><div class="metric-label">主路径步骤</div></div>
       </div>
       <div class="quickstart-strip">
@@ -284,8 +284,8 @@
           </article>
           <article class="card">
             <div class="card-meta">2 / 真正入口</div>
-            <h3 class="card-title">真正执行逻辑是 Markdown 命令契约</h3>
-            <p class="card-body"><code>bin/hx.js</code> 只处理 <code>setup / version</code>。像 <code>hx-init</code>、<code>hx-doc</code>、<code>hx-go</code> 以及维护类命令，本质上都是被 Agent 读取的命令契约文件。</p>
+            <h3 class="card-title">真正执行逻辑是 Markdown skill 契约</h3>
+            <p class="card-body"><code>bin/hx.js</code> 只处理 <code>setup / version</code>。像 <code>hx-init</code>、<code>hx-doc</code>、<code>hx-go</code> 以及维护类命令，本质上都是被 Agent 读取的 skill 契约文件。</p>
           </article>
           <article class="card">
             <div class="card-meta">3 / 扩展方式</div>
@@ -307,10 +307,9 @@
         <p class="section-desc">下面这张地图直接对应当前仓库的真实目录。建议按“入口 → 规则 → 扩展 → 文档”的顺序阅读，不要从零散文件开始。</p>
         <pre><code><span class="cg"># 当前仓库核心结构</span>
 bin/hx.js                     <span class="cm"># CLI 入口，只负责内置维护命令</span>
-src/scripts/hx-postinstall.js <span class="cm"># 装包后自动补齐全局入口</span>
-src/scripts/hx-setup.js       <span class="cm"># 手动修复安装链</span>
+src/scripts/hx-setup.js       <span class="cm"># 安装与修复全局入口</span>
 src/scripts/lib/              <span class="cm"># 安装链和命令元数据工具</span>
-src/commands/*.md             <span class="cm"># hx-init / hx-doc / hx-go 等命令契约</span>
+src/commands/*.md             <span class="cm"># hx-init / hx-doc / hx-go 等 workflow skill 契约</span>
 src/pipelines/default.yaml    <span class="cm"># 默认主路径：doc -> plan -> run -> qa -> mr</span>
 docs/guide/*.html             <span class="cm"># 面向团队的静态文档</span></code></pre>
         <div class="repo-map">
@@ -325,9 +324,9 @@ docs/guide/*.html             <span class="cm"># 面向团队的静态文档</sp
             <p>每个 <code>hx-*</code> 命令都是一份 Markdown 约束文件，里面写“事实来源、执行步骤、边界和输出要求”。这是 HXFlow 最关键的设计点。</p>
           </article>
           <article class="map-card">
-            <div class="map-path">src/scripts/ + postinstall</div>
+            <div class="map-path">src/scripts/</div>
             <h3>系统层仅保留安装链</h3>
-            <p>当前 Node 脚本只承担安装职责：装包后自动执行 <code>hx-postinstall</code>，必要时用 <code>hx setup</code> 手动修复。项目规则生成和维护动作交给 Agent 命令完成。</p>
+            <p>当前 Node 脚本只承担安装职责：用户手动运行 <code>hx setup</code> 完成初始化或修复。项目规则生成和维护动作交给 Agent 命令完成。</p>
           </article>
           <article class="map-card">
             <div class="map-path">src/pipelines/default.yaml</div>
@@ -337,7 +336,7 @@ docs/guide/*.html             <span class="cm"># 面向团队的静态文档</sp
         </div>
         <div class="callout tip">
           <span class="icon">✓</span>
-          <div><strong>新人读仓库顺序：</strong><code>README.md</code> → <code>bin/hx.js</code> → <code>src/commands/hx-init.md</code> → <code>src/pipelines/default.yaml</code> → <code>src/scripts/hx-postinstall.js</code>。</div>
+          <div><strong>新人读仓库顺序：</strong><code>README.md</code> → <code>bin/hx.js</code> → <code>src/commands/hx-init.md</code> → <code>src/pipelines/default.yaml</code> → <code>src/scripts/hx-setup.js</code>。</div>
         </div>
       </div>
     </section>
@@ -363,7 +362,7 @@ docs/guide/*.html             <span class="cm"># 面向团队的静态文档</sp
             <ul>
               <li>运行环境：Claude Code 或 Codex 这类 Agent 会话。</li>
               <li>职责：整理需求、产出计划、执行任务、做 QA、生成 MR 上下文，以及升级/卸载/诊断等维护动作。</li>
-              <li>载体：<code>src/commands/*.md</code> 里的命令契约。</li>
+              <li>载体：<code>src/commands/*.md</code> 里的 workflow skill 契约。</li>
               <li>同一套 contract，Claude 用 <code>/hx-*</code>，Codex 用 <code>$hx-*</code>。</li>
             </ul>
             <div class="command-line">Claude: /hx-go<br>Codex: $hx-go</div>
@@ -379,8 +378,8 @@ docs/guide/*.html             <span class="cm"># 面向团队的静态文档</sp
     <section id="layers">
       <div class="wrap">
         <div class="section-tag">Layers</div>
-        <h2 class="section-title">三层覆盖：为什么团队可以不改内核</h2>
-        <p class="section-desc">HXFlow 的核心设计不是“所有团队都改同一个模板”，而是三层同构目录。命令、Hook 和 pipeline 都按项目层 → 用户层 → 系统层命中即停止。</p>
+        <h2 class="section-title">三层扩展：为什么团队可以不改内核</h2>
+        <p class="section-desc">HXFlow 的核心设计不是“所有团队都改同一个模板”，而是三层同构目录。commands / pipelines 走覆盖解析，hooks 走中间件链执行。</p>
         <div class="path-stack">
           <div class="path-row">
             <div class="path-label">项目层</div>
@@ -391,13 +390,13 @@ docs/guide/*.html             <span class="cm"># 面向团队的静态文档</sp
           <div class="path-row">
             <div class="path-label">用户层</div>
             <div>
-              <p><code>~/.hx/</code>。跨项目共享，适合放个人或团队通用 Hook、自定义命令和 pipeline 覆盖。装包后的自动 setup 会先把这层基础结构准备好。</p>
+              <p><code>~/.hx/</code>。跨项目共享，适合放个人或团队通用 Hook、自定义命令和 pipeline。装包后的自动 setup 会先把这层基础结构准备好。</p>
             </div>
           </div>
           <div class="path-row">
             <div class="path-label">系统层</div>
             <div>
-              <p><code>&lt;frameworkRoot&gt;/src/</code>。也就是当前仓库内置的默认实现：命令契约、默认 pipeline 和安装链脚本都在这里。</p>
+              <p><code>&lt;frameworkRoot&gt;/src/</code>。也就是当前仓库内置的默认实现：workflow skill 契约、默认 pipeline 和安装链脚本都在这里。</p>
             </div>
           </div>
         </div>
@@ -420,7 +419,7 @@ docs/guide/*.html             <span class="cm"># 面向团队的静态文档</sp
         </div>
         <div class="callout tip">
           <span class="icon">✓</span>
-          <div><strong>团队治理建议：</strong>不要直接改系统层命令契约。团队规则应写入项目层 <code>.hx/rules/</code> 的手动区，确保框架升级时不会被覆盖。</div>
+          <div><strong>团队治理建议：</strong>不要直接改系统层 workflow skill 契约。团队规则应写入项目层 <code>.hx/rules/</code> 的手动区，确保框架升级时不会被覆盖。</div>
         </div>
       </div>
     </section>
@@ -435,7 +434,7 @@ docs/guide/*.html             <span class="cm"># 面向团队的静态文档</sp
             <div class="timeline-step">A</div>
             <div>
               <div class="timeline-title">机器级：先装框架</div>
-              <div class="timeline-body">全局安装 npm 包后会自动执行 setup。必要时再手动运行 <code>hx setup</code>。这一步会写入 <code>~/.hx/</code> 目录结构、<code>~/.hx/settings.yaml</code>，并生成 Claude/Codex 对应的适配层。</div>
+              <div class="timeline-body">全局安装 npm 包后，先手动运行一次 <code>hx setup</code>。这一步会写入 <code>~/.hx/</code> 目录结构、<code>~/.hx/settings.yaml</code>，并把同一套 workflow skill 安装到目标 agent 的 skills 目录；所选 agents 会记录到 settings，供后续修复和重跑复用。</div>
             </div>
           </div>
           <div class="timeline-item">
@@ -514,7 +513,7 @@ $hx-mr</code></pre>
           <article class="map-card">
             <div class="map-path">.hx/commands/*.md</div>
             <h3>改命令行为</h3>
-            <p>如果某个命令需要项目级改造，直接用同名命令文件覆盖。例如项目层写 <code>.hx/commands/hx-run.md</code>，优先级会高于系统层。</p>
+            <p>如果某个 skill 需要项目级改造，直接用同名 skill 文件覆盖。例如项目层写 <code>.hx/commands/hx-run.md</code>，优先级会高于系统层。</p>
           </article>
           <article class="map-card">
             <div class="map-path">.hx/pipelines/default.yaml</div>
@@ -624,7 +623,7 @@ npm run hx:test:integration</code></pre>
           </a>
           <a class="reading-card" href="hx-deep-dive.html">
             <h3>运行机制</h3>
-            <p>适合维护者和高级用户，理解命令查找、规则运行时、Hook 与上下文装配。</p>
+            <p>适合维护者和高级用户，理解命令查找、规则运行时、Hook 中间件链与上下文装配。</p>
           </a>
           <a class="reading-card" href="hx-config-reference.html">
             <h3>配置参考</h3>

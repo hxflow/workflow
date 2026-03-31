@@ -1,5 +1,12 @@
 [
   {
+    "name": "AGENTS",
+    "path": "AGENTS.md",
+    "type": "md",
+    "category": "根目录"
+  }
+,
+  {
     "name": "CLAUDE",
     "path": "CLAUDE.md",
     "type": "md",
@@ -224,6 +231,20 @@
   }
 ,
   {
+    "name": "pre_doc",
+    "path": "src/hooks/pre_doc.md",
+    "type": "md",
+    "category": "src/hooks"
+  }
+,
+  {
+    "name": "pre_fix",
+    "path": "src/hooks/pre_fix.md",
+    "type": "md",
+    "category": "src/hooks"
+  }
+,
+  {
     "name": "README",
     "path": "src/pipelines/README.md",
     "type": "md",
@@ -231,29 +252,15 @@
   }
 ,
   {
-    "name": "claude-layered",
-    "path": "src/templates/forwarders/claude-layered.md",
+    "name": "skill-layered",
+    "path": "src/templates/forwarders/skill-layered.md",
     "type": "md",
     "category": "src/templates/forwarders"
   }
 ,
   {
-    "name": "claude-protected",
-    "path": "src/templates/forwarders/claude-protected.md",
-    "type": "md",
-    "category": "src/templates/forwarders"
-  }
-,
-  {
-    "name": "codex-layered",
-    "path": "src/templates/forwarders/codex-layered.md",
-    "type": "md",
-    "category": "src/templates/forwarders"
-  }
-,
-  {
-    "name": "codex-protected",
-    "path": "src/templates/forwarders/codex-protected.md",
+    "name": "skill-protected",
+    "path": "src/templates/forwarders/skill-protected.md",
     "type": "md",
     "category": "src/templates/forwarders"
   }

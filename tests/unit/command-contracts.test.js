@@ -156,8 +156,8 @@ describe('command contracts', () => {
 
     expect(commandsReadme).toContain('src/commands/resolution.md')
     expect(hxGo).toContain('src/commands/resolution.md')
-    expect(resolution).toContain('`protected: true` 的命令只允许读取框架层实体文件。')
-    expect(resolution).toContain('~/.claude/commands/*.md')
+    expect(resolution).toContain('`protected: true` 的 skill 只允许读取框架层实体文件。')
+    expect(resolution).toContain('~/.claude/skills/*/SKILL.md')
     expect(resolution).toContain('~/.codex/skills/*/SKILL.md')
   })
 
@@ -167,6 +167,7 @@ describe('command contracts', () => {
     const hxRun = readFileSync(resolve(COMMANDS_DIR, 'hx-run.md'), 'utf8')
     const hxPlan = readFileSync(resolve(COMMANDS_DIR, 'hx-plan.md'), 'utf8')
     const hxMr = readFileSync(resolve(COMMANDS_DIR, 'hx-mr.md'), 'utf8')
+    const hxUpgrade = readFileSync(resolve(COMMANDS_DIR, 'hx-upgrade.md'), 'utf8')
 
     expect(hxDoc).not.toContain('--task <task-id>')
     expect(hxDoc).toContain('usage: hx-doc')
@@ -188,5 +189,7 @@ describe('command contracts', () => {
     expect(hxPlan).toContain('不允许在本阶段重算')
     expect(hxRun).toContain('不生成、不改写、不重算')
     expect(hxMr).toContain('不允许在 MR 阶段重算')
+    expect(hxUpgrade).toContain('usage: hx-upgrade [--dry-run]')
+    expect(hxUpgrade).not.toContain('--agent <')
   })
 })

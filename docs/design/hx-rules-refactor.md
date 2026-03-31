@@ -18,7 +18,7 @@
 - `.hx/commands/`
 - `.hx/pipelines/`
 
-初始化与更新由命令契约驱动：
+初始化与更新由 workflow skill 契约驱动：
 
 - `src/commands/hx-init.md`
 - `src/commands/hx-rules.md`
@@ -141,7 +141,7 @@ hooks:
 
 ### 5. 运行时边界
 
-当前所有 `hx-*` 命令契约都已按以下边界收口：
+当前所有 `hx-*` workflow skill 契约都已按以下边界收口：
 
 - 运行时只依赖项目内配置、规则和文档
 - `hx-go` 只负责按 pipeline 调度命令
@@ -158,7 +158,6 @@ hooks:
 ```text
 bin/hx.js
 src/scripts/hx-setup.js
-src/scripts/hx-postinstall.js
 src/scripts/lib/config-utils.js
 src/scripts/lib/install-utils.js
 src/scripts/lib/resolve-context.js
