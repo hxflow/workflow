@@ -366,7 +366,7 @@ docs/guide/*.html             <span class="cm"># 面向团队的静态文档</sp
               <li>载体：<code>src/commands/*.md</code> 里的命令契约。</li>
               <li>同一套 contract，Claude 用 <code>/hx-*</code>，Codex 用 <code>$hx-*</code>。</li>
             </ul>
-            <div class="command-line">Claude: /hx-go --task 12345<br>Codex: $hx-go --task 12345</div>
+            <div class="command-line">Claude: /hx-go<br>Codex: $hx-go</div>
           </article>
         </div>
         <div class="callout info">
@@ -466,26 +466,26 @@ hx setup
 <span class="cm">Codex:</span>  $hx-init
 
 <span class="cg"># 3. 进入需求交付</span>
-<span class="cm">Claude:</span> /hx-go --task 12345
-<span class="cm">Codex:</span>  $hx-go --task 12345</code></pre>
+<span class="cm">Claude:</span> /hx-go
+<span class="cm">Codex:</span>  $hx-go</code></pre>
           </article>
           <article class="card">
             <div class="card-meta">手动模式</div>
             <h3 class="card-title">需要可控性时分步执行</h3>
             <pre><code><span class="cm">Claude:</span>
-/hx-doc --task 12345
+/hx-doc "用户登录页支持手机号登录"
 /hx-plan
 /hx-run
 /hx-qa
 /hx-mr
 
 <span class="cm">Codex:</span>
-$hx-doc --task 12345
+$hx-doc "用户登录页支持手机号登录"
 $hx-plan
 $hx-run
 $hx-qa
 $hx-mr</code></pre>
-            <p class="card-body">主路径里通常不需要你手写 <code>feature key</code>，因为 <code>hx-doc</code> 会自动生成，后续步骤会自动续接。只有冲突、恢复或多需求并行时才显式写 key。</p>
+            <p class="card-body">主路径里通常不需要你手写 <code>feature</code>，因为 <code>hx-doc</code> 会自动生成，后续步骤会自动续接。只有冲突、恢复或多需求并行时才显式指定。</p>
           </article>
         </div>
         <div class="callout info">
@@ -565,7 +565,7 @@ npm run hx:test:integration</code></pre>
             <ul>
               <li>确认装包后的全局入口已经可用；若异常，再手动执行 <code>hx setup</code> 修复。</li>
               <li>项目级执行 <code>/hx-init</code> 或 <code>$hx-init</code>。</li>
-              <li>需求级执行 <code>/hx-go --task 12345</code>，或至少手动跑一遍 <code>/hx-doc → /hx-plan</code>。</li>
+              <li>需求级执行 <code>/hx-go</code>，或至少手动跑一遍 <code>/hx-doc → /hx-plan</code>。</li>
             </ul>
           </article>
           <article class="workshop-step">
@@ -597,8 +597,8 @@ npm run hx:test:integration</code></pre>
             <p>不会。团队规则存放在项目层的 <code>.hx/rules/</code>，由 AI 命令按当前项目事实更新；手动写入的团队规则不会因为系统层重装或升级而被覆盖。</p>
           </article>
           <article class="mistake-card">
-            <h3>误区 3：每次都要手动写 <code>feature key</code></h3>
-            <p>不是主路径常态。<code>hx-doc</code> 会生成稳定的内部 key，后续命令通常自动续接。只有恢复执行、冲突消歧或多需求并行时才需要显式输入。</p>
+            <h3>误区 3：每次都要手动写 <code>feature</code></h3>
+            <p>不是主路径常态。<code>hx-doc</code> 会生成稳定的内部标识，后续命令通常自动续接。只有恢复执行、冲突消歧或多需求并行时才需要显式输入。</p>
           </article>
           <article class="mistake-card">
             <h3>误区 4：<code>hx-go</code> 是写死的流程</h3>

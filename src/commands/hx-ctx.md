@@ -1,16 +1,16 @@
 ---
 name: hx-ctx
 description: Phase 03 · 当前需求执行前预检（可选）
-usage: hx-ctx [<feature-key>]
+usage: hx-ctx [<feature>]
 ---
 
 # Phase 03 · 当前需求执行前预检（可选）
 
-参数: `$ARGUMENTS`（格式: `[<feature-key>]`）
+参数: `$ARGUMENTS`（格式: `[<feature>]`）
 
 ## 执行步骤
 
-1. 确定目标 `feature key`。
+1. 确定目标 `feature`。
 2. 读取 `.hx/config.yaml`。
 3. 检查当前需求执行所需资源：
    - `requirementDoc`

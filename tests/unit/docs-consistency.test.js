@@ -36,4 +36,19 @@ describe('docs consistency', () => {
     expect(configReference).toContain('~/.hx/settings.yaml')
     expect(configReference).toContain('.hx/config.yaml')
   })
+
+  it('removes task-id driven wording from the main workflow docs', () => {
+    const readme = readFileSync(resolve(ROOT, 'README.md'), 'utf8')
+    const quickstart = readFileSync(resolve(ROOT, 'docs/guide/hx-quickstart.html'), 'utf8')
+    const guide = readFileSync(resolve(ROOT, 'docs/guide/hx-guide.html'), 'utf8')
+    const commandIndex = readFileSync(resolve(ROOT, 'docs/guide/hx-command-index.html'), 'utf8')
+    const configReference = readFileSync(resolve(ROOT, 'docs/guide/hx-config-reference.html'), 'utf8')
+
+    expect(readme).not.toContain('--task <id>')
+    expect(readme).not.toContain('feature key')
+    expect(quickstart).not.toContain('/hx-go --task 12345')
+    expect(guide).not.toContain('[--task &lt;id&gt;]')
+    expect(commandIndex).toContain('--plan-task &lt;TASK-ID&gt;')
+    expect(configReference).not.toContain('{taskId}')
+  })
 })

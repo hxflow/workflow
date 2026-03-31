@@ -152,30 +152,29 @@
           <article class="card command-card">
             <div class="card-meta">Doc（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-doc</code></h3>
-            <div class="command-syntax">/hx-doc [&lt;feature-key-or-title&gt;] [--task &lt;id&gt;]</div>
-            <p class="card-body">从需求来源生成结构化需求文档；支持手工整理和按任务号拉取。</p>
+            <div class="command-syntax">/hx-doc</div>
+            <p class="card-body">从当前输入或已连接需求来源生成结构化需求文档。</p>
             <div class="note-list">
               <p>路径从 <code>.hx/config.yaml</code> 的 <code>paths.requirementDoc</code> 模板推断。</p>
-              <p><code>--task</code> 表示从任务系统获取需求来源并预填文档，而不是只写一个编号。</p>
-              <p>首个参数可省略；命令会基于需求详情自动生成中文标题和项目内唯一的内部主键。</p>
-              <p>这个内部主键默认不需要你手动管理；后续命令会优先自动续接。</p>
+              <p>命令会基于需求详情自动整理需求标题，并生成项目内稳定的 <code>feature</code> 标识。</p>
+              <p>这个 <code>feature</code> 默认不需要你手动管理；后续命令会优先自动续接。</p>
             </div>
           </article>
           <article class="card command-card">
             <div class="card-meta">Plan（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-plan</code></h3>
-            <div class="command-syntax">/hx-plan [&lt;feature-key&gt;]</div>
+            <div class="command-syntax">/hx-plan [&lt;feature&gt;]</div>
             <p class="card-body">读取需求文档，生成计划 Markdown 与 <code>*-progress.json</code>。</p>
             <div class="note-list">
               <p>路径从 <code>.hx/config.yaml</code> 的 paths.planDoc 模板推断。</p>
-              <p>若省略 <code>feature-key</code>，会优先从当前目标需求文档头部的内部主键自动解析。</p>
+              <p>若省略 <code>feature</code>，会优先从当前目标需求文档头部的内部标识自动解析。</p>
               <p>生成后会写入计划文档和 <code>*-progress.json</code>，后续命令直接以此作为状态来源。</p>
             </div>
           </article>
           <article class="card command-card">
             <div class="card-meta">Ctx（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-ctx</code></h3>
-            <div class="command-syntax">/hx-ctx [&lt;feature-key&gt;]</div>
+            <div class="command-syntax">/hx-ctx [&lt;feature&gt;]</div>
             <p class="card-body">面向当前需求做执行前预检，主要用于排查输入不完整或规则文件缺失。</p>
             <div class="note-list">
               <p>正常主流程不用先单独运行；<code>/hx-run</code> 会自动完成同等预检。</p>
@@ -185,12 +184,12 @@
           <article class="card command-card">
             <div class="card-meta">Status（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-status</code></h3>
-            <div class="command-syntax">/hx-status [&lt;feature-key&gt;]</div>
+            <div class="command-syntax">/hx-status [&lt;feature&gt;]</div>
             <p class="card-body">查看任务进度。</p>
             <div class="note-list">
               <p>无参数时展示所有需求的进度条汇总。</p>
-              <p>指定 feature key 时列出所有任务的详细状态。</p>
-              <p>高亮下一个 pending 任务，并默认提示继续运行当前 feature key 对应的需求。</p>
+              <p>指定 <code>feature</code> 时列出所有任务的详细状态。</p>
+              <p>高亮下一个 pending 任务，并默认提示继续运行当前需求对应的命令。</p>
             </div>
           </article>
         </div>
@@ -206,24 +205,24 @@
           <article class="card command-card">
             <div class="card-meta">Run（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-run</code></h3>
-            <div class="command-syntax">/hx-run [&lt;feature-key&gt;] [--task &lt;TASK-ID&gt;]</div>
-            <p class="card-body">默认执行当前需求下的全部 pending 任务；<code>--task</code> 仅用于高级模式。</p>
+            <div class="command-syntax">/hx-run [&lt;feature&gt;] [--plan-task &lt;TASK-ID&gt;]</div>
+            <p class="card-body">默认执行当前需求下的全部 pending 任务；<code>--plan-task</code> 仅用于高级模式。</p>
             <div class="note-list">
               <p>从 <code>.hx/config.yaml</code> 的 paths.* 字段读取需求文档、执行计划和进度文件路径。</p>
-              <p>省略 <code>feature-key</code> 时，会优先从当前需求/计划上下文自动续接。</p>
+              <p>省略 <code>feature</code> 时，会优先从当前需求/计划上下文自动续接。</p>
               <p>默认按计划顺序逐任务推进，并在每个任务完成后自动更新 progress。</p>
-              <p>需要调试、重试或断点恢复时，再传 <code>--task</code> 下钻到单任务。</p>
+              <p>需要调试、重试或断点恢复时，再传 <code>--plan-task</code> 下钻到单个计划任务。</p>
             </div>
           </article>
           <article class="card command-card">
             <div class="card-meta">Go（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-go</code></h3>
-            <div class="command-syntax">/hx-go [&lt;feature-key&gt;] [--task &lt;TASK-ID&gt;] [--from &lt;step-id&gt;]</div>
+            <div class="command-syntax">/hx-go [&lt;feature&gt;] [--from &lt;step-id&gt;]</div>
             <p class="card-body">全自动流水线，默认串起主路径；项目级 pipeline 可插入 review、clean 等辅助步骤。</p>
             <div class="note-list">
               <p>按 <code>src/pipelines/README.md</code> 的公共规则读取 pipeline YAML（项目层 → 用户层 → 框架层），按步骤驱动执行。</p>
               <p><code>--from &lt;step-id&gt;</code> 支持从指定步骤恢复（如 <code>--from run</code> 跳过 doc/plan）。</p>
-              <p><code>run</code> 步骤默认执行整个需求；传 <code>--task</code> 时才下钻到单任务。</p>
+              <p><code>run</code> 步骤默认执行整个需求；需要下钻单任务时应直接使用 <code>/hx-run --plan-task ...</code>。</p>
               <p>默认主路径为 <code>doc -&gt; plan -&gt; run -&gt; qa -&gt; mr</code>；更多步骤由 pipeline 覆盖控制。</p>
               <p>默认主路径只保留文档与计划两个确认点，后续可由项目级 pipeline 自行追加。</p>
             </div>
@@ -279,11 +278,11 @@
           <article class="card command-card">
             <div class="card-meta">MR（Claude）</div>
             <h3 class="card-title"><code class="command-name">/hx-mr</code></h3>
-            <div class="command-syntax">/hx-mr [&lt;feature-key&gt;] [--project &lt;group/repo&gt;] [--target &lt;branch&gt;]</div>
+            <div class="command-syntax">/hx-mr [&lt;feature&gt;] [--project &lt;group/repo&gt;] [--target &lt;branch&gt;]</div>
             <p class="card-body">输出 MR 创建上下文。</p>
             <div class="note-list">
               <p>汇总需求文档、任务完成情况、git log 和 diff stat。</p>
-              <p>省略 <code>feature-key</code> 时，会优先从最近一次执行上下文自动续接。</p>
+              <p>省略 <code>feature</code> 时，会优先从最近一次执行上下文自动续接。</p>
               <p>默认目标分支是 <code>main</code>；<code>--project</code> 用于显式指定目标仓库。</p>
             </div>
           </article>

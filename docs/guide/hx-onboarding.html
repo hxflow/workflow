@@ -94,7 +94,7 @@
         <div class="grid grid-2">
           <article class="card">
             <div class="card-meta">术语 01</div>
-            <h3 class="card-title"><code>feature key</code></h3>
+            <h3 class="card-title"><code>feature</code></h3>
             <p class="card-body">它是“当前需求在 HXFlow 里的内部短 ID”，不是给业务方看的标题。比如“用户登录页支持手机号登录”这类需求，系统可能生成 <code>user-login</code> 作为 key。后续很多文件都会以它命名，所以它更像一个稳定的文件前缀，而不是展示名。</p>
           </article>
           <article class="card">
@@ -105,7 +105,7 @@
         </div>
         <div class="callout info">
           <span class="icon">i</span>
-          <div><strong>一句话记忆：</strong><code>feature key</code> 用来串起”同一个需求”的文档和进度文件，<code>.hx/rules/*.md</code> 决定”按什么团队规则生成和执行”。正常情况下 feature key 自动生成续接，规则文件在项目初始化时配置好，后续只需按需更新。</div>
+          <div><strong>一句话记忆：</strong><code>feature</code> 用来串起“同一个需求”的文档和进度文件，<code>.hx/rules/*.md</code> 决定“按什么团队规则生成和执行”。正常情况下 feature 自动生成续接，规则文件在项目初始化时配置好，后续只需按需更新。</div>
         </div>
       </div>
     </section>
@@ -183,14 +183,14 @@ CLAUDE.md / AGENTS.md          ← 注入 harness 标记块
         <p class="section-desc">支持一键自动化（/hx-go）和手动逐步执行两种模式。主路径默认是 <code>/hx-doc → /hx-plan → /hx-run → /hx-qa → /hx-mr</code>。</p>
         <div class="callout tip">
           <span class="icon">✓</span>
-          <div><strong>推荐：</strong>优先使用 <code>/hx-go --task 12345</code> 一键执行主路径。只有在需要断点恢复或手动指定时，才显式传入 <code>feature key</code>。</div>
+          <div><strong>推荐：</strong>优先使用 <code>/hx-go</code> 一键执行主路径。只有在需要断点恢复或手动指定时，才显式传入 <code>feature</code>。</div>
         </div>
         <div class="timeline">
           <div class="timeline-item">
             <div class="timeline-step">01</div>
             <div>
               <div class="timeline-title">创建需求文档</div>
-              <div class="timeline-body">执行 <code>/hx-doc</code> 创建需求文档；可用 <code>--task &lt;id&gt;</code> 直接从任务系统拉取需求来源。feature key 由系统自动生成，正常情况下不用关心。</div>
+              <div class="timeline-body">执行 <code>/hx-doc</code> 创建需求文档；命令会根据当前输入或已连接需求来源整理事实，并自动生成项目内稳定的 <code>feature</code>。</div>
             </div>
           </div>
           <div class="timeline-item">
@@ -204,7 +204,7 @@ CLAUDE.md / AGENTS.md          ← 注入 harness 标记块
             <div class="timeline-step">03</div>
             <div>
               <div class="timeline-title">执行需求</div>
-              <div class="timeline-body">执行 <code>/hx-run</code>，按计划顺序完成当前需求下的全部 pending 任务；命令会先自动完成当前需求的执行前预检。仅在调试/恢复时才传 <code>--task</code>。</div>
+              <div class="timeline-body">执行 <code>/hx-run</code>，按计划顺序完成当前需求下的全部 pending 任务；命令会先自动完成当前需求的执行前预检。仅在调试/恢复单个计划任务时才传 <code>--plan-task</code>。</div>
             </div>
           </div>
           <div class="timeline-item">
@@ -218,29 +218,29 @@ CLAUDE.md / AGENTS.md          ← 注入 harness 标记块
             <div class="timeline-step">05</div>
             <div>
               <div class="timeline-title">交付</div>
-              <div class="timeline-body">执行 <code>/hx-mr</code> 生成 Merge Request 上下文；如果前面已建立最近执行上下文，通常不需要再手工输入 <code>feature key</code>。</div>
+              <div class="timeline-body">执行 <code>/hx-mr</code> 生成 Merge Request 上下文；如果前面已建立最近执行上下文，通常不需要再手工输入 <code>feature</code>。</div>
             </div>
           </div>
         </div>
         <pre><code><span class="cg"># 手动逐步执行（Claude）</span>
-/hx-doc --task 12345
+/hx-doc "用户登录页支持手机号登录"
 /hx-plan
 /hx-run
 /hx-qa
 /hx-mr
 
 <span class="cg"># 手动逐步执行（Codex）</span>
-$hx-doc --task 12345
+$hx-doc "用户登录页支持手机号登录"
 $hx-plan
 $hx-run
 $hx-qa
 $hx-mr
 
 <span class="cg"># 或一键执行（Claude）</span>
-/hx-go --task 12345
+/hx-go
 
 <span class="cg"># 或一键执行（Codex）</span>
-$hx-go --task 12345
+$hx-go
 
 <span class="cg"># 从指定步骤恢复（Claude）</span>
 /hx-go user-login --from run</code></pre>
@@ -255,7 +255,7 @@ $hx-go --task 12345
       <div class="wrap">
         <div class="section-tag">Example</div>
         <h2 class="section-title">完整例子</h2>
-        <p class="section-desc">下面用一个真实心智的例子，把“任务来源 → feature key → 文档 → 计划 → 执行 → 交付”串起来。</p>
+        <p class="section-desc">下面用一个真实心智的例子，把“需求事实 → feature → 文档 → 计划 → 执行 → 交付”串起来。</p>
         <div class="grid grid-2">
           <article class="card">
             <div class="card-meta">场景</div>
@@ -269,20 +269,20 @@ $hx-go --task 12345
             <div class="card-meta">命令</div>
             <h3 class="card-title">最常见的两种启动方式</h3>
             <pre><code><span class="cg"># 一步一步来</span>
-/hx-doc --task 12345
+/hx-doc "用户登录页支持手机号登录"
 /hx-plan
 /hx-run
 /hx-qa
 /hx-mr
 
 <span class="cg"># 或者直接一键跑主路径</span>
-/hx-go --task 12345</code></pre>
-            <p class="card-body">如果只是第一次体验，优先用这两套命令，不要先手输 <code>feature key</code>。</p>
+/hx-go</code></pre>
+            <p class="card-body">如果只是第一次体验，优先用这两套命令，不要先手输 <code>feature</code>。</p>
           </article>
         </div>
         <div class="callout tip">
           <span class="icon">✓</span>
-          <div><strong>这一步发生了什么：</strong><code>/hx-doc</code> 会读取任务 12345 的标题和描述，再自动生成一个适合做文件名的 kebab-case key。假设它生成的是 <code>user-login</code>，后面整条链路就会围绕这个 key 工作。</div>
+          <div><strong>这一步发生了什么：</strong><code>/hx-doc</code> 会读取当前需求详情，整理出需求标题，并自动生成一个项目内稳定的中文 <code>feature</code>。后面整条链路都会围绕这个标识工作。</div>
         </div>
         <div class="grid grid-2">
           <article class="card">
@@ -294,7 +294,7 @@ $hx-go --task 12345
 └── plans/
     ├── user-login.md
     └── user-login-progress.json</code></pre>
-            <p class="card-body">这里的 <code>user-login</code> 就是 feature key。它把“需求文档、计划文档、进度文件”三件事绑定成同一个需求上下文。</p>
+            <p class="card-body">这里的 <code>user-login</code> 就是 feature。它把“需求文档、计划文档、进度文件”三件事绑定成同一个需求上下文。</p>
           </article>
           <article class="card">
             <div class="card-meta">文件内容</div>
@@ -316,7 +316,7 @@ $hx-go --task 12345
         </div>
         <div class="callout info">
           <span class="icon">i</span>
-          <div><strong>为什么后面常常不用再写 key：</strong>当你刚执行过 <code>/hx-doc</code> 或当前打开的需求文档头部已经写着 <code>Feature Key: user-login</code>，<code>/hx-plan</code>、<code>/hx-run</code>、<code>/hx-mr</code> 一般都能自动续接到这个需求。</div>
+          <div><strong>为什么后面常常不用再写 feature：</strong>当你刚执行过 <code>/hx-doc</code> 或当前打开的需求文档头部已经写着 <code>Feature: user-login</code>，<code>/hx-plan</code>、<code>/hx-run</code>、<code>/hx-mr</code> 一般都能自动续接到这个需求。</div>
         </div>
         <div class="callout info">
           <span class="icon">i</span>

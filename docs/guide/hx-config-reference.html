@@ -107,7 +107,7 @@
           <article class="card">
             <div class="card-meta">object</div>
             <h3 class="card-title"><code>paths</code></h3>
-            <p class="card-body">所有字段均为路径模板，支持 {feature} 和 {taskId} 占位符。其中 {feature} 表示当前需求的内部 <code>feature key</code>。初始化后会显式写出默认值，便于后续编辑。</p>
+            <p class="card-body">所有字段均为路径模板，支持 {feature} 占位符。其中 {feature} 表示当前需求在项目内的稳定标识。初始化后会显式写出默认值，便于后续编辑。</p>
             <pre><code>paths:
   src: app                           # 源码目录（默认 src）
   requirementDoc: docs/req/{feature}.md   # 需求文档模板
@@ -122,7 +122,7 @@
       <div class="wrap">
         <div class="section-tag">Paths</div>
         <h2 class="section-title">路径模板字段</h2>
-        <p class="section-desc">所有 paths 字段均为路径模板，支持 {feature} 和 {taskId} 占位符替换。其中 {feature} 表示当前需求的内部 <code>feature key</code>。下面出现的 <code>docs/requirement</code> 与 <code>docs/plans</code> 仅表示默认值，不是强制目录。</p>
+        <p class="section-desc">所有 paths 字段均为路径模板，支持 {feature} 占位符替换。其中 {feature} 表示当前需求在项目内的稳定标识。下面出现的 <code>docs/requirement</code> 与 <code>docs/plans</code> 仅表示默认值，不是强制目录。</p>
         <div class="grid grid-2">
           <article class="card">
             <div class="card-meta">默认值</div>

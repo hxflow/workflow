@@ -129,12 +129,12 @@
         <div class="wrap">
           <div class="section-tag">Glossary</div>
           <h2 class="section-title">先懂两个词</h2>
-          <p class="section-desc">多数人第一次卡住的不是命令，而是不知道 <code>feature key</code> 和项目规则分别在框架里扮演什么角色。</p>
+          <p class="section-desc">多数人第一次卡住的不是命令，而是不知道 <code>feature</code> 和项目规则分别在框架里扮演什么角色。</p>
           <div class="grid grid-2">
             <article class="card">
               <div class="card-meta">术语 01</div>
-              <h3 class="card-title"><code>feature key</code> = 当前需求的内部短 ID</h3>
-              <p class="card-body">可以把它理解成”这次需求在 HXFlow 里的文件名前缀”。例如登录需求可能被生成成 <code>user-login</code>，随后需求文档、计划文档、进度文件通常都会围绕它命名：<code>docs/requirement/user-login.md</code>、<code>docs/plans/user-login.md</code>、<code>docs/plans/user-login-progress.json</code>。</p>
+              <h3 class="card-title"><code>feature</code> = 当前需求的项目内标识</h3>
+              <p class="card-body">可以把它理解成“这次需求在 HXFlow 里的文件名前缀”。例如登录需求可能被生成成 <code>user-login</code>，随后需求文档、计划文档、进度文件通常都会围绕它命名：<code>docs/requirement/user-login.md</code>、<code>docs/plans/user-login.md</code>、<code>docs/plans/user-login-progress.json</code>。</p>
             </article>
             <article class="card">
               <div class="card-meta">术语 02</div>
@@ -144,7 +144,7 @@
           </div>
           <div class="callout info">
             <span class="icon">i</span>
-            <div><strong>一句话记忆：</strong><code>feature key</code> 回答”这是哪一个需求”，<code>.hx/rules/*.md</code> 决定”团队按什么规则执行”。正常主路径里，feature key 通常自动生成并自动续接，规则文件在项目初始化时一次性配置好。</div>
+            <div><strong>一句话记忆：</strong><code>feature</code> 回答“这是哪一个需求”，<code>.hx/rules/*.md</code> 决定“团队按什么规则执行”。正常主路径里，feature 通常自动生成并自动续接，规则文件在项目初始化时一次性配置好。</div>
           </div>
         </div>
       </section>
@@ -167,7 +167,7 @@
               <div class="timeline-step">2</div>
               <div>
                 <div class="timeline-title">需求文档</div>
-                <div class="timeline-body"><code>/hx-doc [&lt;feature-key|标题&gt;] [--task &lt;id&gt;]</code> 创建需求文档；未传 feature key 时会基于需求详情自动生成内部主键，正常情况下不需要你手动处理。
+                <div class="timeline-body"><code>/hx-doc</code> 创建需求文档；命令会基于当前需求上下文整理需求标题并生成项目内稳定的 <code>feature</code>，正常情况下不需要你手动处理。
                 </div>
               </div>
             </div>
@@ -175,15 +175,15 @@
               <div class="timeline-step">3</div>
               <div>
                 <div class="timeline-title">执行计划</div>
-                <div class="timeline-body"><code>/hx-plan [&lt;feature-key&gt;]</code> 生成任务拆分和 progress
-                  JSON；若省略 feature key，会优先从当前需求文档自动续接。需要排查输入问题时，可额外运行 <code>/hx-ctx</code> 做当前需求的预检诊断。</div>
+                <div class="timeline-body"><code>/hx-plan [&lt;feature&gt;]</code> 生成任务拆分和 progress
+                  JSON；若省略 feature，会优先从当前需求文档自动续接。需要排查输入问题时，可额外运行 <code>/hx-ctx</code> 做当前需求的预检诊断。</div>
               </div>
             </div>
             <div class="timeline-item">
               <div class="timeline-step">4</div>
               <div>
                 <div class="timeline-title">任务执行</div>
-                <div class="timeline-body"><code>/hx-run [&lt;feature-key&gt;]</code> 默认按计划顺序执行整个需求下的 pending 任务；只在调试或恢复时才传 <code>--task</code> 下钻到单任务。</div>
+                <div class="timeline-body"><code>/hx-run [&lt;feature&gt;] [--plan-task &lt;TASK-ID&gt;]</code> 默认按计划顺序执行整个需求下的 pending 任务；只在调试或恢复时才传 <code>--plan-task</code> 下钻到单任务。</div>
               </div>
             </div>
             <div class="timeline-item">
@@ -205,13 +205,13 @@
           <div class="callout info">
             <span class="icon">i</span>
             <div>
-              <strong>一键模式：</strong><code>/hx-go [&lt;feature-key&gt;] [--task &lt;id&gt;]</code> 读取 pipeline YAML
+              <strong>一键模式：</strong><code>/hx-go [&lt;feature&gt;]</code> 读取 pipeline YAML
               驱动默认主路径（<code>doc -> plan -> run -> qa -> mr</code>），支持 <code>--from &lt;step-id&gt;</code> 从指定阶段恢复。
             </div>
           </div>
           <div class="callout tip">
             <span class="icon">✓</span>
-            <div><strong>读图方式：</strong>如果你只想先跑通一遍，不要先纠结 <code>feature key</code>。直接从 <code>/hx-doc</code> 开始。只有在断点恢复、冲突消歧或手工指定需求时，才需要显式输入 key。</div>
+            <div><strong>读图方式：</strong>如果你只想先跑通一遍，不要先纠结 <code>feature</code>。直接从 <code>/hx-doc</code> 开始。只有在断点恢复、冲突消歧或手工指定需求时，才需要显式输入。</div>
           </div>
         </div>
       </section>

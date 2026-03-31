@@ -2708,7 +2708,7 @@
           <div class="install-method">
             <div class="im-step">需求来源</div>
             <div class="im-title">DevOps 协作平台</div>
-            <div class="im-body">`/hx-doc --task <id>` 应直接拉取公司 DevOps 平台的任务详情，自动预填需求文档的来源、背景和 AC 候选项，并在内部生成项目唯一主键；未接入任务系统时再回退到手工整理模式。</div>
+            <div class="im-body"><code>/hx-doc</code> 应优先根据当前输入或已连接需求来源整理需求事实，自动预填需求文档的来源、背景和 AC 候选项，并在内部生成项目内稳定的 <code>feature</code>；未接入需求系统时回退到手工整理模式。</div>
           </div>
           <div class="install-method">
             <div class="im-step">执行引擎</div>
@@ -2818,7 +2818,7 @@
             <div class="phase-time">⏱ 0.5 ~ 1h / 需求</div>
           </div>
           <div class="phase-body">
-            <p class="phase-lead">每一条需求都必须产出一个结构化文档，写入 <code>paths.requirementDoc</code> 对应位置（默认在 <code>docs/requirement/</code>）。需求来源通常是公司 DevOps 协作平台；优先通过 <code>/hx-doc --task &lt;id&gt;</code> 拉取任务详情，再转化为 Agent 可执行的标准格式。
+            <p class="phase-lead">每一条需求都必须产出一个结构化文档，写入 <code>paths.requirementDoc</code> 对应位置（默认在 <code>docs/requirement/</code>）。需求来源通常是公司 DevOps 协作平台；优先通过 <code>/hx-doc</code> 读取当前输入或已连接来源中的需求事实，再转化为 Agent 可执行的标准格式。
             </p>
 
             <div class="cl-legend">
@@ -2831,13 +2831,13 @@
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                     <polyline points="1,5 4,8 9,2" />
                   </svg></div>
-                <div>传入 <code>--task &lt;id&gt;</code> 时，<code>/hx-doc</code> 应从 DevOps 平台获取任务详情（任务 ID、标题、描述、优先级、关联需求），并在内部生成项目内唯一、可复用的主键，作为需求文档的关联标识</div>
+                <div><code>/hx-doc</code> 应从当前输入或已连接需求来源中获取标题、描述、优先级、关联需求等事实，并在内部生成项目内唯一、可复用的 <code>feature</code>，作为需求文档的关联标识</div>
               </li>
               <li class="must">
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
                     <polyline points="1,5 4,8 9,2" />
                   </svg></div>
-                <div>以 Markdown 写需求文档，文件命名遵循 <code>paths.requirementDoc</code> 模板；若使用默认值，则为 <code>docs/requirement/[feature-key].md</code>。文档头部记录来源任务 ID 与 Feature Key 以保持双向追溯</div>
+                <div>以 Markdown 写需求文档，文件命名遵循 <code>paths.requirementDoc</code> 模板；若使用默认值，则为 <code>docs/requirement/[feature].md</code>。文档头部记录来源信息与 <code>feature</code> 以保持双向追溯</div>
               </li>
               <li class="must">
                 <div class="cl-icon"><svg fill="none" stroke-width="2" viewBox="0 0 10 10">
@@ -2869,7 +2869,7 @@
             <div class="codeblock gold" style="margin-top:28px">
               <div
                 style="font-family:var(--mono);font-size:10px;color:var(--txt3);margin-bottom:12px;letter-spacing:.1em">
-                需求文档模板 · 默认路径示例：docs/requirement/[feature-key].md</div>
+                需求文档模板 · 默认路径示例：docs/requirement/[feature].md</div>
               <pre><span class="ck"># 需求：用户登录接口</span>
 <span class="cm">&gt; 内部主键（Feature Key）：user-login</span>
 
@@ -3155,7 +3155,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
                     <line x1="5" y1="1" x2="5" y2="9" />
                     <line x1="1" y1="5" x2="9" y2="5" />
                   </svg></div>
-                <div>复杂特性可以用 JSON 文件追踪子任务进度（由 <code>paths.progressFile</code> 定位；默认示例为 <code>docs/plans/[feature-key]-progress.json</code>），Agent 对结构化数据的读写比 Markdown
+                <div>复杂特性可以用 JSON 文件追踪子任务进度（由 <code>paths.progressFile</code> 定位；默认示例为 <code>docs/plans/[feature]-progress.json</code>），Agent 对结构化数据的读写比 Markdown
                   更稳定</div>
               </li>
             </ul>
@@ -3827,7 +3827,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
 <span class="ck">/hx-mr user-login --project lehu/bffservice</span>
 
 <span class="cm"># 或在全自动流水线中自动执行</span>
-<span class="ck">/hx-go user-login --task 46474</span>
+<span class="ck">/hx-go user-login</span>
 <span class="cm"># → Phase 01→02→04→06 完成后自动进入 Phase 08</span>
 
 <span class="cm"># 如已安装 gitlab skill，可使用其提供的命令查看 MR 状态</span>
@@ -3857,20 +3857,20 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
             <div class="wf-step shared-s">
               <div class="wf-snum">01</div>
               <div class="wf-stitle">写需求文档</div>
-              <div class="wf-sbody">按 <code>paths.requirementDoc</code> 新建需求文档；若使用默认值，则为 <code>docs/requirement/[feature-key].md</code></div>
-              <span class="wf-cmd">/hx-doc [feature-key|标题]</span>
+              <div class="wf-sbody">按 <code>paths.requirementDoc</code> 新建需求文档；若使用默认值，则为 <code>docs/requirement/[feature].md</code></div>
+              <span class="wf-cmd">/hx-doc</span>
             </div>
             <div class="wf-step shared-s">
               <div class="wf-snum">02</div>
               <div class="wf-stitle">写执行计划</div>
-              <div class="wf-sbody">按 <code>paths.planDoc</code> 新建执行计划；若未显式传 feature key，则优先从当前需求文档自动续接</div>
-              <span class="wf-cmd">/hx-plan [feature-key]</span>
+              <div class="wf-sbody">按 <code>paths.planDoc</code> 新建执行计划；若未显式传 feature，则优先从当前需求文档自动续接</div>
+              <span class="wf-cmd">/hx-plan [feature]</span>
             </div>
             <div class="wf-step shared-s">
               <div class="wf-snum">03</div>
               <div class="wf-stitle">执行需求</div>
               <div class="wf-sbody">由 /hx-run 自动完成执行前预检，并按计划顺序执行整个需求下的 pending 任务</div>
-              <span class="wf-cmd">/hx-run [feature-key]</span>
+              <span class="wf-cmd">/hx-run [feature] [--plan-task &lt;TASK-ID&gt;]</span>
             </div>
             <div class="wf-step gate-s">
               <div class="wf-snum">✓</div>
@@ -3888,7 +3888,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
               <div class="wf-snum">05</div>
               <div class="wf-stitle">生成 MR 上下文</div>
               <div class="wf-sbody">汇总需求文档、计划完成情况、git log 与 diff stat，生成可直接提交的 MR 描述</div>
-              <span class="wf-cmd">/hx-mr [feature-key]</span>
+              <span class="wf-cmd">/hx-mr [feature]</span>
             </div>
             <div class="wf-step be-s">
               <div class="wf-snum">MR</div>
@@ -3912,7 +3912,7 @@ AC: 组件自身无 API 调用，仅通过 onSubmit 暴露表单数据
               <div class="wf-snum">CTX</div>
               <div class="wf-stitle">执行前预检</div>
               <div class="wf-sbody">当 /hx-run 因输入不完整而停止时，额外运行 /hx-ctx 查看缺失项</div>
-              <span class="wf-cmd">/hx-ctx [feature-key]</span>
+              <span class="wf-cmd">/hx-ctx [feature]</span>
             </div>
             <div class="wf-step gate-s">
               <div class="wf-snum">RV</div>
@@ -4290,7 +4290,7 @@ description: |
 | Code | HTTP | 说明 |</span>
 
 <span class="cs">## 输出规范</span>
-<span class="cm">- 路径: `/mnt/user-data/outputs/api-[feature-key].md`
+<span class="cm">- 路径: `/mnt/user-data/outputs/api-[feature].md`
 - 完成后调用 `present_files`
 - 同时建议用户将文件纳入 `docs/` 版本控制，并在对应需求文档中建立引用</span>
 
