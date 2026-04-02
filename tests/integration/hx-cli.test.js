@@ -32,7 +32,20 @@ describe('hx cli integration', () => {
     expect(help).toContain('Harness Workflow CLI')
     expect(help).toContain('migrate')
     expect(help).toContain('upgrade')
+    expect(help).toContain('uninstall')
     expect(runNode(['bin/hx.js', 'version'])).toMatch(/hx v\d+\.\d+\.\d+/)
+  })
+
+  it('runs uninstall and shows preview without --force', () => {
+    const userHxDir = createTempDir('hx-uninstall-user-')
+
+    const result = spawnSync(
+      process.execPath,
+      ['bin/hx.js', 'uninstall', '--user-hx-dir', userHxDir],
+      { cwd: process.cwd(), encoding: 'utf8' }
+    )
+
+    expect(result.status).toBe(0)
   })
 
   it('runs upgrade with dry-run', () => {
@@ -135,6 +148,6 @@ describe('hx cli integration', () => {
 
     expect(result.status).toBe(1)
     expect(result.stderr).toContain('未知命令: unknown-command')
-    expect(result.stderr).toContain('当前 CLI 仅直接执行: setup, migrate, upgrade, version, cmd')
+    expect(result.stderr).toContain('当前 CLI 仅直接执行: setup, migrate, upgrade, uninstall, version, cmd')
   })
 })

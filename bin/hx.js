@@ -29,6 +29,7 @@ const BUILTIN_SCRIPTS = {
   setup: 'hx-setup.js',
   migrate: 'hx-migrate.js',
   upgrade: 'hx-upgrade.js',
+  uninstall: 'hx-uninstall.js',
   cmd: 'hx-cmd.js',
 }
 const runtimeCwd = getSafeCwd()
@@ -52,6 +53,7 @@ function printHelp() {
     setup     手动重跑全局安装/修复 ~/.hx 与各 agent skill 入口
     migrate   执行老版本安装产物迁移并重跑 setup
     upgrade   升级 @hxflow/cli 到最新版本并重跑 setup
+    uninstall 移除 Harness Workflow 安装产物
     cmd       管理自定义命令（new / list / validate / remove）
     version   输出当前 CLI 版本
 
