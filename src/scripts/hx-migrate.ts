@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 import { execFileSync } from 'child_process'
 import { homedir } from 'os'
@@ -11,7 +11,7 @@ import { getSafeCwd } from './lib/resolve-context.ts'
 
 const { options } = parseArgs(process.argv.slice(2))
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const SETUP_SCRIPT = resolve(__dirname, 'hx-setup.js')
+const SETUP_SCRIPT = resolve(__dirname, 'hx-setup.ts')
 
 main()
 

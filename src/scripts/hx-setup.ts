@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 /** hx setup 只负责创建 ~/.hx 目录骨架、写 ~/.hx/settings.yaml，并生成 skill 入口。 */
 

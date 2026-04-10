@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 /** hx upgrade — 升级 @hxflow/cli 并重跑 setup */
 

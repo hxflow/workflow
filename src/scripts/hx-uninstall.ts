@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 /** hx uninstall — 移除 Harness Workflow 安装产物 */
 

@@ -26,10 +26,10 @@ const SCRIPTS_DIR = resolve(__dirname, '..', 'src', 'scripts')
 const FRAMEWORK_COMMAND_DIR = resolve(__dirname, '..', 'src', 'commands')
 const PACKAGE_JSON_PATH = resolve(__dirname, '..', 'package.json')
 const BUILTIN_SCRIPTS = {
-  setup: 'hx-setup.js',
-  migrate: 'hx-migrate.js',
-  upgrade: 'hx-upgrade.js',
-  uninstall: 'hx-uninstall.js',
+  setup: 'hx-setup.ts',
+  migrate: 'hx-migrate.ts',
+  upgrade: 'hx-upgrade.ts',
+  uninstall: 'hx-uninstall.ts',
   // 确定性工具命令（代码实现，供 AI agent 调用）
   progress: 'hx-progress.ts',
   feature: 'hx-feature.ts',
