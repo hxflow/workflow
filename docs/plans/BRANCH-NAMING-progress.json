@@ -1,0 +1,42 @@
+{
+  "feature": "BRANCH-NAMING",
+  "requirementDoc": "docs/requirement/branch-naming.md",
+  "planDoc": "docs/plans/BRANCH-NAMING.md",
+  "createdAt": "2026-04-13T07:52:57.000Z",
+  "updatedAt": "2026-04-13T07:57:17.299Z",
+  "completedAt": "2026-04-13T07:57:17.299Z",
+  "lastRun": {
+    "taskId": "test",
+    "taskName": "为 branchCheck 补充单元测试",
+    "status": "done",
+    "exitStatus": "succeeded",
+    "exitReason": "",
+    "ranAt": "2026-04-13T07:57:17.299Z"
+  },
+  "tasks": [
+    {
+      "id": "impl",
+      "name": "在 hx-check.ts 增加 checkBranchName 函数与 qa 输出字段",
+      "status": "done",
+      "dependsOn": [],
+      "parallelizable": false,
+      "output": "在 hx-check.ts 增加 checkBranchName 函数，在 runQa 结果中附加 branchCheck 字段（warning-only，不影响 qa.ok），printSummary 输出 branchCheck",
+      "startedAt": "2026-04-13T07:53:06.182Z",
+      "completedAt": "2026-04-13T07:55:08.813Z",
+      "durationSeconds": 123
+    },
+    {
+      "id": "test",
+      "name": "为 branchCheck 补充单元测试",
+      "status": "done",
+      "dependsOn": [
+        "impl"
+      ],
+      "parallelizable": false,
+      "output": "新增 16 个 branch naming 测试（11 合规分支 + 3 不合规 + 2 原有脚本测试），182/182 通过",
+      "startedAt": "2026-04-13T07:55:08.963Z",
+      "completedAt": "2026-04-13T07:57:17.299Z",
+      "durationSeconds": 128
+    }
+  ]
+}

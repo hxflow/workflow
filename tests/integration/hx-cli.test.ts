@@ -33,6 +33,9 @@ describe('hx cli integration', () => {
     expect(help).toContain('migrate')
     expect(help).toContain('upgrade')
     expect(help).toContain('uninstall')
+    expect(help).toContain('本地工作流命令')
+    expect(help).toContain('plan')
+    expect(help).toContain('go')
     expect(runNode(['bin/hx.js', 'version'])).toMatch(/hx v\d+\.\d+\.\d+/)
   })
 
@@ -132,14 +135,36 @@ describe('hx cli integration', () => {
     expect(result.stdout).toContain('Harness Workflow · setup (dry-run)')
   })
 
-  it('reports contract commands without executing local scripts', () => {
+  it('reports agent contract commands without executing local scripts', () => {
     const result = spawnSync(process.execPath, ['bin/hx.js', 'hx-init'], {
       cwd: process.cwd(),
       encoding: 'utf8',
     })
 
     expect(result.status).toBe(1)
-    expect(result.stderr).toContain('"hx-init" 是 agent 命令 contract')
+    expect(result.stderr).toContain('"hx-init" 是 agent command contract')
+  })
+
+  it('runs local workflow commands through the CLI entrypoint', () => {
+    const projectRoot = createTempDir('hx-go-entry-')
+    const entryPath = resolve(process.cwd(), 'bin', 'hx.js')
+    const result = spawnSync(process.execPath, [entryPath, 'go', 'AUTH-001'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).toBe(0)
+    const parsed = JSON.parse(result.stdout)
+    expect(parsed).toMatchObject({
+      ok: false,
+      actionRequired: true,
+      feature: 'AUTH-001',
+      pipeline: 'default',
+      startStep: 'doc',
+      blockedStep: 'doc',
+    })
+    expect(parsed.executedSteps).toHaveLength(1)
+    expect(parsed.executedSteps[0]).toMatchObject({ id: 'doc', ok: true })
   })
 
   it('reports unknown commands', () => {
@@ -150,6 +175,6 @@ describe('hx cli integration', () => {
 
     expect(result.status).toBe(1)
     expect(result.stderr).toContain('未知命令: unknown-command')
-    expect(result.stderr).toContain('当前 CLI 仅直接执行: setup, migrate, upgrade, uninstall, version')
+    expect(result.stderr).toContain('当前 CLI 可直接执行: setup, migrate, upgrade, uninstall, version, progress, feature, archive, restore, status, plan, run, check, mr, go')
   })
 })

@@ -4,6 +4,10 @@
  * 把 progress-contract 中「两阶段写入」规则固化为代码。
  * 每次写入前读取最新文件，写入后自动执行 validateProgressFile，
  * 校验失败时立即抛出。
+ *
+ * 注意：sleep() 使用 SharedArrayBuffer + Atomics.wait() 实现同步等待。
+ * SharedArrayBuffer 在部分浏览器安全上下文中被禁用，但本模块仅在
+ * Bun（CLI 运行时）环境下使用，无需兼容浏览器。
  */
 
 import { closeSync, openSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
@@ -18,15 +22,15 @@ const LOCK_WAIT_ARRAY = new Int32Array(LOCK_WAIT_BUFFER)
 
 // ── 内部工具 ────────────────────────────────────────────────
 
-function readProgress(filePath) {
+function readProgress(filePath: string): Record<string, unknown> {
   return JSON.parse(readFileSync(filePath, 'utf8'))
 }
 
-function sleep(ms) {
+function sleep(ms: number): void {
   Atomics.wait(LOCK_WAIT_ARRAY, 0, 0, ms)
 }
 
-function withProgressLock(filePath, action) {
+function withProgressLock<T>(filePath: string, action: () => T): T {
   const lockPath = `${filePath}.lock`
   const deadline = Date.now() + LOCK_TIMEOUT_MS
   let lockFd = null
@@ -59,7 +63,7 @@ function withProgressLock(filePath, action) {
   }
 }
 
-function writeProgress(filePath, data) {
+function writeProgress(filePath: string, data: Record<string, unknown>): void {
   const result = validateProgressData(data)
   if (!result.valid) {
     throw new Error(`progressFile 写入校验失败：\n${result.errors.join('\n')}`)
@@ -67,17 +71,19 @@ function writeProgress(filePath, data) {
   writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf8')
 }
 
-function findTask(data, taskId) {
-  const task = data.tasks.find((t) => t.id === taskId)
+function findTask(data: Record<string, unknown>, taskId: string): Record<string, unknown> {
+  const tasks = data.tasks as Array<Record<string, unknown>>
+  const task = tasks.find((t) => t.id === taskId)
   if (!task) {
     throw new Error(`task "${taskId}" 不存在于 progressFile`)
   }
   return task
 }
 
-function hasCompletedDeps(data, task) {
-  const doneIds = new Set(data.tasks.filter((item) => item.status === 'done').map((item) => item.id))
-  return task.dependsOn.every((depId) => doneIds.has(depId))
+function hasCompletedDeps(data: Record<string, unknown>, task: Record<string, unknown>): boolean {
+  const tasks = data.tasks as Array<Record<string, unknown>>
+  const doneIds = new Set(tasks.filter((item) => item.status === 'done').map((item) => item.id))
+  return (task.dependsOn as string[]).every((depId) => doneIds.has(depId))
 }
 
 // ── 两阶段写入 ──────────────────────────────────────────────

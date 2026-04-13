@@ -119,6 +119,13 @@
   }
 ,
   {
+    "name": "branch-naming",
+    "path": "docs/requirement/branch-naming.md",
+    "type": "md",
+    "category": "docs/requirement"
+  }
+,
+  {
     "name": "README",
     "path": "README.md",
     "type": "md",

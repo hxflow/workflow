@@ -2,7 +2,7 @@ const SHORT_FLAGS = {
   h: 'help',
 }
 
-export function parseArgs(argv) {
+export function parseArgs(argv: string[]): { positional: string[]; options: Record<string, string | true> } {
   const positional = []
   const options = {}
 
@@ -52,7 +52,7 @@ export function parseArgs(argv) {
   return { positional, options }
 }
 
-export function readTopLevelYamlScalar(content, key) {
+export function readTopLevelYamlScalar(content: string, key: string): string | undefined {
   const pattern = new RegExp(`^${escapeRegExp(key)}:\\s*(.*?)\\s*$`, 'm')
   const match = content.match(pattern)
 
@@ -63,7 +63,7 @@ export function readTopLevelYamlScalar(content, key) {
   return normalizeYamlScalar(match[1])
 }
 
-export function upsertTopLevelYamlScalar(content, key, value) {
+export function upsertTopLevelYamlScalar(content: string, key: string, value: string): string {
   const renderedLine = `${key}: ${value}`
   const pattern = new RegExp(`^${escapeRegExp(key)}:\\s*.*$`, 'm')
 
@@ -75,7 +75,7 @@ export function upsertTopLevelYamlScalar(content, key, value) {
   return trimmed ? `${trimmed}\n${renderedLine}\n` : `${renderedLine}\n`
 }
 
-function normalizeYamlScalar(rawValue) {
+function normalizeYamlScalar(rawValue: string): string {
   const value = stripInlineYamlComment(rawValue).trim()
 
   if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
@@ -85,7 +85,7 @@ function normalizeYamlScalar(rawValue) {
   return value
 }
 
-function stripInlineYamlComment(line) {
+function stripInlineYamlComment(line: string): string {
   let inSingle = false
   let inDouble = false
 
@@ -111,6 +111,6 @@ function stripInlineYamlComment(line) {
   return line
 }
 
-function escapeRegExp(value) {
+function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }

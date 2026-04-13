@@ -19,23 +19,24 @@ hooks:
 hx run <feature> [--plan-task <task-id>]
 ```
 
-`hx run` 会自动完成以下工作，并输出精确的执行指令：
+`hx run` 会自动完成以下工作：
 - 定位并校验 progressFile
 - 计算当前批次（恢复中断 / 执行新任务 / 全部完成）
-- 输出每个任务的阶段一 / 阶段二 / 阶段三调用命令
+- 对可执行 task 依次执行 `hx progress start` / AI 实现 / `hx progress done` 或 `hx progress fail`
+- 输出本次执行摘要与下一步建议
 
-## AI 职责：阶段二 — 实现任务内容
+## AI 职责
 
-收到 `hx run` 的输出后，对每个任务：
+`hx run` 只把真正需要 AI 的部分交给 AI：
 
-1. 调用输出中指定的 `hx progress start` 命令（锁定 in-progress）
-2. 阅读 planDoc 中对应 task 的实施要点
-3. 实现代码、文档或配置变更
+1. 读取当前 task 的最小上下文
+2. 实现代码、文档或配置变更
+3. 返回执行结果摘要
 
 **实现质量标准：**
 - 只改动与任务边界相关的内容，不引入无关变更
 - 遵守 `rules/golden-rules.md` 中的约束
-- 每个 task 实现完成后，立即调用 `hx progress done` 或 `hx progress fail`
+- 不直接修改 `progressFile`
 
 ## 故障处理
 
@@ -46,5 +47,6 @@ hx run <feature> [--plan-task <task-id>]
 ## 约束
 
 - `--plan-task <task-id>` 只限制本次目标 task，不改变完整任务图
-- 调度与状态写回全部通过 `hx progress` 的确定性能力完成
-- AI 只负责 task 实现，不自行修改 `progressFile`
+- 调度、状态写回、完成判定全部通过确定性代码完成
+- AI 只负责 task 实现与结果返回，不自行调用 `hx progress`
+- 提供给 AI 的上下文应收敛到当前 task、依赖输出、requirement 摘要与 plan 片段

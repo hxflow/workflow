@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 
 /**
- * hx-plan.js — 执行计划生成上下文加载器
+ * hx-plan.ts — 执行计划 orchestrator
  *
- * 确定性工作：定位需求文档、解析 feature 头部、选择计划模板、输出精确路径和约束。
- * AI 工作：生成 planDoc 内容和 progressFile 的任务分解。
+ * 第一次调用（planDoc 不存在）：收集需求/模板/规则上下文，输出供 AI 生成计划。
+ * 第二次调用（planDoc 已写入）：验证 progressFile schema，输出完成状态。
  */
 
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
+
 import { parseArgs } from './lib/config-utils.ts'
 import { findProjectRoot, getSafeCwd, FRAMEWORK_ROOT } from './lib/resolve-context.ts'
 import {
@@ -17,7 +18,8 @@ import {
   getActiveProgressFilePath,
 } from './lib/file-paths.ts'
 import { parseFeatureHeaderFile } from './lib/feature-header.ts'
-import { getProgressSchemaPaths } from './lib/progress-schema.ts'
+import { getProgressSchemaPaths, validateProgressFile } from './lib/progress-schema.ts'
+import type { ProgressData } from './lib/types.ts'
 
 const argv = process.argv.slice(2)
 const { positional } = parseArgs(argv)
@@ -62,45 +64,106 @@ const templatePath = existsSync(projectTemplatePath) ? projectTemplatePath : fra
 const planDoc = getActivePlanDocPath(projectRoot, feature)
 const progressFile = getActiveProgressFilePath(projectRoot, feature)
 const { schemaPath, templatePath: progressTemplatePath } = getProgressSchemaPaths()
+const planTemplateContent = readFileSync(templatePath, 'utf8')
 
-if (existsSync(progressFile)) {
-  console.warn(`⚠️  progressFile 已存在: ${progressFile}`)
-  console.warn(`   继续执行将覆盖现有计划，请确认后继续。`)
-  console.warn()
+const planExists = existsSync(planDoc)
+const progressExists = existsSync(progressFile)
+
+// ── 阶段二：planDoc 已存在 → 校验 progressFile ──────────────────────────────
+if (planExists && progressExists) {
+  const validation = validateProgressFile(progressFile)
+  if (!validation.valid) {
+    printSummary({
+      ok: false,
+      actionRequired: false,
+      completed: false,
+      feature,
+      planDoc,
+      progressFile,
+      tasks: [],
+      validation,
+      nextAction: `hx fix ${feature}`,
+    })
+    process.exit(1)
+  }
+
+  const data = validation.data as ProgressData
+  printSummary({
+    ok: true,
+    actionRequired: false,
+    completed: true,
+    feature,
+    planDoc,
+    progressFile,
+    tasks: data.tasks.map((t) => ({ id: t.id, name: t.name, status: t.status, dependsOn: t.dependsOn, parallelizable: t.parallelizable })),
+    validation: { valid: true, errors: [] },
+    nextAction: `hx run ${feature}`,
+  })
+  process.exit(0)
 }
 
-// 6. 输出精确的计划生成指令
-console.log(`## hx-plan: 生成执行计划`)
-console.log()
-console.log(`**feature:** \`${parsedHeader.feature}\``)
-if (parsedHeader.displayName) console.log(`**名称:** ${parsedHeader.displayName}`)
-console.log(`**类型:** ${docType}`)
-console.log()
+// ── 阶段一：planDoc 不存在 → 收集上下文，供 AI 生成 ──────────────────────────
+const goldenRules = resolveRuleFile(projectRoot, 'golden-rules.md')
+const progressTemplateContent = existsSync(progressTemplatePath) ? readFileSync(progressTemplatePath, 'utf8') : null
 
-console.log(`**输入文件:**`)
-console.log(`- requirementDoc:    \`${requirementDoc}\``)
-console.log(`- planTemplate:      \`${templatePath}\``)
-console.log(`- progressTemplate:  \`${progressTemplatePath}\``)
-console.log(`- progressSchema:    \`${schemaPath}\``)
-console.log()
+printSummary({
+  ok: true,
+  actionRequired: true,
+  completed: false,
+  feature,
+  planDoc,
+  progressFile,
+  tasks: [],
+  validation: { valid: true, errors: [] },
+  nextAction: `hx plan ${feature}`,
+  context: {
+    feature: parsedHeader.feature,
+    displayName: parsedHeader.displayName,
+    sourceId: parsedHeader.sourceId,
+    docType,
+    requirementContent: reqContent,
+    planTemplate: planTemplateContent,
+    goldenRules,
+    progressTemplate: progressTemplateContent,
+    progressSchemaPath: schemaPath,
+    expectedOutput: { planDoc, progressFile },
+  },
+})
 
-console.log(`**输出文件:**`)
-console.log(`- planDoc:       \`${planDoc}\``)
-console.log(`- progressFile:  \`${progressFile}\``)
-console.log()
+function resolveRuleFile(root: string, name: string): string | null {
+  const projectFile = resolve(root, '.hx', 'rules', name)
+  const frameworkFile = resolve(FRAMEWORK_ROOT, 'templates', 'rules', name)
+  const targetPath = existsSync(projectFile) ? projectFile : frameworkFile
+  return existsSync(targetPath) ? readFileSync(targetPath, 'utf8') : null
+}
 
-console.log(`**步骤:**`)
-console.log(`1. 读取 requirementDoc，按 planTemplate 生成 planDoc`)
-console.log(`2. 从需求中提取任务列表，按 progressTemplate/Schema 生成 progressFile`)
-console.log(`   - 每个 task 必须包含: id, name, dependsOn[], parallelizable, output("")`)
-console.log(`   - 依赖关系和并行标记写入 progressFile，不写入 planDoc`)
-console.log(`3. 将 planDoc 写入 \`${planDoc}\`，progressFile 写入 \`${progressFile}\``)
-console.log(`4. 校验: \`hx progress validate ${progressFile}\``)
-console.log(`5. 新开子 agent 评审任务拆分质量（粒度、依赖、可并行性）`)
-console.log(`6. 根据评审修正后，再次校验: \`hx progress validate ${progressFile}\``)
-console.log()
+function toProjectRelativePath(filePath: string): string {
+  return filePath.startsWith(`${projectRoot}/`) ? filePath.slice(projectRoot.length + 1) : filePath
+}
 
-console.log(`**约束:**`)
-console.log(`- feature 值固定为 \`${parsedHeader.feature}\`，不允许重算或修改`)
-console.log(`- progressFile 必须通过 \`hx progress validate\` 校验才算完成`)
-console.log(`- planDoc 不写依赖关系和并行标记（只写任务内容）`)
+function printSummary(summary: {
+  ok: boolean
+  actionRequired: boolean
+  completed: boolean
+  feature: string
+  planDoc: string
+  progressFile: string
+  tasks: Array<{ id: string; name: string; status?: string; dependsOn: string[]; parallelizable: boolean }>
+  validation: { valid: boolean; errors: string[] }
+  nextAction: string
+  context?: Record<string, unknown>
+}) {
+  const out: Record<string, unknown> = {
+    ok: summary.ok,
+    actionRequired: summary.actionRequired,
+    completed: summary.completed,
+    feature: summary.feature,
+    planDoc: summary.planDoc,
+    progressFile: summary.progressFile,
+    tasks: summary.tasks,
+    validation: summary.validation,
+    nextAction: summary.nextAction,
+  }
+  if (summary.context) out.context = summary.context
+  console.log(JSON.stringify(out, null, 2))
+}

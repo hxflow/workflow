@@ -201,7 +201,7 @@ function isManagedArtifact(target) {
   }
 }
 
-function parseCommandFrontmatter(content) {
+function parseCommandFrontmatter(content: string): Record<string, string> {
   const match = content.match(/^---\n([\s\S]*?)\n---\n/)
   if (!match) {
     return {}
@@ -225,7 +225,11 @@ function parseCommandFrontmatter(content) {
     }, {})
 }
 
-function buildAgentArtifactContent(spec, frameworkRoot, userHxDir) {
+function buildAgentArtifactContent(
+  spec: { name: string; description: string; protected: boolean },
+  frameworkRoot: string,
+  userHxDir: string,
+): string {
   const template = loadArtifactTemplate(frameworkRoot, spec.protected)
   return renderTemplate(template, {
     name: spec.name,
@@ -236,7 +240,7 @@ function buildAgentArtifactContent(spec, frameworkRoot, userHxDir) {
   })
 }
 
-function loadArtifactTemplate(frameworkRoot, isProtected) {
+function loadArtifactTemplate(frameworkRoot: string, isProtected: boolean): string {
   const templateName = `skill-${isProtected ? 'protected' : 'layered'}.md`
   const templatePath = resolve(frameworkRoot, 'templates', 'forwarders', templateName)
 
@@ -247,6 +251,6 @@ function loadArtifactTemplate(frameworkRoot, isProtected) {
   return TEMPLATE_CACHE.get(templatePath)
 }
 
-function renderTemplate(template, variables) {
+function renderTemplate(template: string, variables: Record<string, string>): string {
   return template.replace(/{{(\w+)}}/g, (_, key) => variables[key] ?? '')
 }

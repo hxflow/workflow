@@ -183,7 +183,7 @@ function validateTaskGraph(tasks, errors) {
     }
 
     visiting.add(taskId)
-    for (const depId of taskMap.get(taskId).dependsOn) {
+    for (const depId of (taskMap.get(taskId).dependsOn ?? [])) {
       dfs(depId)
     }
     visiting.delete(taskId)
@@ -238,7 +238,7 @@ function validateTaskStateConsistency(tasks, errors) {
 }
 
 function validateLastRunConsistency(lastRun, tasks, errors) {
-  if (lastRun === null) {
+  if (lastRun == null) {
     return
   }
 

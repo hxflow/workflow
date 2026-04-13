@@ -1,134 +1,348 @@
 #!/usr/bin/env node
 
 /**
- * hx-check.js — 质量检查上下文加载器
+ * hx-check.ts — 核心检查 orchestrator
  *
- * 确定性工作：加载 config.yaml 中的 gates、检查规则文件路径、输出精确检查指令。
- * AI 工作：review（代码审查）、clean（工程卫生扫描）的具体内容判断。
+ * 确定性工作：加载 gates、执行 qa、收集 diff 与规则文件、汇总结果。
+ * AI 工作：review / clean 的语义判断。
  */
 
 import { existsSync, readFileSync } from 'fs'
+import { spawnSync } from 'child_process'
 import { resolve } from 'path'
-import { parseArgs, readTopLevelYamlScalar } from './lib/config-utils.ts'
-import { findProjectRoot, getSafeCwd, FRAMEWORK_ROOT } from './lib/resolve-context.ts'
 
-const VALID_SCOPES = ['review', 'qa', 'clean', 'all']
-const GATE_ORDER = ['lint', 'build', 'type', 'test']
+import { parseArgs } from './lib/config-utils.ts'
+import { FRAMEWORK_ROOT, findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+
+const VALID_SCOPES = ['review', 'qa', 'clean', 'all'] as const
+const GATE_ORDER = ['lint', 'build', 'type', 'test'] as const
+
+type CheckScope = (typeof VALID_SCOPES)[number]
+type GateName = (typeof GATE_ORDER)[number]
+
+interface GateResult {
+  name: GateName
+  command: string
+  ok: boolean
+  exitCode: number
+  stdout: string
+  stderr: string
+}
+
+interface ScopeResult {
+  enabled: boolean
+  ok: boolean
+  summary?: string
+  reason?: string
+  actionRequired?: boolean
+  context?: Record<string, unknown>
+}
+
+interface BranchCheckResult {
+  ok: boolean
+  branch: string
+  reason: string | null
+}
 
 const argv = process.argv.slice(2)
-const { options } = parseArgs(argv)
+const { positional, options } = parseArgs(argv)
+const [feature] = positional
 const scope = options.scope ?? 'all'
 
-if (!VALID_SCOPES.includes(scope)) {
+if (!VALID_SCOPES.includes(scope as CheckScope)) {
   console.error(`❌ --scope "${scope}" 无效，有效值: ${VALID_SCOPES.join(', ')}`)
   process.exit(1)
 }
 
 const projectRoot = findProjectRoot(getSafeCwd())
+const gates = loadGates(projectRoot)
+const reviewChecklist = resolveRuleFile(projectRoot, 'review-checklist.md')
+const goldenRules = resolveRuleFile(projectRoot, 'golden-rules.md')
+const diffStat = runGit(projectRoot, 'diff', '--stat', 'HEAD')
+const changedFiles = splitLines(runGit(projectRoot, 'diff', '--name-only', 'HEAD'))
 
-// 加载 .hx/config.yaml 中的 gates（不依赖 YAML 库，用正则提取嵌套值）
-let gates = {}
-try {
-  const configPath = resolve(projectRoot, '.hx', 'config.yaml')
-  if (existsSync(configPath)) {
+const selectedScope = scope as CheckScope
+const doReview = selectedScope === 'review' || selectedScope === 'all'
+const doQa = selectedScope === 'qa' || selectedScope === 'all'
+const doClean = selectedScope === 'clean' || selectedScope === 'all'
+
+const qa = doQa ? runQa(projectRoot, gates) : { enabled: false, ok: true, summary: '未执行 qa', gates: [], branchCheck: null }
+const review = doReview
+  ? runSemanticScope('review', feature, {
+      projectRoot,
+      reviewChecklist,
+      goldenRules,
+      diffStat,
+      changedFiles,
+      qaSummary: qa.summary ?? '',
+    })
+  : { enabled: false, ok: true, summary: '未执行 review' }
+const clean = doClean
+  ? runSemanticScope('clean', feature, {
+      projectRoot,
+      reviewChecklist,
+      goldenRules,
+      diffStat,
+      changedFiles,
+      qaSummary: qa.summary ?? '',
+    })
+  : { enabled: false, ok: true, summary: '未执行 clean' }
+
+// qa 失败 → pipeline 阻塞
+const qaFailed = !qa.ok
+// review/clean 需要 AI 判断 → actionRequired
+const needsAi = (review.actionRequired || clean.actionRequired) && qa.ok
+
+const ok = !qaFailed && !needsAi
+
+printSummary({
+  ok,
+  actionRequired: needsAi,
+  feature: feature ?? null,
+  scope: selectedScope,
+  qa,
+  review,
+  clean,
+  nextAction: qaFailed ? buildFixCommand(feature) : needsAi ? `hx check ${feature ?? ''}`.trim() : buildMrCommand(feature),
+})
+
+process.exit(ok ? 0 : 1)
+
+function loadGates(projectRootPath: string): Partial<Record<GateName, string>> {
+  const gates: Partial<Record<GateName, string>> = {}
+
+  try {
+    const configPath = resolve(projectRootPath, '.hx', 'config.yaml')
+    if (!existsSync(configPath)) {
+      return gates
+    }
+
     const content = readFileSync(configPath, 'utf8')
-    // 找到 gates: 块，提取其下的缩进键值对
     const gatesMatch = content.match(/^gates:\s*\n((?:[ \t]+\S[^\n]*\n?)*)/m)
-    if (gatesMatch) {
-      for (const line of gatesMatch[1].split('\n')) {
-        const m = line.match(/^\s+(\w+):\s*(.*)/)
-        if (m && m[2].trim()) {
-          gates[m[1]] = m[2].trim()
-        }
+    if (!gatesMatch) {
+      return gates
+    }
+
+    for (const line of gatesMatch[1].split('\n')) {
+      const match = line.match(/^\s+(\w+):\s*(.*)/)
+      if (!match) {
+        continue
+      }
+
+      // strip surrounding YAML quotes ('' or "") before empty-check
+      const rawValue = match[2].trim()
+      const value = rawValue.replace(/^(['"])(.*)\1$/, '$2').trim()
+      if (!value) {
+        continue
+      }
+
+      if (GATE_ORDER.includes(match[1] as GateName)) {
+        gates[match[1] as GateName] = value
       }
     }
+  } catch (error) {
+    console.error(
+      `⚠️  无法读取 .hx/config.yaml gates 配置：${error instanceof Error ? error.message : String(error)}`,
+    )
+    return {}
   }
-} catch {
-  gates = {}
+
+  return gates
 }
 
-// 规则文件路径（项目层优先）
-function resolveRuleFile(name) {
-  const project = resolve(projectRoot, '.hx', 'rules', name)
+function resolveRuleFile(projectRootPath: string, name: string): string | null {
+  const project = resolve(projectRootPath, '.hx', 'rules', name)
   const framework = resolve(FRAMEWORK_ROOT, 'templates', 'rules', name)
-  if (existsSync(project)) return project
-  if (existsSync(framework)) return framework
+  if (existsSync(project)) {
+    return project
+  }
+  if (existsSync(framework)) {
+    return framework
+  }
   return null
 }
 
-const reviewChecklist = resolveRuleFile('review-checklist.md')
-const goldenRules = resolveRuleFile('golden-rules.md')
+function runQa(projectRootPath: string, gatesMap: Partial<Record<GateName, string>>) {
+  const activeGates = GATE_ORDER.filter((gate) => gatesMap[gate])
+  const results: GateResult[] = []
+  const branchCheck = checkBranchName(projectRootPath)
 
-// ── 输出 ────────────────────────────────────────────────────
-
-console.log(`## hx-check: 质量检查`)
-console.log()
-console.log(`**scope:** ${scope}`)
-console.log()
-
-const doReview = scope === 'review' || scope === 'all'
-const doQa = scope === 'qa' || scope === 'all'
-const doClean = scope === 'clean' || scope === 'all'
-
-// ── review ──────────────────────────────────────────────────
-if (doReview) {
-  console.log(`### review — 代码审查`)
-  console.log()
-  if (reviewChecklist) {
-    console.log(`检查清单: \`${reviewChecklist}\``)
-  } else {
-    console.log(`⚠️  未找到 review-checklist.md，使用通用审查原则。`)
-  }
-  if (goldenRules) {
-    console.log(`规则文件: \`${goldenRules}\``)
-  }
-  console.log()
-  console.log(`步骤:`)
-  console.log(`1. 运行 \`git diff --stat HEAD\` 获取变更文件列表`)
-  console.log(`2. 逐条对照检查清单执行机验项（可工具化执行的先行）`)
-  console.log(`3. 执行人工审查项，输出问题列表（区分 blocker / warning / suggestion）`)
-  console.log(`4. 若存在 blocker，输出具体修复建议，完成后运行 \`hx fix <feature>\``)
-  console.log()
-}
-
-// ── qa ──────────────────────────────────────────────────────
-if (doQa) {
-  console.log(`### qa — 质量门`)
-  console.log()
-
-  const activeGates = GATE_ORDER.filter((g) => gates[g])
   if (activeGates.length === 0) {
-    console.log(`ℹ️  .hx/config.yaml 中未配置任何 gate，跳过 qa。`)
-  } else {
-    console.log(`按顺序执行以下命令（任一非零 exit code 即失败）:`)
-    console.log()
-    console.log(`\`\`\`bash`)
-    for (const gate of activeGates) {
-      console.log(`# ${gate}`)
-      console.log(gates[gate])
+    return {
+      enabled: true,
+      ok: true,
+      summary: '未配置任何 qa gate，已跳过',
+      gates: results,
+      branchCheck,
     }
-    console.log(`\`\`\``)
-    console.log()
-    console.log(`通过标准：exit code === 0，不看命令输出文本。`)
   }
-  console.log()
+
+  for (const gate of activeGates) {
+    const command = gatesMap[gate] as string
+    const result = spawnSync('zsh', ['-lc', command], {
+      cwd: projectRootPath,
+      encoding: 'utf8',
+      timeout: 120000,
+      maxBuffer: 10 * 1024 * 1024,
+    })
+
+    const timedOut = result.signal === 'SIGTERM' && result.status === null
+    const gateResult: GateResult = {
+      name: gate,
+      command,
+      ok: result.status === 0,
+      exitCode: result.status ?? 1,
+      stdout: (result.stdout ?? '').trim(),
+      stderr: timedOut ? `${gate} 执行超时（120s）` : (result.stderr ?? '').trim(),
+    }
+    results.push(gateResult)
+
+    if (!gateResult.ok) {
+      return {
+        enabled: true,
+        ok: false,
+        summary: `${gate} 失败`,
+        reason: gateResult.stderr || gateResult.stdout || `${gate} exit code ${gateResult.exitCode}`,
+        gates: results,
+        branchCheck,
+      }
+    }
+  }
+
+  return {
+    enabled: true,
+    ok: true,
+    summary: `${activeGates.join(', ')} 全部通过`,
+    gates: results,
+    branchCheck,
+  }
 }
 
-// ── clean ────────────────────────────────────────────────────
-if (doClean) {
-  console.log(`### clean — 工程卫生扫描`)
-  console.log()
-  console.log(`步骤（只扫描，不修改文件）:`)
-  console.log(`1. 检查是否存在调试用代码（console.log、TODO、FIXME、hardcoded credentials）`)
-  console.log(`2. 检查文档与代码的一致性（README、CHANGELOG、API 文档是否需要更新）`)
-  console.log(`3. 检查未使用的导入、dead code、不一致的命名`)
-  console.log(`4. 输出发现列表（分级: blocker / warning），不自动修改`)
-  console.log()
+function runSemanticScope(
+  kind: 'review' | 'clean',
+  featureValue: string | undefined,
+  payload: {
+    projectRoot: string
+    reviewChecklist: string | null
+    goldenRules: string | null
+    diffStat: string
+    changedFiles: string[]
+    qaSummary: string
+  },
+): ScopeResult {
+  return {
+    enabled: true,
+    ok: true,
+    actionRequired: true,
+    context: {
+      kind,
+      feature: featureValue ?? null,
+      projectRoot: payload.projectRoot,
+      reviewChecklist: payload.reviewChecklist,
+      goldenRules: payload.goldenRules,
+      diffStat: payload.diffStat,
+      changedFiles: payload.changedFiles,
+      qaSummary: payload.qaSummary,
+    },
+  }
 }
 
-// ── 完成后 ──────────────────────────────────────────────────
-console.log(`---`)
-console.log()
-console.log(`**完成后:**`)
-console.log(`- 存在 blocker → 运行 \`hx fix <feature>\` 或人工修复后重试`)
-console.log(`- 全部通过 → 运行 \`hx mr <feature>\``)
+function checkBranchName(projectRootPath: string): BranchCheckResult {
+  const PROTECTED = new Set(['main', 'master', 'develop'])
+  const VALID_PATTERN = /^(feat|fix|bugfix|refactor|chore|docs|test|hotfix)\/[a-zA-Z0-9_-]+$/
+
+  const branch = runGit(projectRootPath, 'rev-parse', '--abbrev-ref', 'HEAD')
+  if (!branch) {
+    return { ok: true, branch: '(unknown)', reason: null }
+  }
+  if (PROTECTED.has(branch)) {
+    return { ok: true, branch, reason: null }
+  }
+  if (VALID_PATTERN.test(branch)) {
+    return { ok: true, branch, reason: null }
+  }
+
+  const slug = branch
+    .toLowerCase()
+    .replace(/[^a-z0-9-_/]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+  const suggested = `feat/${slug}`
+  return {
+    ok: false,
+    branch,
+    reason: `分支名 "${branch}" 不符合规范 <type>/<scope>，建议重命名为 "${suggested}"`,
+  }
+}
+
+function runGit(projectRootPath: string, ...args: string[]): string {
+  const result = spawnSync('git', args, {
+    cwd: projectRootPath,
+    encoding: 'utf8',
+  })
+  return result.status === 0 ? result.stdout.trim() : ''
+}
+
+function splitLines(value: string): string[] {
+  return value
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function buildFixCommand(featureValue?: string): string {
+  return featureValue ? `hx fix ${featureValue}` : 'hx fix'
+}
+
+function buildMrCommand(featureValue?: string): string {
+  return featureValue ? `hx mr ${featureValue}` : 'hx mr'
+}
+
+function printSummary(summary: {
+  ok: boolean
+  actionRequired?: boolean
+  feature: string | null
+  scope: CheckScope
+  qa: ScopeResult & { gates?: GateResult[]; branchCheck?: BranchCheckResult | null }
+  review: ScopeResult
+  clean: ScopeResult
+  nextAction: string
+}) {
+  console.log(
+    JSON.stringify(
+      {
+        ok: summary.ok,
+        actionRequired: summary.actionRequired ?? false,
+        feature: summary.feature,
+        scope: summary.scope,
+        qa: {
+          enabled: summary.qa.enabled,
+          ok: summary.qa.ok,
+          summary: summary.qa.summary ?? null,
+          reason: summary.qa.reason ?? null,
+          gates: summary.qa.gates ?? [],
+          branchCheck: summary.qa.branchCheck ?? null,
+        },
+        review: {
+          enabled: summary.review.enabled,
+          ok: summary.review.ok,
+          actionRequired: summary.review.actionRequired ?? false,
+          context: summary.review.context ?? null,
+          summary: summary.review.summary ?? null,
+          reason: summary.review.reason ?? null,
+        },
+        clean: {
+          enabled: summary.clean.enabled,
+          ok: summary.clean.ok,
+          actionRequired: summary.clean.actionRequired ?? false,
+          context: summary.clean.context ?? null,
+          summary: summary.clean.summary ?? null,
+          reason: summary.clean.reason ?? null,
+        },
+        nextAction: summary.nextAction,
+      },
+      null,
+      2,
+    ),
+  )
+}

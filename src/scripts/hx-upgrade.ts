@@ -2,7 +2,7 @@
 
 /** hx upgrade — 升级 @hxflow/cli 并重跑 setup */
 
-import { execSync } from 'child_process'
+import { spawnSync } from 'child_process'
 import { readFileSync } from 'fs'
 import { homedir } from 'os'
 import { dirname, resolve } from 'path'
@@ -77,17 +77,16 @@ function runSetup({ dryRun }) {
 
   console.log('  重跑 setup...\n')
 
-  try {
-    const output = execSync(`hx setup ${setupArgs.join(' ')}`, {
-      cwd: getSafeCwd(),
-      encoding: 'utf8',
-      env: process.env,
-    })
-    if (output) process.stdout.write(output)
-  } catch (error) {
-    if (error.stdout) process.stdout.write(error.stdout)
-    if (error.stderr) process.stderr.write(error.stderr)
-    process.exit(error.status || 1)
+  const result = spawnSync('hx', ['setup', ...setupArgs], {
+    cwd: getSafeCwd(),
+    encoding: 'utf8',
+    env: process.env,
+    stdio: ['inherit', 'pipe', 'pipe'],
+  })
+  if (result.stdout) process.stdout.write(result.stdout)
+  if (result.status !== 0) {
+    if (result.stderr) process.stderr.write(result.stderr)
+    process.exit(result.status || 1)
   }
 }
 

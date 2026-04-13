@@ -1,19 +1,20 @@
 #!/usr/bin/env node
 
 /**
- * hx-mr.js — MR 创建上下文收集器
+ * hx-mr.ts — MR orchestrator
  *
- * 确定性工作：定位 feature、读取 requirementDoc / progressFile、
- *             收集 git 事实、输出精确的 MR 生成指令。
- * AI 工作：生成 MR 标题和 Markdown 描述。
+ * 确定性工作：读取 requirement / progress / git 事实，校验完成态并执行归档。
+ * AI 工作：生成 MR 标题和描述。
  */
 
 import { existsSync, readFileSync } from 'fs'
 import { spawnSync } from 'child_process'
 import { resolve } from 'path'
+
 import { parseArgs } from './lib/config-utils.ts'
 import { findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
 import {
+  archiveFeature,
   getRequirementDocPath,
   getActivePlanDocPath,
   getActiveProgressFilePath,
@@ -71,20 +72,53 @@ if (!progressFile) {
 // 4. 收集进度摘要
 let progressSummary = '（无法读取）'
 let allDone = false
+let doneCount = 0
+let totalCount = 0
+let pendingIds: string[] = []
+let taskSummaries: Array<{ id: string; name: string; output: string }> = []
 try {
   const data = JSON.parse(readFileSync(progressFile, 'utf8'))
   const tasks = data.tasks ?? []
+  totalCount = tasks.length
   allDone = tasks.length > 0 && tasks.every((t) => t.status === 'done')
-  const doneCount = tasks.filter((t) => t.status === 'done').length
+  doneCount = tasks.filter((t) => t.status === 'done').length
   progressSummary = `${doneCount}/${tasks.length} 个任务完成`
-  if (!allDone) {
-    const pendingIds = tasks.filter((t) => t.status !== 'done').map((t) => t.id)
-    console.warn(`⚠️  存在未完成任务: ${pendingIds.join(', ')}`)
-    console.warn(`   建议先运行 \`hx run ${feature}\` 完成所有任务。`)
-    console.warn()
-  }
+  pendingIds = tasks.filter((t) => t.status !== 'done').map((t) => t.id)
+  taskSummaries = tasks.map((task) => ({
+    id: task.id,
+    name: task.name,
+    output: task.output,
+  }))
 } catch {
-  console.warn(`⚠️  无法解析 progressFile: ${progressFile}`)
+  console.log(JSON.stringify({
+    ok: false,
+    feature,
+    progressFile,
+    progressSummary,
+    currentBranch: '（无法获取）',
+    targetBranch: targetBranch ?? 'main',
+    mr: null,
+    archive: { performed: false, archived: [] },
+    nextAction: `hx run ${feature}`,
+    reason: `无法解析 progressFile: ${progressFile}`,
+  }))
+  process.exit(1)
+}
+
+if (!allDone) {
+  console.log(JSON.stringify({
+    ok: false,
+    feature,
+    progressFile,
+    progressSummary,
+    currentBranch: '（尚未执行）',
+    targetBranch: targetBranch ?? 'main',
+    mr: null,
+    archive: { performed: false, archived: [] },
+    nextAction: `hx run ${feature}`,
+    reason: `存在未完成任务: ${pendingIds.join(', ')}`,
+  }))
+  process.exit(1)
 }
 
 // 5. 收集 git 事实
@@ -106,55 +140,52 @@ const planDoc = existsSync(getActivePlanDocPath(projectRoot, feature))
   ? getActivePlanDocPath(projectRoot, feature)
   : resolve(archiveDir, `${feature}.md`)
 
-// 7. 输出精确的 MR 生成指令
-console.log(`## hx-mr: 生成 Merge Request`)
-console.log()
-console.log(`**feature:** \`${parsedHeader.feature}\``)
-if (parsedHeader.displayName) console.log(`**名称:** ${parsedHeader.displayName}`)
-if (parsedHeader.sourceId) console.log(`**来源:** ${parsedHeader.sourceId}`)
-console.log()
+// ── 收集所有上下文，供 AI 生成 MR 标题和描述 ──────────────────────────────────
+const alreadyArchived = !existsSync(activeProgressFile) && existsSync(archivedProgressFile)
+const archived = alreadyArchived ? [] : archiveFeature(projectRoot, feature).archived
 
-console.log(`**输入文件:**`)
-console.log(`- requirementDoc: \`${requirementDoc}\``)
-console.log(`- planDoc:        \`${planDoc}\``)
-console.log(`- progressFile:   \`${progressFile}\`  (${progressSummary})`)
-console.log()
+console.log(JSON.stringify({
+  ok: true,
+  actionRequired: true,
+  feature,
+  progressFile,
+  progressSummary,
+  currentBranch,
+  targetBranch: defaultBranch,
+  archive: {
+    performed: !alreadyArchived,
+    archived,
+  },
+  context: {
+    feature: parsedHeader.feature,
+    displayName: parsedHeader.displayName,
+    sourceId: parsedHeader.sourceId,
+    sourceFingerprint: parsedHeader.sourceFingerprint,
+    project,
+    requirementDoc,
+    planDoc,
+    progressFile,
+    requirementSummary: summarizeRequirement(readFileSync(requirementDoc, 'utf8')),
+    progress: {
+      doneCount,
+      totalCount,
+      tasks: taskSummaries,
+    },
+    git: {
+      currentBranch,
+      targetBranch: defaultBranch,
+      log: gitLog || '',
+      diffStat: gitDiffStat || '',
+    },
+  },
+  nextAction: `hx mr ${feature}`,
+}, null, 2))
 
-console.log(`**git 事实:**`)
-console.log(`- 当前分支: \`${currentBranch}\``)
-console.log(`- 目标分支: \`${defaultBranch}\``)
-if (project) console.log(`- 项目: \`${project}\``)
-console.log()
-
-console.log(`\`git log ${defaultBranch}..HEAD --oneline\`:`)
-console.log(`\`\`\``)
-console.log(gitLog || '（无提交）')
-console.log(`\`\`\``)
-console.log()
-
-console.log(`\`git diff ${defaultBranch}...HEAD --stat\`:`)
-console.log(`\`\`\``)
-console.log(gitDiffStat || '（无变更）')
-console.log(`\`\`\``)
-console.log()
-
-console.log(`**步骤:**`)
-console.log(`1. 读取 requirementDoc（背景、目标、验收标准）`)
-console.log(`2. 读取 progressFile（任务完成状态与输出摘要）`)
-console.log(`3. 结合 git 事实，生成 MR 标题和 Markdown 描述`)
-console.log(`   - 描述需涵盖: 需求背景、变更说明、AC 验收清单、任务完成情况、测试说明`)
-console.log(`4. 输出 MR 标题（单行）`)
-console.log(`5. 输出 Markdown 描述（可直接粘贴到平台）`)
-console.log(`6. 归档: \`hx archive ${feature}\``)
-console.log(`   （hx archive 会校验所有 task 均为 done 后再执行移动）`)
-console.log()
-
-if (!allDone) {
-  console.warn(`⚠️  当前存在未完成任务，hx archive 会失败。建议先补齐 progressFile。`)
+function summarizeRequirement(content: string): string {
+  return content
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('>') && !line.startsWith('#'))
+    .slice(0, 8)
+    .join('\n')
 }
-
-console.log(`---`)
-console.log()
-console.log(`**约束:**`)
-console.log(`- feature 只读取已有值 \`${parsedHeader.feature}\`，不允许在 MR 阶段重算`)
-console.log(`- 归档路径固定: \`docs/archive/${feature}/\`，不允许自定义`)

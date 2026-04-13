@@ -38,7 +38,10 @@
     "src/scripts/lib/progress-ops.ts",
     "src/scripts/lib/progress-schema.ts",
     "src/scripts/lib/resolve-context.ts",
+    "src/scripts/lib/pipeline-state.ts",
     "src/scripts/lib/task-scheduler.ts",
+    "src/scripts/lib/task-context.ts",
+    "src/scripts/lib/ai-executor.ts",
     "src/scripts/lib/types.ts"
   ],
   "scripts": {

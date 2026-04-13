@@ -76,7 +76,7 @@ function main() {
   printSummary(summary, dryRun)
 }
 
-function resolveSetupAgents({ optionAgent }) {
+function resolveSetupAgents({ optionAgent }: { optionAgent: string | true | undefined }): string[] {
   if (optionAgent) {
     return resolveAgentTargets(optionAgent)
   }
@@ -84,7 +84,7 @@ function resolveSetupAgents({ optionAgent }) {
   return resolveAgentTargets('all')
 }
 
-function resolveTargetDir(agent) {
+function resolveTargetDir(agent: string): string {
   if (agent === 'claude') {
     return options['user-claude-dir']
       ? resolve(options['user-claude-dir'], 'skills')
@@ -98,7 +98,15 @@ function resolveTargetDir(agent) {
     : resolve(homedir(), getAgentSkillDir('agents'))
 }
 
-function ensureUserLayerDirectories(userHxDir, summary, dryRun) {
+interface SetupSummary {
+  created: string[]
+  updated: string[]
+  removed: string[]
+  skipped: string[]
+  warnings: string[]
+}
+
+function ensureUserLayerDirectories(userHxDir: string, summary: SetupSummary, dryRun: boolean): void {
   for (const sub of ['', ...USER_LAYER_DIRS]) {
     const dir = sub ? resolve(userHxDir, sub) : userHxDir
     if (!existsSync(dir)) {
@@ -108,7 +116,12 @@ function ensureUserLayerDirectories(userHxDir, summary, dryRun) {
   }
 }
 
-function ensureUserSettingsFile(userHxDir, previousContent, summary, dryRun) {
+function ensureUserSettingsFile(
+  userHxDir: string,
+  previousContent: string,
+  summary: SetupSummary,
+  dryRun: boolean,
+): void {
   const userSettingsPath = resolve(userHxDir, USER_SETTINGS_FILE)
   const settingsContent = buildUserSettingsContent()
 
@@ -119,7 +132,7 @@ function ensureUserSettingsFile(userHxDir, previousContent, summary, dryRun) {
   }
 
   const existingFrameworkRoot = readTopLevelYamlScalar(previousContent, 'frameworkRoot')
-  if (existingFrameworkRoot === PACKAGE_ROOT && !previousContent.includes('\nagents:')) {
+  if (existingFrameworkRoot === PACKAGE_ROOT && !/^agents:/m.test(previousContent)) {
     summary.skipped.push('~/.hx/settings.yaml (已存在)')
     return
   }
@@ -139,7 +152,17 @@ function buildUserSettingsContent() {
   ].join('\n')
 }
 
-function printSetupHeader({ targets, dryRun, userHxDir, agentHomes }) {
+function printSetupHeader({
+  targets,
+  dryRun,
+  userHxDir,
+  agentHomes,
+}: {
+  targets: string[]
+  dryRun: boolean
+  userHxDir: string
+  agentHomes: Record<string, string>
+}): void {
   const lines = [
     `\n  Harness Workflow · setup${dryRun ? ' (dry-run)' : ''}`,
     `  targets     → ${targets.join(', ')}`,
@@ -154,7 +177,7 @@ function printSetupHeader({ targets, dryRun, userHxDir, agentHomes }) {
   console.log('')
 }
 
-function printSummary(summary, dryRun) {
+function printSummary(summary: SetupSummary, dryRun: boolean): void {
   console.log('  ── 安装报告 ──\n')
   for (const [title, items, marker] of [
     ['创建', summary.created, '+'],

@@ -45,7 +45,7 @@ export function getSafeCwd(fallbackDir = homedir()) {
  * 向上搜索项目根目录。
  * 优先找 .hx/config.yaml，最后找 .git（通用项目根标记）。
  */
-export function findProjectRoot(startDir) {
+export function findProjectRoot(startDir?: string): string {
   const resolvedStartDir = resolve(startDir || getSafeCwd())
   let dir = resolvedStartDir
   const root = resolve('/')

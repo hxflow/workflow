@@ -22,20 +22,14 @@ hx plan <feature>
 `hx plan` 会自动完成以下工作，并输出精确的生成指令：
 - 定位需求文档，解析 feature 头部（固化解析）
 - 根据 `Type` 字段选择计划模板（feature / bugfix）
-- 输出 planDoc / progressFile 的目标路径、模板路径、schema 路径
+- 构造最小计划上下文并调用 AI
+- 由代码写入 `planDoc / progressFile` 并执行 schema 校验
 
-## AI 职责：生成 planDoc 和 progressFile
+## AI 职责：生成 planDoc 和任务拆分结果
 
-收到 `hx plan` 的输出后：
-
-1. 读取 requirementDoc 中的需求内容
-2. 按 planTemplate 生成 planDoc，包含：目标、修改范围、实施要点、验收标准、验证方式
-3. 从需求提取任务列表，按 progressTemplate/Schema 生成 progressFile
-   - 每个 task：id, name, dependsOn[], parallelizable, output("")
-   - 依赖关系和并行标记写入 progressFile，不写入 planDoc
-4. 写入文件后运行：`hx progress validate <progressFile>`
-5. 新开子 agent 评审任务拆分质量（粒度、依赖、可并行性）
-6. 根据评审修正后，再次校验
+AI 只负责返回：
+1. `planDoc` 文本
+2. task 列表：`id / name / dependsOn / parallelizable`
 
 **planDoc 质量标准：**
 - 每个 task 只写目标、修改范围、实施要点、验收标准
@@ -45,5 +39,5 @@ hx plan <feature>
 ## 约束
 
 - feature 值固定，来自需求文档头部，不允许重算
+- `progressFile` 由确定性代码按固定 schema 生成，不由 AI 直接写入
 - progressFile 必须通过 `hx progress validate` 才算完成
-
