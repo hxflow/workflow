@@ -1,7 +1,7 @@
 ---
 name: hx-doc
 description: Phase 01 · 获取需求并创建需求文档
-usage: hx-doc <context|validate> <feature> [--type <feature|bugfix>]
+usage: bun src/tools/doc.ts <context|validate> <feature> [--type <feature|bugfix>]
 hooks:
   - pre
   - post
@@ -16,14 +16,14 @@ hooks:
 ## 何时使用
 
 - 适用场景：开始处理一个新需求或新缺陷，或需要把外部详情沉淀为项目内文档。
-- 不适用场景：只是继续已有 feature 的计划或实现时，优先用 `hx-go`、`hx-plan`、`hx-run`。
+- 不适用场景：只是继续已有 feature 的计划或实现时，优先用 `bun src/tools/go.ts`、`bun src/tools/plan.ts`、`bun src/tools/run.ts`。
 
 ## 输入
 
 - 命令参数：脚本是事实工具，AI 调用子命令获取确定性事实后自行推理和写入
 - 子命令：
-  - `hx doc context <feature> [--type feature|bugfix] [--source-file <path>] [--force]`
-  - `hx doc validate <feature> [--type feature|bugfix]`
+  - `bun src/tools/doc.ts context <feature> [--type feature|bugfix] [--source-file <path>] [--force]`
+  - `bun src/tools/doc.ts validate <feature> [--type feature|bugfix]`
 - 必选参数：`<feature>`
 - 可选参数：`--type <feature|bugfix>`（默认 `feature`）、`--source-file <path>`、`--force`
 - 默认值：`--type` 默认为 `feature`
@@ -31,7 +31,7 @@ hooks:
 
 ## 执行步骤
 
-1. 调用 `hx doc context <feature>` 获取事实，返回 JSON：
+1. 调用 `bun src/tools/doc.ts context <feature>` 获取事实，返回 JSON：
    ```json
    {
      "ok": true,
@@ -52,7 +52,7 @@ hooks:
 3. 按 feature contract 先复用已有 `feature`，仅在无法复用时首次生成 `feature`；缺省路径为 `docs/requirement/{feature}.md`。
 4. 头部固定写入 `Feature`、`Display Name`、`Source ID`、`Source Fingerprint`、`Type` 五个字段。
 5. 新开一个子 agent 评审 `requirementDoc` 的完整性、可执行性和头部格式；主 agent 必须根据子 agent 的评审结论修正后再写入。
-6. 调用 `hx doc validate <feature>` 校验头部合规，返回 JSON：
+6. 调用 `bun src/tools/doc.ts validate <feature>` 校验头部合规，返回 JSON：
    ```json
    {
      "ok": true|false,
@@ -79,7 +79,7 @@ hooks:
 
 ## 下一步
 
-- 正常情况下继续运行 `hx-plan`；若想走整条主路径，也可以直接回到 `hx-go`。
+- 正常情况下继续运行 `bun src/tools/plan.ts`；若想走整条主路径，也可以直接回到 `bun src/tools/go.ts`。
 
 ## 约束
 

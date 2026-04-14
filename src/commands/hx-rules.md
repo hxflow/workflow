@@ -1,7 +1,7 @@
 ---
 name: hx-rules
 description: 查看或更新项目规则事实
-usage: hx-rules [update]
+usage: bun src/tools/rules.ts [update]
 ---
 
 # 项目规则事实
@@ -13,7 +13,7 @@ usage: hx-rules [update]
 ## 何时使用
 
 - 适用场景：想检查 `.hx/config.yaml` 和规则文件是否齐全，或需要刷新自动生成内容。
-- 不适用场景：首次接入项目时优先用 `hx-init`；正常主流程中不需要频繁运行。
+- 不适用场景：首次接入项目时优先用 `bun src/tools/init.ts`；正常主流程中不需要频繁运行。
 
 ## 输入
 
@@ -43,7 +43,7 @@ usage: hx-rules [update]
 
 ## 下一步
 
-- 发现缺失项时运行 `hx-rules update`；更新完成后重新检查规则结果。
+- 发现缺失项时运行 `bun src/tools/rules.ts update`；更新完成后重新检查规则结果。
 
 ## 约束
 

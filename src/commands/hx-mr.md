@@ -1,7 +1,7 @@
 ---
 name: hx-mr
 description: Phase 08 · 创建 Merge Request
-usage: hx-mr <context|archive> <feature> [--project <group/repo>] [--target <branch>]
+usage: bun src/tools/mr.ts <context|archive> <feature> [--project <group/repo>] [--target <branch>]
 hooks:
   - pre
   - post
@@ -16,20 +16,20 @@ hooks:
 ## 何时使用
 
 - 适用场景：所有任务已完成，准备提交 Merge Request。
-- 不适用场景：任务未全部完成，应先运行 `hx run`。
+- 不适用场景：任务未全部完成，应先运行 `bun src/tools/run.ts`。
 
 ## 输入
 
 - 脚本是事实工具，AI 调用子命令获取 MR 上下文后自行生成内容
 - 子命令：
-  - `hx mr context <feature> [--target <branch>] [--project <group/repo>]`
-  - `hx mr archive <feature>`
+  - `bun src/tools/mr.ts context <feature> [--target <branch>] [--project <group/repo>]`
+  - `bun src/tools/mr.ts archive <feature>`
 - 必选参数：`<feature>`
 - 可选参数：`--target <branch>`、`--project <group/repo>`
 
 ## 执行步骤
 
-1. 调用 `hx mr context <feature>` 获取事实，返回 JSON：
+1. 调用 `bun src/tools/mr.ts context <feature>` 获取事实，返回 JSON：
    ```json
    {
      "ok": true,
@@ -50,7 +50,7 @@ hooks:
    ```
    - `allDone: false` 且 `pendingIds` 非空时，直接停止，不生成 MR。
 2. AI 根据 `requirementSummary`、`progress`、`git` 生成 MR 标题和描述。
-3. 调用 `hx mr archive <feature>` 归档 feature 产物，返回 JSON：
+3. 调用 `bun src/tools/mr.ts archive <feature>` 归档 feature 产物，返回 JSON：
    ```json
    {
      "ok": true,
@@ -80,4 +80,4 @@ hooks:
 - feature 只读取已有值，不允许在 MR 阶段生成或重算
 - 归档路径固定：`docs/archive/{feature}/`，不允许自定义
 - 未完成 task 存在时直接失败，不调用 AI
-- 归档由 `hx mr archive` 执行，AI 不手工操作文件
+- 归档由 `bun src/tools/mr.ts archive` 执行，AI 不手工操作文件

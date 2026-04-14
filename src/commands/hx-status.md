@@ -1,7 +1,7 @@
 ---
 name: hx-status
 description: 查看任务进度
-usage: hx-status [<feature> | --feature <name>]
+usage: bun src/tools/status.ts [<feature> | --feature <name>]
 protected: true
 ---
 
@@ -14,7 +14,7 @@ protected: true
 ## 何时使用
 
 - 适用场景：想确认当前执行到哪一步，或排查哪个 feature 还没完成。
-- 不适用场景：要真正继续执行任务时，直接用 `hx-run`。
+- 不适用场景：要真正继续执行任务时，直接用 `bun src/tools/run.ts`。
 
 ## 输入
 
@@ -27,7 +27,7 @@ protected: true
 ## 执行步骤
 
 1. 解析参数，确定目标 feature（positional 或 `--feature`）。
-2. 调用 `hx status [<feature>]`，输出进度摘要和下一步建议。
+2. 调用 `bun src/tools/status.ts [<feature>]`，输出进度摘要和下一步建议。
 
 ## 成功结果
 
@@ -40,7 +40,7 @@ protected: true
 
 ## 下一步
 
-- 存在未完成任务时运行 `hx-run <feature>`；全部完成时运行 `hx-check` 或 `hx-mr`。
+- 存在未完成任务时运行 `bun src/tools/run.ts <feature>`；全部完成时运行 `bun src/tools/check.ts` 或 `bun src/tools/mr.ts`。
 
 ## 约束
 

@@ -1,7 +1,7 @@
 ---
 name: hx-check
 description: 核心检查入口
-usage: hx-check [<feature>] [--scope <review|qa|clean|facts|all>]
+usage: bun src/tools/check.ts [<feature>] [--scope <review|qa|clean|facts|all>]
 hooks:
   - pre
   - post
@@ -16,13 +16,13 @@ hooks:
 ## 何时使用
 
 - 适用场景：任务实现完成后，执行质量检查和代码审查。
-- 不适用场景：需要修复已知错误时，使用 `hx fix`。
+- 不适用场景：需要修复已知错误时，使用 `bun src/tools/fix.ts`。
 
 ## 输入
 
 - 脚本是事实工具，执行确定性检查并返回结构化结果，AI 负责语义审查
 - 子命令：
-  - `hx check [<feature>] [--scope <review|qa|clean|facts|all>]`
+  - `bun src/tools/check.ts [<feature>] [--scope <review|qa|clean|facts|all>]`
 - 可选参数：`<feature>`、`--scope`（默认 `all`）
 - scope 说明：
   - `facts`：只返回确定性事实（gates 配置、diff、规则路径），不触发 AI 审查
@@ -74,8 +74,8 @@ hooks:
 
 ## 下一步
 
-- 全部通过后继续运行 `hx mr`。
-- gate 失败时运行 `hx fix` 修复后重试。
+- 全部通过后继续运行 `bun src/tools/mr.ts`。
+- gate 失败时运行 `bun src/tools/fix.ts` 修复后重试。
 
 ## 约束
 
@@ -83,4 +83,4 @@ hooks:
 - qa 只看 exit code，不看命令输出文本
 - clean 只做扫描和报告，不修改任何文件
 - review / clean 不直接执行修复
-- 存在 blocker 或 gate 失败时，运行 `hx fix` 或人工修复后重试
+- 存在 blocker 或 gate 失败时，运行 `bun src/tools/fix.ts` 或人工修复后重试

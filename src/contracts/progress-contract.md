@@ -137,9 +137,9 @@ timeout
 
 两阶段写入通过以下命令执行，不允许 AI 直接修改 progressFile：
 
-- 阶段一：`hx progress start <progressFile> <taskId>`
-- 阶段二成功：`hx progress done <progressFile> <taskId> --output "<摘要>"`
-- 阶段二失败：`hx progress fail <progressFile> <taskId> --exit <status> --reason "<原因>"`
+- 阶段一：`bun src/tools/progress.ts start <progressFile> <taskId>`
+- 阶段二成功：`bun src/tools/progress.ts done <progressFile> <taskId> --output "<摘要>"`
+- 阶段二失败：`bun src/tools/progress.ts fail <progressFile> <taskId> --exit <status> --reason "<原因>"`
 
 每次命令执行内部自动调用校验，失败时立即中止并返回错误。
 
@@ -164,7 +164,7 @@ timeout
 
 ## 调度规则
 
-> **调度和写入操作均通过 `hx progress` 系列命令完成。AI 不自行推导调度逻辑，不直接修改 progressFile。**
+> **调度和写入操作均通过 `bun src/tools/progress.ts` 系列命令完成。AI 不自行推导调度逻辑，不直接修改 progressFile。**
 
 ### 可执行 task 判定
 

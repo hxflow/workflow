@@ -1,7 +1,7 @@
 ---
 name: hx-plan
 description: Phase 02 · 生成执行计划
-usage: hx-plan <context|validate> <feature>
+usage: bun src/tools/plan.ts <context|validate> <feature>
 hooks:
   - pre
   - post
@@ -16,20 +16,20 @@ hooks:
 ## 何时使用
 
 - 适用场景：需求文档已就绪，需要拆分为可执行的任务计划。
-- 不适用场景：需求文档尚未创建，应先运行 `hx doc`。
+- 不适用场景：需求文档尚未创建，应先运行 `bun src/tools/doc.ts`。
 
 ## 输入
 
 - 脚本是事实工具，AI 调用子命令获取确定性事实后自行推理和写入
 - 子命令：
-  - `hx plan context <feature>`
-  - `hx plan validate <feature>`
+  - `bun src/tools/plan.ts context <feature>`
+  - `bun src/tools/plan.ts validate <feature>`
 - 必选参数：`<feature>`
 - 依赖输入：需求文档、计划模板、`rules/golden-rules.md`、progressFile schema
 
 ## 执行步骤
 
-1. 调用 `hx plan context <feature>` 获取事实，返回 JSON：
+1. 调用 `bun src/tools/plan.ts context <feature>` 获取事实，返回 JSON：
    ```json
    {
      "ok": true,
@@ -50,7 +50,7 @@ hooks:
    ```
 2. AI 根据 `requirementContent`、`planTemplate`、`goldenRules` 生成 `planDoc` 和任务拆分结果。
 3. AI 写入 `planDoc` 和 `progressFile`（按 progressTemplate 的 schema 格式）。
-4. 调用 `hx plan validate <feature>` 校验产物，返回 JSON：
+4. 调用 `bun src/tools/plan.ts validate <feature>` 校验产物，返回 JSON：
    ```json
    {
      "ok": true|false,
@@ -76,7 +76,7 @@ hooks:
 
 ## 下一步
 
-- 继续运行 `hx run` 执行任务。
+- 继续运行 `bun src/tools/run.ts` 执行任务。
 
 ## 约束
 

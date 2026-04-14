@@ -131,7 +131,7 @@ describe('template structure', () => {
 
     expect(pipelineRules).toContain('顶层必须包含 `name` 和 `steps`')
     expect(pipelineRules).toContain('`command`：非空字符串，值必须是 `hx-*` 命令名')
-    expect(pipelineRules).toContain('`id` 同时是 `hx-go --from <step-id>` 的恢复锚点')
+    expect(pipelineRules).toContain('`id` 同时是 `bun src/tools/go.ts --from <step-id>` 的恢复锚点')
     expect(pipelineRules).toContain('自动恢复位置')
     expect(pipelineRules).toContain('没有耐久完成标记的 step')
     expect(pipelineRules).toContain('checkpoint.message')

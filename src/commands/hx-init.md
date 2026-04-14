@@ -1,7 +1,7 @@
 ---
 name: hx-init
 description: 初始化项目规则事实
-usage: hx-init
+usage: bun src/tools/init.ts
 protected: true
 ---
 
@@ -14,7 +14,7 @@ protected: true
 ## 何时使用
 
 - 适用场景：首次接入 HXFlow，或项目骨架缺失、需要重新补全时。
-- 不适用场景：项目已经完成初始化且骨架完整时，不需要再次执行；只是刷新规则自动区时，优先用 `hx-rules update`。
+- 不适用场景：项目已经完成初始化且骨架完整时，不需要再次执行；只是刷新规则自动区时，优先用 `bun src/tools/rules.ts update`。
 
 ## 输入
 
@@ -36,7 +36,7 @@ protected: true
 ## 成功结果
 
 - 首次初始化或缺失补齐时，生成或补全项目配置、规则文件和基础骨架。
-- 已完成初始化且骨架完整时，明确返回“当前项目无需再次执行 `hx-init`”。
+- 已完成初始化且骨架完整时，明确返回“当前项目无需再次执行 `bun src/tools/init.ts`”。
 
 ## 失败边界
 
@@ -45,8 +45,8 @@ protected: true
 
 ## 下一步
 
-- 首次初始化完成后运行 `hx-doc` 或 `hx-rules`。
-- 若只是更新自动区或补齐缺失配置，优先运行 `hx-rules update`。
+- 首次初始化完成后运行 `bun src/tools/doc.ts` 或 `bun src/tools/rules.ts`。
+- 若只是更新自动区或补齐缺失配置，优先运行 `bun src/tools/rules.ts update`。
 
 ## 约束
 

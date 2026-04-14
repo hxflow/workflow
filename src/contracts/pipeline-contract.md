@@ -24,11 +24,11 @@
 
 ## 恢复规则
 
-- `id` 同时是 `hx-go --from <step-id>` 的恢复锚点
-- `hx-go` 是事实工具，不再 spawn 子进程执行步骤
-- `hx go next` 返回下一步应执行的命令，AI 自行调用对应命令
-- `hx go state` 返回流水线完整状态
-- 未显式传入 `--from` 时，`hx go next` 按文件系统判断自动恢复位置
+- `id` 同时是 `bun src/tools/go.ts --from <step-id>` 的恢复锚点
+- `bun src/tools/go.ts` 是事实工具，不再 spawn 子进程执行步骤
+- `bun src/tools/go.ts next` 返回下一步应执行的命令，AI 自行调用对应命令
+- `bun src/tools/go.ts state` 返回流水线完整状态
+- 未显式传入 `--from` 时，`bun src/tools/go.ts next` 按文件系统判断自动恢复位置
 - 没有耐久完成标记的 step，不得自动判定为已完成
 - 恢复时应从最近一个已完成耐久 step 的下一步重新执行
 

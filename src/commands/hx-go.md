@@ -1,7 +1,7 @@
 ---
 name: hx-go
 description: 全自动流水线 · 从需求到交付
-usage: hx-go <next|state> <feature> [--from <step-id>]
+usage: bun src/tools/go.ts <next|state> <feature> [--from <step-id>]
 ---
 
 # 全自动流水线 · 从需求到交付
@@ -19,33 +19,33 @@ usage: hx-go <next|state> <feature> [--from <step-id>]
 
 - 脚本是事实工具，不再 spawn 子进程；AI 读取下一步后自行调用对应命令
 - 子命令：
-  - `hx go next <feature> [--from <step>]`
-  - `hx go state <feature>`
+  - `bun src/tools/go.ts next <feature> [--from <step>]`
+  - `bun src/tools/go.ts state <feature>`
 - 必选参数：`<feature>`
 - 可选参数：`--from <step>`（强制指定起点）
 
 ## 执行步骤
 
-1. 调用 `hx go next <feature>` 获取下一步，返回 JSON：
+1. 调用 `bun src/tools/go.ts next <feature>` 获取下一步，返回 JSON：
    ```json
    {
      "ok": true,
      "feature": "<feature>",
      "nextStep": "plan",
-     "command": "hx plan",
+     "command": "bun src/tools/plan.ts",
      "state": [{"id":"doc","name":"需求文档","status":"done"},{"id":"plan","name":"执行计划","status":"pending"}]
    }
    ```
-2. AI 根据 `command` 调用对应命令（如 `hx plan context <feature>`）。
-3. 完成当前步骤后，再次调用 `hx go next <feature>` 获取下一步，循环直到流水线完成。
-4. 调用 `hx go state <feature>` 查看完整状态，返回 JSON：
+2. AI 根据 `command` 调用对应命令（如 `bun src/tools/plan.ts context <feature>`）。
+3. 完成当前步骤后，再次调用 `bun src/tools/go.ts next <feature>` 获取下一步，循环直到流水线完成。
+4. 调用 `bun src/tools/go.ts state <feature>` 查看完整状态，返回 JSON：
    ```json
    {
      "ok": true,
      "feature": "<feature>",
      "allDone": true|false,
      "nextStep": "check"|null,
-     "steps": [{"id":"doc","name":"...","command":"hx doc","status":"done|pending|skipped"}]
+     "steps": [{"id":"doc","name":"...","command":"bun src/tools/doc.ts","status":"done|pending|skipped"}]
    }
    ```
 
@@ -60,7 +60,7 @@ usage: hx-go <next|state> <feature> [--from <step-id>]
 ## 失败边界
 
 - `--from <step>` 指定了无效 step 名称。
-- `doc` 阶段需要手动执行 `hx doc`，`next` 返回阻断提示。
+- `doc` 阶段需要手动执行 `bun src/tools/doc.ts`，`next` 返回阻断提示。
 
 ## 下一步
 

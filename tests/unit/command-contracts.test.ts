@@ -253,7 +253,7 @@ describe('command contracts', () => {
 
     // ── hx-doc（纯 AI 驱动，保留完整契约断言）────────────────────
     expect(hxDoc).not.toContain('--task <task-id>')
-    expect(hxDoc).toContain('usage: hx-doc')
+    expect(hxDoc).toContain('usage: bun src/tools/doc.ts')
     expect(hxDoc).not.toContain('[<title>]')
     expect(hxDoc).toContain('src/contracts/feature-contract.md')
     expect(hxDoc).toContain('唯一的 feature 事实源')
@@ -269,8 +269,8 @@ describe('command contracts', () => {
 
     // ── hx-plan（代码驱动）————————————————————————————————————
     // 编排逻辑在 hx-plan.ts；MD 只保留事实工具描述和约束
-    expect(hxPlan).toContain('hx plan validate')
-    expect(hxPlan).toContain('hx plan context')
+    expect(hxPlan).toContain('bun src/tools/plan.ts validate')
+    expect(hxPlan).toContain('bun src/tools/plan.ts context')
     expect(hxPlan).toContain('planTemplate')
     expect(hxPlan).toContain('progressFile')
     expect(hxPlan).toContain('planDoc')
@@ -284,7 +284,7 @@ describe('command contracts', () => {
     expect(hxPlanScript).toContain('validateProgressFile')
 
     // ── hx-check（代码驱动）————————————————————————————————————
-    expect(hxCheck).toContain('usage: hx-check [<feature>] [--scope <review|qa|clean|facts|all>]')
+    expect(hxCheck).toContain('usage: bun src/tools/check.ts [<feature>] [--scope <review|qa|clean|facts|all>]')
     expect(hxCheck).toContain('qa')
     expect(hxCheck).toContain('review-checklist.md')
     expect(hxCheck).toContain('needsAiReview')
@@ -300,11 +300,11 @@ describe('command contracts', () => {
     // ── hx-run（代码驱动）————————————————————————————————————
     expect(hxRun).not.toContain('--task <task-id>')
     expect(hxRun).toContain('--plan-task <task')
-    expect(hxRun).toContain('hx progress start')
-    expect(hxRun).toContain('hx progress done')
-    expect(hxRun).toContain('hx progress fail')
-    expect(hxRun).toContain('hx run next')
-    expect(hxRun).toContain('hx run validate')
+    expect(hxRun).toContain('bun src/tools/progress.ts start')
+    expect(hxRun).toContain('bun src/tools/progress.ts done')
+    expect(hxRun).toContain('bun src/tools/progress.ts fail')
+    expect(hxRun).toContain('bun src/tools/run.ts next')
+    expect(hxRun).toContain('bun src/tools/run.ts validate')
     // 调度逻辑在 run.ts 脚本中
     const hxRunScript = readFileSync(resolve(TOOLS_DIR, 'run.ts'), 'utf8')
     expect(hxRunScript).toContain('getScheduledBatch')
@@ -316,14 +316,14 @@ describe('command contracts', () => {
 
     // ── hx-go（代码驱动）————————————————————————————————————
     expect(hxGo).not.toContain('--task <task-id>')
-    expect(hxGo).toContain('usage: hx-go <next|state> <feature> [--from <step-id>]')
+    expect(hxGo).toContain('usage: bun src/tools/go.ts <next|state> <feature> [--from <step-id>]')
     expect(hxGo).toContain('--from <step')
     expect(hxGo).toContain('`doc`')
     expect(hxGo).toContain('`plan`')
     expect(hxGo).toContain('`run`')
     expect(hxGo).toContain('不得跳过最早未完成 step')
-    expect(hxGo).toContain('hx go next')
-    expect(hxGo).toContain('hx go state')
+    expect(hxGo).toContain('bun src/tools/go.ts next')
+    expect(hxGo).toContain('bun src/tools/go.ts state')
     // 流水线状态机在 go.ts 脚本中
     const hxGoScript = readFileSync(resolve(TOOLS_DIR, 'go.ts'), 'utf8')
     expect(hxGoScript).toContain('getPipelineState')
@@ -332,7 +332,7 @@ describe('command contracts', () => {
     expect(hxGoScript).toContain("case 'state'")
 
     // ── hx-mr（代码驱动）————————————————————————————————————
-    expect(hxMr).toContain('hx mr archive')
+    expect(hxMr).toContain('bun src/tools/mr.ts archive')
     expect(hxMr).toContain('不允许在 MR 阶段生成或重算')
     expect(hxMr).toContain('不允许自定义')
     expect(hxMr).toContain('未完成 task 存在时直接失败')

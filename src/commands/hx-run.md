@@ -1,7 +1,7 @@
 ---
 name: hx-run
 description: Phase 04 · 执行需求
-usage: hx-run <next|validate> <feature> [--plan-task <task-id>]
+usage: bun src/tools/run.ts <next|validate> <feature> [--plan-task <task-id>]
 hooks:
   - pre
   - post
@@ -16,20 +16,20 @@ hooks:
 ## 何时使用
 
 - 适用场景：执行计划已就绪，需要逐批实现任务。
-- 不适用场景：计划文档尚未创建，应先运行 `hx plan`。
+- 不适用场景：计划文档尚未创建，应先运行 `bun src/tools/plan.ts`。
 
 ## 输入
 
 - 脚本是事实工具，AI 调用子命令获取任务调度事实后自行实现
 - 子命令：
-  - `hx run next <feature> [--plan-task <taskId>]`
-  - `hx run validate <feature>`
+  - `bun src/tools/run.ts next <feature> [--plan-task <taskId>]`
+  - `bun src/tools/run.ts validate <feature>`
 - 必选参数：`<feature>`
 - 可选参数：`--plan-task <taskId>`（限定本次目标 task）
 
 ## 执行步骤
 
-1. 调用 `hx run next <feature>` 获取下一批可执行任务，返回 JSON：
+1. 调用 `bun src/tools/run.ts next <feature>` 获取下一批可执行任务，返回 JSON：
    ```json
    {
      "ok": true,
@@ -46,9 +46,9 @@ hooks:
    ```
    - `completed: true` 表示所有任务已完成，无需继续。
    - `mode: "recover"` 表示存在中断任务需恢复。
-2. AI 根据 `tasksContext` 和 `goldenRules` 逐个实现任务：读取上下文 → 实现代码/文档变更 → 调用 `hx progress start` / `hx progress done` / `hx progress fail` 更新状态。
-3. 单批完成后再次调用 `hx run next <feature>` 获取下一批，循环直到 `completed: true`。
-4. 调用 `hx run validate <feature>` 确认最终状态，返回 JSON：
+2. AI 根据 `tasksContext` 和 `goldenRules` 逐个实现任务：读取上下文 → 实现代码/文档变更 → 调用 `bun src/tools/progress.ts start` / `bun src/tools/progress.ts done` / `bun src/tools/progress.ts fail` 更新状态。
+3. 单批完成后再次调用 `bun src/tools/run.ts next <feature>` 获取下一批，循环直到 `completed: true`。
+4. 调用 `bun src/tools/run.ts validate <feature>` 确认最终状态，返回 JSON：
    ```json
    {
      "ok": true,
@@ -68,13 +68,13 @@ hooks:
 
 ## 失败边界
 
-- progressFile 不存在：先运行 `hx plan <feature>`。
+- progressFile 不存在：先运行 `bun src/tools/plan.ts <feature>`。
 - 校验失败：检查 progressFile 结构后重试。
 - 任务阻断（blocked）：输出阻断原因，等待人工介入后再重试。
 
 ## 下一步
 
-- 继续运行 `hx check` 进行质量检查。
+- 继续运行 `bun src/tools/check.ts` 进行质量检查。
 
 ## 约束
 

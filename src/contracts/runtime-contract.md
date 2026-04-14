@@ -33,7 +33,7 @@
 
 ### 子命令模式
 
-每个脚本使用 `hx <cmd> <subcmd> [args]` 格式：
+每个脚本使用 `bun src/tools/<cmd>.ts <subcmd> [args]` 格式：
 - `context` / `next`：收集当前阶段所需的事实上下文
 - `validate`：校验产物是否合规
 - `archive`：执行归档等确定性操作
