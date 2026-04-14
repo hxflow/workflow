@@ -16,16 +16,16 @@ import { existsSync, readFileSync } from 'fs'
 import { spawnSync } from 'child_process'
 import { resolve } from 'path'
 
-import { parseArgs } from './lib/config-utils.ts'
-import { findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 import {
   archiveFeature,
   getRequirementDocPath,
   getActivePlanDocPath,
   getActiveProgressFilePath,
   getArchiveDirPath,
-} from './lib/file-paths.ts'
-import { parseFeatureHeaderFile } from './lib/feature-header.ts'
+} from '../lib/file-paths.ts'
+import { parseFeatureHeaderFile } from '../lib/feature-header.ts'
 
 const argv = process.argv.slice(2)
 const [sub, ...rest] = argv

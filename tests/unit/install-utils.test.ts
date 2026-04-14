@@ -12,7 +12,7 @@ import {
   loadCommandSpecs,
   mergeCommandSpecs,
   resolveAgentTargets,
-} from '../../src/scripts/lib/install-utils.ts'
+} from '../../src/lib/install-utils.ts'
 
 const tempDirs = []
 

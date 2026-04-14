@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach, afterEach } from 'bun:test'
 import { writeFileSync, mkdtempSync, rmSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
-import { startTask, completeTask, failTask } from '../../src/scripts/lib/progress-ops.ts'
+import { startTask, completeTask, failTask } from '../../src/lib/progress-ops.ts'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 

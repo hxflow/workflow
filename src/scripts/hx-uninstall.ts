@@ -6,9 +6,9 @@ import { existsSync, readdirSync, readFileSync, rmSync, statSync } from 'fs'
 import { homedir } from 'os'
 import { resolve } from 'path'
 
-import { parseArgs } from './lib/config-utils.ts'
-import { getAgentSkillDir, SUPPORTED_AGENTS } from './lib/install-utils.ts'
-import { USER_HX_DIR } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { getAgentSkillDir, SUPPORTED_AGENTS } from '../lib/install-utils.ts'
+import { USER_HX_DIR } from '../lib/resolve-context.ts'
 
 const { options } = parseArgs(process.argv.slice(2))
 

@@ -19,5 +19,7 @@ describe('package manifest', () => {
     expect(pkg.files).toContain('src/scripts/hx-setup.ts')
     expect(pkg.files).toContain('src/scripts/hx-upgrade.ts')
     expect(pkg.files).toContain('src/scripts/hx-uninstall.ts')
+    expect(pkg.files).toContain('src/tools/**/*')
+    expect(pkg.files).toContain('src/lib/**/*')
   })
 })

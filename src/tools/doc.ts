@@ -15,9 +15,9 @@
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 
-import { parseArgs } from './lib/config-utils.ts'
-import { FRAMEWORK_ROOT, findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
-import { getRequirementDocPath } from './lib/file-paths.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { FRAMEWORK_ROOT, findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
+import { getRequirementDocPath } from '../lib/file-paths.ts'
 
 const VALID_TYPES = ['feature', 'bugfix'] as const
 type DocType = (typeof VALID_TYPES)[number]

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'bun:test'
 
 const COMMANDS_DIR = resolve(process.cwd(), 'src', 'commands')
 const CONTRACTS_DIR = resolve(process.cwd(), 'src', 'contracts')
-const SCRIPTS_DIR = resolve(process.cwd(), 'src', 'scripts')
+const TOOLS_DIR = resolve(process.cwd(), 'src', 'tools')
 const commandFiles = readdirSync(COMMANDS_DIR)
   .filter((file) => file.startsWith('hx-') && file.endsWith('.md'))
   .sort()
@@ -277,8 +277,8 @@ describe('command contracts', () => {
     expect(hxPlan).toContain('progressFile')
     expect(hxPlan).toContain('不允许重算')
 
-    // 确定性逻辑在 hx-plan.ts 脚本中
-    const hxPlanScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-plan.ts'), 'utf8')
+    // 确定性逻辑在 plan.ts 脚本中
+    const hxPlanScript = readFileSync(resolve(TOOLS_DIR, 'plan.ts'), 'utf8')
     expect(hxPlanScript).toContain('parseFeatureHeaderFile')
     expect(hxPlanScript).toContain('getProgressSchemaPaths')
     expect(hxPlanScript).toContain('validateProgressFile')
@@ -288,8 +288,8 @@ describe('command contracts', () => {
     expect(hxCheck).toContain('qa')
     expect(hxCheck).toContain('review-checklist.md')
     expect(hxCheck).toContain('needsAiReview')
-    // gates 逻辑在 hx-check.ts 脚本中
-    const hxCheckScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-check.ts'), 'utf8')
+    // gates 逻辑在 check.ts 脚本中
+    const hxCheckScript = readFileSync(resolve(TOOLS_DIR, 'check.ts'), 'utf8')
     expect(hxCheckScript).toContain("'lint'")
     expect(hxCheckScript).toContain("'build'")
     expect(hxCheckScript).toContain("'type'")
@@ -305,8 +305,8 @@ describe('command contracts', () => {
     expect(hxRun).toContain('hx progress fail')
     expect(hxRun).toContain('hx run next')
     expect(hxRun).toContain('hx run validate')
-    // 调度逻辑在 hx-run.ts 脚本中
-    const hxRunScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-run.ts'), 'utf8')
+    // 调度逻辑在 run.ts 脚本中
+    const hxRunScript = readFileSync(resolve(TOOLS_DIR, 'run.ts'), 'utf8')
     expect(hxRunScript).toContain('getScheduledBatch')
     expect(hxRunScript).toContain('validateProgressFile')
     expect(hxRunScript).toContain('buildTaskContext')
@@ -324,8 +324,8 @@ describe('command contracts', () => {
     expect(hxGo).toContain('不得跳过最早未完成 step')
     expect(hxGo).toContain('hx go next')
     expect(hxGo).toContain('hx go state')
-    // 流水线状态机在 hx-go.ts 脚本中
-    const hxGoScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-go.ts'), 'utf8')
+    // 流水线状态机在 go.ts 脚本中
+    const hxGoScript = readFileSync(resolve(TOOLS_DIR, 'go.ts'), 'utf8')
     expect(hxGoScript).toContain('getPipelineState')
     expect(hxGoScript).toContain('resolvePipelineStartStep')
     expect(hxGoScript).toContain("case 'next'")
@@ -336,8 +336,8 @@ describe('command contracts', () => {
     expect(hxMr).toContain('不允许在 MR 阶段生成或重算')
     expect(hxMr).toContain('不允许自定义')
     expect(hxMr).toContain('未完成 task 存在时直接失败')
-    // git 事实收集在 hx-mr.ts 脚本中
-    const hxMrScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-mr.ts'), 'utf8')
+    // git 事实收集在 mr.ts 脚本中
+    const hxMrScript = readFileSync(resolve(TOOLS_DIR, 'mr.ts'), 'utf8')
     expect(hxMrScript).toContain('parseFeatureHeaderFile')
     expect(hxMrScript).toContain('spawnSync')
     expect(hxMrScript).toContain('archiveFeature')

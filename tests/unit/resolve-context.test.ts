@@ -4,7 +4,7 @@ import { resolve } from 'path'
 
 import { afterEach, describe, expect, it } from 'bun:test'
 
-import { findProjectRoot } from '../../src/scripts/lib/resolve-context.ts'
+import { findProjectRoot } from '../../src/lib/resolve-context.ts'
 
 const tempDirs = []
 

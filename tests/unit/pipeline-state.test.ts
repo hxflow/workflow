@@ -9,7 +9,7 @@ import {
   isPlanDone,
   isRunDone,
   resolvePipelineStartStep,
-} from '../../src/scripts/lib/pipeline-state.ts'
+} from '../../src/lib/pipeline-state.ts'
 
 const tempDirs: string[] = []
 

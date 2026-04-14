@@ -21,8 +21,8 @@ import {
   BUILTIN_CLI_COMMANDS,
   loadCommandSpecs,
   mergeCommandSpecs,
-} from '../src/scripts/lib/install-utils.ts'
-import { USER_HX_DIR, findProjectRoot, getSafeCwd } from '../src/scripts/lib/resolve-context.ts'
+} from '../src/lib/install-utils.ts'
+import { USER_HX_DIR, findProjectRoot, getSafeCwd } from '../src/lib/resolve-context.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SCRIPTS_DIR = resolve(__dirname, '..', 'src', 'scripts')

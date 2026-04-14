@@ -11,13 +11,13 @@
  * 所有子命令输出 JSON 到 stdout，失败时 exit 1。
  */
 
-import { parseArgs } from './lib/config-utils.ts'
-import { findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
-import { resolveProgressFile } from './lib/file-paths.ts'
-import { validateProgressFile } from './lib/progress-schema.ts'
-import { getScheduledBatch } from './lib/task-scheduler.ts'
-import { buildTaskContext } from './lib/task-context.ts'
-import type { ProgressData } from './lib/types.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
+import { resolveProgressFile } from '../lib/file-paths.ts'
+import { validateProgressFile } from '../lib/progress-schema.ts'
+import { getScheduledBatch } from '../lib/task-scheduler.ts'
+import { buildTaskContext } from '../lib/task-context.ts'
+import type { ProgressData } from '../lib/types.ts'
 
 const args = process.argv.slice(2)
 const [sub, ...rest] = args

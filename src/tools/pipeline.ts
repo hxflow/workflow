@@ -9,17 +9,17 @@
  * 所有子命令输出 JSON 到 stdout，失败时 exit 1。
  */
 
-import { findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 import {
   getPipelineState,
   resolvePipelineStartStep,
-} from './lib/pipeline-state.ts'
+} from '../lib/pipeline-state.ts'
 import {
   getRequirementDocPath,
   getActivePlanDocPath,
   getActiveProgressFilePath,
   getArchiveDirPath,
-} from './lib/file-paths.ts'
+} from '../lib/file-paths.ts'
 import { existsSync } from 'fs'
 
 const args = process.argv.slice(2)

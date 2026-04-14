@@ -5,9 +5,9 @@ import { homedir } from 'os'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
-import { parseArgs } from './lib/config-utils.ts'
-import { resolveAgentTargets, SUPPORTED_AGENTS } from './lib/install-utils.ts'
-import { getSafeCwd } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { resolveAgentTargets, SUPPORTED_AGENTS } from '../lib/install-utils.ts'
+import { getSafeCwd } from '../lib/resolve-context.ts'
 
 const { options } = parseArgs(process.argv.slice(2))
 const __dirname = dirname(fileURLToPath(import.meta.url))

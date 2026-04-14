@@ -14,11 +14,11 @@
  */
 
 import { resolve } from 'path'
-import { parseArgs } from './lib/config-utils.ts'
-import { getScheduledBatch } from './lib/task-scheduler.ts'
-import { startTask, completeTask, failTask } from './lib/progress-ops.ts'
-import { readProgressFile, validateProgressFile } from './lib/progress-schema.ts'
-import { getSafeCwd } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { getScheduledBatch } from '../lib/task-scheduler.ts'
+import { startTask, completeTask, failTask } from '../lib/progress-ops.ts'
+import { readProgressFile, validateProgressFile } from '../lib/progress-schema.ts'
+import { getSafeCwd } from '../lib/resolve-context.ts'
 
 const args = process.argv.slice(2)
 const [sub, ...rest] = args

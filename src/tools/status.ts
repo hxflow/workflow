@@ -13,10 +13,10 @@
 
 import { readdirSync, existsSync } from 'fs'
 import { resolve } from 'path'
-import { parseArgs } from './lib/config-utils.ts'
-import { readProgressFile, validateProgressFile } from './lib/progress-schema.ts'
-import { getActiveProgressFilePath } from './lib/file-paths.ts'
-import { findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { readProgressFile, validateProgressFile } from '../lib/progress-schema.ts'
+import { getActiveProgressFilePath } from '../lib/file-paths.ts'
+import { findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 
 const rawArgs = process.argv.slice(2)
 const { positional, options } = parseArgs(rawArgs)

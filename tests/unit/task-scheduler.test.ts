@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { getRunnableTasks, getRecoverableTasks, getScheduledBatch } from '../../src/scripts/lib/task-scheduler.ts'
+import { getRunnableTasks, getRecoverableTasks, getScheduledBatch } from '../../src/lib/task-scheduler.ts'
 
 function makeTask(overrides) {
   return {

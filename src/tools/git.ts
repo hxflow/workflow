@@ -11,8 +11,8 @@
  */
 
 import { spawnSync } from 'child_process'
-import { parseArgs } from './lib/config-utils.ts'
-import { findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 
 const args = process.argv.slice(2)
 const [sub, ...rest] = args

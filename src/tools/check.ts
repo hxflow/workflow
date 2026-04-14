@@ -11,8 +11,8 @@ import { existsSync, readFileSync } from 'fs'
 import { spawnSync } from 'child_process'
 import { resolve } from 'path'
 
-import { parseArgs } from './lib/config-utils.ts'
-import { FRAMEWORK_ROOT, findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { FRAMEWORK_ROOT, findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 
 const VALID_SCOPES = ['review', 'qa', 'clean', 'all', 'facts'] as const
 const GATE_ORDER = ['lint', 'build', 'type', 'test'] as const

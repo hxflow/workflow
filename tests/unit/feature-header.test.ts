@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { parseFeatureHeader, parseFeatureHeaderFile } from '../../src/scripts/lib/feature-header.ts'
+import { parseFeatureHeader, parseFeatureHeaderFile } from '../../src/lib/feature-header.ts'
 import { writeFileSync, mkdtempSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'

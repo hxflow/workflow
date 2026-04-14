@@ -4,7 +4,7 @@ import {
   parseArgs,
   readTopLevelYamlScalar,
   upsertTopLevelYamlScalar,
-} from '../../src/scripts/lib/config-utils.ts'
+} from '../../src/lib/config-utils.ts'
 
 describe('config-utils', () => {
   it('parses positional args and option variants', () => {

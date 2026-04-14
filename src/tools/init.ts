@@ -11,7 +11,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs'
 import { resolve, basename } from 'path'
 
-import { FRAMEWORK_ROOT, findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { FRAMEWORK_ROOT, findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 
 const projectRoot = findProjectRoot(getSafeCwd())
 const hxDir = resolve(projectRoot, '.hx')

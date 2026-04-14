@@ -10,8 +10,8 @@
  * 输出 JSON 到 stdout，失败时 exit 1。
  */
 
-import { restoreFeature } from './lib/file-paths.ts'
-import { findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { restoreFeature } from '../lib/file-paths.ts'
+import { findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 
 const args = process.argv.slice(2)
 const [feature] = args

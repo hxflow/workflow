@@ -12,15 +12,15 @@
 
 import { resolve } from 'path'
 import { existsSync, readFileSync } from 'fs'
-import { parseFeatureHeaderFile } from './lib/feature-header.ts'
-import { findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { parseFeatureHeaderFile } from '../lib/feature-header.ts'
+import { findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 import {
   getRequirementDocPath,
   getActivePlanDocPath,
   getActiveProgressFilePath,
   getArchiveDirPath,
-} from './lib/file-paths.ts'
-import { getPipelineState } from './lib/pipeline-state.ts'
+} from '../lib/file-paths.ts'
+import { getPipelineState } from '../lib/pipeline-state.ts'
 
 const args = process.argv.slice(2)
 const [sub, ...rest] = args

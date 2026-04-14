@@ -7,7 +7,7 @@ import {
   readProgressTemplate,
   validateProgressData,
   validateProgressFile,
-} from '../../src/scripts/lib/progress-schema.ts'
+} from '../../src/lib/progress-schema.ts'
 import { mkdtempSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'

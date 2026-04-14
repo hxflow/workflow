@@ -10,7 +10,7 @@ import {
   archiveFeature,
   restoreFeature,
   resolveProgressFile,
-} from '../../src/scripts/lib/file-paths.ts'
+} from '../../src/lib/file-paths.ts'
 
 let tmpDir
 

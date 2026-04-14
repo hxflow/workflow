@@ -8,8 +8,8 @@ import { homedir } from 'os'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
-import { parseArgs } from './lib/config-utils.ts'
-import { getSafeCwd } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { getSafeCwd } from '../lib/resolve-context.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PACKAGE_JSON_PATH = resolve(__dirname, '../../package.json')

@@ -13,16 +13,16 @@
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 
-import { parseArgs } from './lib/config-utils.ts'
-import { findProjectRoot, getSafeCwd, FRAMEWORK_ROOT } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { findProjectRoot, getSafeCwd, FRAMEWORK_ROOT } from '../lib/resolve-context.ts'
 import {
   getRequirementDocPath,
   getActivePlanDocPath,
   getActiveProgressFilePath,
-} from './lib/file-paths.ts'
-import { parseFeatureHeaderFile } from './lib/feature-header.ts'
-import { getProgressSchemaPaths, validateProgressFile } from './lib/progress-schema.ts'
-import type { ProgressData } from './lib/types.ts'
+} from '../lib/file-paths.ts'
+import { parseFeatureHeaderFile } from '../lib/feature-header.ts'
+import { getProgressSchemaPaths, validateProgressFile } from '../lib/progress-schema.ts'
+import type { ProgressData } from '../lib/types.ts'
 
 const argv = process.argv.slice(2)
 const [sub, ...rest] = argv

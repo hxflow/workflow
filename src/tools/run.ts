@@ -10,15 +10,15 @@
  * 所有子命令输出 JSON 到 stdout，失败时 exit 1。
  */
 
-import { validateProgressFile } from './lib/progress-schema.ts'
-import { parseArgs } from './lib/config-utils.ts'
-import { findProjectRoot, getSafeCwd, FRAMEWORK_ROOT } from './lib/resolve-context.ts'
-import { resolveProgressFile } from './lib/file-paths.ts'
-import { getRecoverableTasks, getRunnableTasks, getScheduledBatch } from './lib/task-scheduler.ts'
-import { buildTaskContext } from './lib/task-context.ts'
+import { validateProgressFile } from '../lib/progress-schema.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { findProjectRoot, getSafeCwd, FRAMEWORK_ROOT } from '../lib/resolve-context.ts'
+import { resolveProgressFile } from '../lib/file-paths.ts'
+import { getRecoverableTasks, getRunnableTasks, getScheduledBatch } from '../lib/task-scheduler.ts'
+import { buildTaskContext } from '../lib/task-context.ts'
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
-import type { ProgressData, ScheduledBatch } from './lib/types.ts'
+import type { ProgressData, ScheduledBatch } from '../lib/types.ts'
 
 const argv = process.argv.slice(2)
 const [sub, ...rest] = argv

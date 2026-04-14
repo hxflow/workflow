@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
-const SCRIPT_PATH = resolve(process.cwd(), 'src/scripts/hx-go.ts')
+const SCRIPT_PATH = resolve(process.cwd(), 'src/tools/go.ts')
 const tempDirs: string[] = []
 
 afterEach(() => {

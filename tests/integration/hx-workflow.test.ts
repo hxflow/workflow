@@ -6,7 +6,7 @@ import { resolve } from 'path'
 import { afterEach, describe, expect, it } from 'bun:test'
 
 const REPO_ROOT = resolve(import.meta.dir, '..', '..')
-const SCRIPTS_DIR = resolve(REPO_ROOT, 'src', 'scripts')
+const TOOLS_DIR = resolve(REPO_ROOT, 'src', 'tools')
 
 const tempDirs: string[] = []
 
@@ -25,7 +25,7 @@ afterEach(() => {
 })
 
 function run(script: string, args: string[], cwd: string) {
-  return spawnSync(process.execPath, [resolve(SCRIPTS_DIR, script), ...args], {
+  return spawnSync(process.execPath, [resolve(TOOLS_DIR, script), ...args], {
     cwd,
     encoding: 'utf8',
   })
@@ -117,7 +117,7 @@ describe('hx progress integration', () => {
       const data = baseProgress('TEST-001', [makeTask({ id: 't1', name: 'Task 1' })])
       const filePath = writeProgress(project, 'TEST-001', data)
 
-      const result = run('hx-progress.ts', ['next', filePath], project)
+      const result = run('progress.ts', ['next', filePath], project)
 
       expect(result.status).toBe(0)
       const out = JSON.parse(result.stdout)
@@ -133,7 +133,7 @@ describe('hx progress integration', () => {
       ])
       const filePath = writeProgress(project, 'TEST-001', data)
 
-      const result = run('hx-progress.ts', ['next', filePath], project)
+      const result = run('progress.ts', ['next', filePath], project)
 
       expect(result.status).toBe(0)
       const out = JSON.parse(result.stdout)
@@ -156,7 +156,7 @@ describe('hx progress integration', () => {
       })
       const filePath = writeProgress(project, 'TEST-001', data)
 
-      const result = run('hx-progress.ts', ['next', filePath], project)
+      const result = run('progress.ts', ['next', filePath], project)
 
       expect(result.status).toBe(0)
       const out = JSON.parse(result.stdout)
@@ -172,7 +172,7 @@ describe('hx progress integration', () => {
       ])
       const filePath = writeProgress(project, 'TEST-001', data)
 
-      const result = run('hx-progress.ts', ['next', filePath], project)
+      const result = run('progress.ts', ['next', filePath], project)
 
       expect(result.status).toBe(0)
       const out = JSON.parse(result.stdout)
@@ -188,7 +188,7 @@ describe('hx progress integration', () => {
       ])
       const filePath = writeProgress(project, 'TEST-001', data)
 
-      const result = run('hx-progress.ts', ['next', filePath], project)
+      const result = run('progress.ts', ['next', filePath], project)
 
       expect(result.status).toBe(0)
       const out = JSON.parse(result.stdout)
@@ -203,12 +203,12 @@ describe('hx progress integration', () => {
       const data = baseProgress('TEST-001', [makeTask({ id: 't1', name: 'Task 1' })])
       const filePath = writeProgress(project, 'TEST-001', data)
 
-      const startResult = run('hx-progress.ts', ['start', filePath, 't1'], project)
+      const startResult = run('progress.ts', ['start', filePath, 't1'], project)
       expect(startResult.status).toBe(0)
       expect(JSON.parse(startResult.stdout).ok).toBe(true)
 
       const doneResult = run(
-        'hx-progress.ts',
+        'progress.ts',
         ['done', filePath, 't1', '--output', 'task completed'],
         project,
       )
@@ -229,10 +229,10 @@ describe('hx progress integration', () => {
       ])
       const filePath = writeProgress(project, 'TEST-001', data)
 
-      run('hx-progress.ts', ['start', filePath, 't1'], project)
-      run('hx-progress.ts', ['done', filePath, 't1', '--output', 't1 done'], project)
-      run('hx-progress.ts', ['start', filePath, 't2'], project)
-      run('hx-progress.ts', ['done', filePath, 't2', '--output', 't2 done'], project)
+      run('progress.ts', ['start', filePath, 't1'], project)
+      run('progress.ts', ['done', filePath, 't1', '--output', 't1 done'], project)
+      run('progress.ts', ['start', filePath, 't2'], project)
+      run('progress.ts', ['done', filePath, 't2', '--output', 't2 done'], project)
 
       const saved = JSON.parse(readFileSync(filePath, 'utf8'))
       expect(saved.completedAt).not.toBeNull()
@@ -246,10 +246,10 @@ describe('hx progress integration', () => {
       const data = baseProgress('TEST-001', [makeTask({ id: 't1', name: 'Task 1' })])
       const filePath = writeProgress(project, 'TEST-001', data)
 
-      run('hx-progress.ts', ['start', filePath, 't1'], project)
+      run('progress.ts', ['start', filePath, 't1'], project)
 
       const failResult = run(
-        'hx-progress.ts',
+        'progress.ts',
         ['fail', filePath, 't1', '--exit', 'failed', '--reason', 'build error'],
         project,
       )
@@ -272,7 +272,7 @@ describe('hx progress integration', () => {
       ])
       const filePath = writeProgress(project, 'TEST-001', data)
 
-      const result = run('hx-progress.ts', ['start', filePath, 't2'], project)
+      const result = run('progress.ts', ['start', filePath, 't2'], project)
 
       expect(result.status).toBe(1)
       expect(JSON.parse(result.stderr).ok).toBe(false)
@@ -284,7 +284,7 @@ describe('hx progress integration', () => {
       const filePath = writeProgress(project, 'TEST-001', data)
 
       const result = run(
-        'hx-progress.ts',
+        'progress.ts',
         ['done', filePath, 't1', '--output', 'output'],
         project,
       )
@@ -299,7 +299,7 @@ describe('hx progress integration', () => {
       const filePath = writeProgress(project, 'TEST-001', data)
 
       const result = run(
-        'hx-progress.ts',
+        'progress.ts',
         ['fail', filePath, 't1', '--exit', 'failed', '--reason', 'reason'],
         project,
       )
@@ -325,7 +325,7 @@ describe('hx progress integration', () => {
       })
       const filePath = writeProgress(project, 'TEST-001', data)
 
-      const result = run('hx-progress.ts', ['start', filePath, 't1'], project)
+      const result = run('progress.ts', ['start', filePath, 't1'], project)
 
       expect(result.status).toBe(1)
       expect(JSON.parse(result.stderr).ok).toBe(false)
@@ -338,7 +338,7 @@ describe('hx progress integration', () => {
       const data = baseProgress('TEST-001', [makeTask()])
       const filePath = writeProgress(project, 'TEST-001', data)
 
-      const result = run('hx-progress.ts', ['validate', filePath], project)
+      const result = run('progress.ts', ['validate', filePath], project)
 
       expect(result.status).toBe(0)
       const out = JSON.parse(result.stdout)
@@ -351,7 +351,7 @@ describe('hx progress integration', () => {
       const filePath = resolve(project, 'docs', 'plans', 'bad-progress.json')
       writeFileSync(filePath, JSON.stringify({ feature: 'BAD' }), 'utf8')
 
-      const result = run('hx-progress.ts', ['validate', filePath], project)
+      const result = run('progress.ts', ['validate', filePath], project)
 
       expect(result.status).toBe(1)
       const out = JSON.parse(result.stdout)
@@ -368,7 +368,7 @@ describe('hx feature integration', () => {
     const project = createTempProject()
     const filePath = writeRequirementDoc(project, 'TEST-001')
 
-    const result = run('hx-feature.ts', ['parse', filePath], project)
+    const result = run('feature.ts', ['parse', filePath], project)
 
     expect(result.status).toBe(0)
     const out = JSON.parse(result.stdout)
@@ -382,7 +382,7 @@ describe('hx feature integration', () => {
   it('exits 1 for a non-existent file', () => {
     const project = createTempProject()
 
-    const result = run('hx-feature.ts', ['parse', '/nonexistent/file.md'], project)
+    const result = run('feature.ts', ['parse', '/nonexistent/file.md'], project)
 
     expect(result.status).toBe(1)
     expect(JSON.parse(result.stderr).ok).toBe(false)
@@ -393,7 +393,7 @@ describe('hx feature integration', () => {
     const filePath = resolve(project, 'docs', 'requirement', 'bad.md')
     writeFileSync(filePath, '# Requirement\n\nNo header here.\n', 'utf8')
 
-    const result = run('hx-feature.ts', ['parse', filePath], project)
+    const result = run('feature.ts', ['parse', filePath], project)
 
     expect(result.status).toBe(1)
     expect(JSON.parse(result.stderr).ok).toBe(false)
@@ -405,7 +405,7 @@ describe('hx feature integration', () => {
 describe('hx status integration', () => {
   it('shows progress summary for a specific feature', () => {
     const project = createTempProject()
-    run('hx-progress.ts', [], project) // ensure script loads fine
+    run('progress.ts', [], project) // ensure script loads fine
     const data = baseProgress('TEST-001', [
       makeTask({ id: 't1', name: 'Task 1' }),
       makeDoneTask('t2', 'Task 2'),
@@ -421,7 +421,7 @@ describe('hx status integration', () => {
     })
     writeProgress(project, 'TEST-001', data)
 
-    const result = run('hx-status.ts', ['TEST-001'], project)
+    const result = run('status.ts', ['TEST-001'], project)
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('TEST-001')
@@ -433,7 +433,7 @@ describe('hx status integration', () => {
     writeProgress(project, 'FEAT-A', baseProgress('FEAT-A', [makeTask()]))
     writeProgress(project, 'FEAT-B', baseProgress('FEAT-B', [makeTask()]))
 
-    const result = run('hx-status.ts', [], project)
+    const result = run('status.ts', [], project)
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('FEAT-A')
@@ -443,7 +443,7 @@ describe('hx status integration', () => {
   it('reports no files when plans dir is empty', () => {
     const project = createTempProject()
 
-    const result = run('hx-status.ts', [], project)
+    const result = run('status.ts', [], project)
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('暂无进度文件')
@@ -452,7 +452,7 @@ describe('hx status integration', () => {
   it('exits 1 for a feature with no progress file', () => {
     const project = createTempProject()
 
-    const result = run('hx-status.ts', ['NO-SUCH'], project)
+    const result = run('status.ts', ['NO-SUCH'], project)
 
     expect(result.status).toBe(1)
   })
@@ -477,7 +477,7 @@ describe('hx archive + hx restore integration', () => {
     writeProgress(project, 'TEST-001', data)
     writePlanDoc(project, 'TEST-001')
 
-    const result = run('hx-archive.ts', ['TEST-001'], project)
+    const result = run('archive.ts', ['TEST-001'], project)
 
     expect(result.status).toBe(0)
     const out = JSON.parse(result.stdout)
@@ -493,7 +493,7 @@ describe('hx archive + hx restore integration', () => {
     writeProgress(project, 'TEST-001', data)
     writePlanDoc(project, 'TEST-001')
 
-    const result = run('hx-archive.ts', ['TEST-001'], project)
+    const result = run('archive.ts', ['TEST-001'], project)
 
     expect(result.status).toBe(1)
     expect(JSON.parse(result.stderr).ok).toBe(false)
@@ -515,11 +515,11 @@ describe('hx archive + hx restore integration', () => {
     writeProgress(project, 'TEST-001', data)
     writePlanDoc(project, 'TEST-001')
 
-    run('hx-archive.ts', ['TEST-001'], project)
+    run('archive.ts', ['TEST-001'], project)
 
     expect(existsSync(resolve(project, 'docs', 'plans', 'test-001-progress.json'))).toBe(false)
 
-    const restoreResult = run('hx-restore.ts', ['TEST-001'], project)
+    const restoreResult = run('restore.ts', ['TEST-001'], project)
 
     expect(restoreResult.status).toBe(0)
     const out = JSON.parse(restoreResult.stdout)
@@ -531,14 +531,14 @@ describe('hx archive + hx restore integration', () => {
 // ─── bare script smoke tests ─────────────────────────────────────────────────
 
 describe('bare script — direct invocation smoke test', () => {
-  it('invokes hx-progress.ts directly', () => {
+  it('invokes progress.ts directly', () => {
     const project = createTempProject()
     const data = baseProgress('TEST-001', [makeTask()])
     const filePath = writeProgress(project, 'TEST-001', data)
 
     const result = spawnSync(
       process.execPath,
-      [resolve(REPO_ROOT, 'src', 'scripts', 'hx-progress.ts'), 'validate', filePath],
+      [resolve(REPO_ROOT, 'src', 'tools', 'progress.ts'), 'validate', filePath],
       { cwd: project, encoding: 'utf8' },
     )
 
@@ -546,13 +546,13 @@ describe('bare script — direct invocation smoke test', () => {
     expect(JSON.parse(result.stdout).valid).toBe(true)
   })
 
-  it('invokes hx-feature.ts directly', () => {
+  it('invokes feature.ts directly', () => {
     const project = createTempProject()
     const filePath = writeRequirementDoc(project, 'SMOKE-001')
 
     const result = spawnSync(
       process.execPath,
-      [resolve(REPO_ROOT, 'src', 'scripts', 'hx-feature.ts'), 'parse', filePath],
+      [resolve(REPO_ROOT, 'src', 'tools', 'feature.ts'), 'parse', filePath],
       { cwd: project, encoding: 'utf8' },
     )
 

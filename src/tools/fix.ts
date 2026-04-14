@@ -14,8 +14,8 @@ import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 import { spawnSync } from 'child_process'
 
-import { parseArgs } from './lib/config-utils.ts'
-import { FRAMEWORK_ROOT, findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { FRAMEWORK_ROOT, findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 
 const argv = process.argv.slice(2)
 const [sub, ...rest] = argv

@@ -10,8 +10,8 @@
 import { existsSync, readFileSync, readdirSync } from 'fs'
 import { resolve, basename } from 'path'
 
-import { parseArgs } from './lib/config-utils.ts'
-import { FRAMEWORK_ROOT, findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { FRAMEWORK_ROOT, findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 
 const AUTO_START = '<!-- hx:auto:start -->'
 const AUTO_END = '<!-- hx:auto:end -->'

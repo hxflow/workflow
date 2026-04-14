@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
-const SCRIPT_PATH = resolve(process.cwd(), 'src/scripts/hx-run.ts')
+const SCRIPT_PATH = resolve(process.cwd(), 'src/tools/run.ts')
 const tempDirs = []
 
 function makeProgressData() {

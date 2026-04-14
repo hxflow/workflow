@@ -6,12 +6,12 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { homedir } from 'os'
 import { resolve } from 'path'
 
-import { FRAMEWORK_ROOT, PACKAGE_ROOT } from './lib/resolve-context.ts'
+import { FRAMEWORK_ROOT, PACKAGE_ROOT } from '../lib/resolve-context.ts'
 import {
   parseArgs,
   readTopLevelYamlScalar,
   upsertTopLevelYamlScalar,
-} from './lib/config-utils.ts'
+} from '../lib/config-utils.ts'
 import {
   generateSkillFilesForAgent,
   getAgentSkillDir,
@@ -19,7 +19,7 @@ import {
   mergeCommandSpecs,
   resolveAgentTargets,
   SUPPORTED_AGENTS,
-} from './lib/install-utils.ts'
+} from '../lib/install-utils.ts'
 
 const USER_LAYER_DIRS = ['commands', 'hooks', 'pipelines']
 const USER_SETTINGS_FILE = 'settings.yaml'

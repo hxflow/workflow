@@ -13,9 +13,9 @@
  */
 
 import { resolve } from 'path'
-import { readProgressFile, validateProgressFile } from './lib/progress-schema.ts'
-import { archiveFeature, getActiveProgressFilePath } from './lib/file-paths.ts'
-import { findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { readProgressFile, validateProgressFile } from '../lib/progress-schema.ts'
+import { archiveFeature, getActiveProgressFilePath } from '../lib/file-paths.ts'
+import { findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 
 const args = process.argv.slice(2)
 const [feature] = args

@@ -10,14 +10,14 @@
  * 不再 spawn 子进程执行步骤。AI 读取下一步后自行调用对应命令。
  */
 
-import { parseArgs } from './lib/config-utils.ts'
-import { findProjectRoot, getSafeCwd } from './lib/resolve-context.ts'
+import { parseArgs } from '../lib/config-utils.ts'
+import { findProjectRoot, getSafeCwd } from '../lib/resolve-context.ts'
 import {
   DEFAULT_PIPELINE_STEPS,
   getPipelineState,
   type PipelineStepId,
   resolvePipelineStartStep,
-} from './lib/pipeline-state.ts'
+} from '../lib/pipeline-state.ts'
 
 const PIPELINE_STEPS = ['doc', 'plan', 'run', 'check', 'mr']
 

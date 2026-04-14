@@ -5,7 +5,7 @@ import { describe, expect, it } from 'bun:test'
 
 const COMMANDS_DIR = resolve(process.cwd(), 'src', 'commands')
 const CONTRACTS_DIR = resolve(process.cwd(), 'src', 'contracts')
-const SCRIPTS_DIR = resolve(process.cwd(), 'src', 'scripts')
+const TOOLS_DIR = resolve(process.cwd(), 'src', 'tools')
 const featureContract = readFileSync(resolve(CONTRACTS_DIR, 'feature-contract.md'), 'utf8')
 const ownershipContract = readFileSync(resolve(CONTRACTS_DIR, 'ownership-contract.md'), 'utf8')
 const hxDoc = readFileSync(resolve(COMMANDS_DIR, 'hx-doc.md'), 'utf8')
@@ -14,10 +14,10 @@ const hxRun = readFileSync(resolve(COMMANDS_DIR, 'hx-run.md'), 'utf8')
 const hxMr = readFileSync(resolve(COMMANDS_DIR, 'hx-mr.md'), 'utf8')
 const hxGo = readFileSync(resolve(COMMANDS_DIR, 'hx-go.md'), 'utf8')
 // 代码驱动命令的编排脚本
-const hxPlanScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-plan.ts'), 'utf8')
-const hxRunScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-run.ts'), 'utf8')
-const hxMrScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-mr.ts'), 'utf8')
-const hxGoScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-go.ts'), 'utf8')
+const hxPlanScript = readFileSync(resolve(TOOLS_DIR, 'plan.ts'), 'utf8')
+const hxRunScript = readFileSync(resolve(TOOLS_DIR, 'run.ts'), 'utf8')
+const hxMrScript = readFileSync(resolve(TOOLS_DIR, 'mr.ts'), 'utf8')
+const hxGoScript = readFileSync(resolve(TOOLS_DIR, 'go.ts'), 'utf8')
 
 describe('feature contract', () => {
   it('locks the single-demand scope and the display boundary', () => {

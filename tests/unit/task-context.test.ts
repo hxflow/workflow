@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
-import { buildTaskContext } from '../../src/scripts/lib/task-context.ts'
+import { buildTaskContext } from '../../src/lib/task-context.ts'
 
 const tempDirs: string[] = []
 
