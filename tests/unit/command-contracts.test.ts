@@ -268,11 +268,11 @@ describe('command contracts', () => {
     expect(featureContract).toContain('先复用，后生成')
 
     // ── hx-plan（代码驱动）————————————————————————————————————
-    // 编排逻辑在 hx-plan.ts；MD 只保留 AI 职责描述和约束
-    expect(hxPlan).toContain('hx progress validate')
-    expect(hxPlan).toContain('构造最小计划上下文并调用 AI')
-    expect(hxPlan).toContain('task 列表：`id / name / dependsOn / parallelizable`')
-    expect(hxPlan).toContain('progressFile` 由确定性代码按固定 schema 生成')
+    // 编排逻辑在 hx-plan.ts；MD 只保留事实工具描述和约束
+    expect(hxPlan).toContain('hx plan validate')
+    expect(hxPlan).toContain('hx plan context')
+    expect(hxPlan).toContain('planTemplate')
+    expect(hxPlan).toContain('progressFile')
     expect(hxPlan).toContain('planDoc')
     expect(hxPlan).toContain('progressFile')
     expect(hxPlan).toContain('不允许重算')
@@ -284,10 +284,10 @@ describe('command contracts', () => {
     expect(hxPlanScript).toContain('validateProgressFile')
 
     // ── hx-check（代码驱动）————————————————————————————————————
-    expect(hxCheck).toContain('usage: hx-check [<feature>] [--scope <review|qa|clean|all>]')
-    expect(hxCheck).toContain('执行 `qa` scope 下的 gate 命令')
+    expect(hxCheck).toContain('usage: hx-check [<feature>] [--scope <review|qa|clean|facts|all>]')
+    expect(hxCheck).toContain('qa')
     expect(hxCheck).toContain('review-checklist.md')
-    expect(hxCheck).toContain('为 `review / clean` 构造最小检查上下文并调用 AI')
+    expect(hxCheck).toContain('needsAiReview')
     // gates 逻辑在 hx-check.ts 脚本中
     const hxCheckScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-check.ts'), 'utf8')
     expect(hxCheckScript).toContain("'lint'")
@@ -299,43 +299,40 @@ describe('command contracts', () => {
 
     // ── hx-run（代码驱动）————————————————————————————————————
     expect(hxRun).not.toContain('--task <task-id>')
-    expect(hxRun).toContain('--plan-task <task-id>')
+    expect(hxRun).toContain('--plan-task <task')
     expect(hxRun).toContain('hx progress start')
     expect(hxRun).toContain('hx progress done')
     expect(hxRun).toContain('hx progress fail')
-    expect(hxRun).toContain('不自行调用 `hx progress`')
-    expect(hxRun).toContain('当前 task、依赖输出、requirement 摘要与 plan 片段')
+    expect(hxRun).toContain('hx run next')
+    expect(hxRun).toContain('hx run validate')
     // 调度逻辑在 hx-run.ts 脚本中
     const hxRunScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-run.ts'), 'utf8')
     expect(hxRunScript).toContain('getScheduledBatch')
     expect(hxRunScript).toContain('validateProgressFile')
     expect(hxRunScript).toContain('buildTaskContext')
-    expect(hxRunScript).toContain('startTask')
-    expect(hxRunScript).toContain('completeTask')
-    expect(hxRunScript).toContain('failTask')
+    expect(hxRunScript).toContain("case 'next'")
+    expect(hxRunScript).toContain("case 'validate'")
     expect(hxRunScript).toContain("if (batch.mode === 'done')")
 
     // ── hx-go（代码驱动）————————————————————————————————————
     expect(hxGo).not.toContain('--task <task-id>')
-    expect(hxGo).toContain('usage: hx-go [<feature>] [--from <step-id>] [--pipeline <name>]')
-    expect(hxGo).toContain('--from <step-id>')
+    expect(hxGo).toContain('usage: hx-go <next|state> <feature> [--from <step-id>]')
+    expect(hxGo).toContain('--from <step')
     expect(hxGo).toContain('`doc`')
     expect(hxGo).toContain('`plan`')
     expect(hxGo).toContain('`run`')
     expect(hxGo).toContain('不得跳过最早未完成 step')
-    expect(hxGo).toContain('顺序调用对应编排脚本')
-    expect(hxGo).toContain('doc` 当前仍是 agent contract')
+    expect(hxGo).toContain('hx go next')
+    expect(hxGo).toContain('hx go state')
     // 流水线状态机在 hx-go.ts 脚本中
     const hxGoScript = readFileSync(resolve(SCRIPTS_DIR, 'hx-go.ts'), 'utf8')
-    expect(hxGoScript).toContain("'doc', 'plan', 'run', 'check', 'mr'")
-    expect(hxGoScript).toContain('isDocDone')
-    expect(hxGoScript).toContain('isPlanDone')
-    expect(hxGoScript).toContain('isRunDone')
-    expect(hxGoScript).toContain('spawnSync')
-    expect(hxGoScript).toContain('executeStep')
+    expect(hxGoScript).toContain('getPipelineState')
+    expect(hxGoScript).toContain('resolvePipelineStartStep')
+    expect(hxGoScript).toContain("case 'next'")
+    expect(hxGoScript).toContain("case 'state'")
 
     // ── hx-mr（代码驱动）————————————————————————————————————
-    expect(hxMr).toContain('自动归档 feature 产物')
+    expect(hxMr).toContain('hx mr archive')
     expect(hxMr).toContain('不允许在 MR 阶段生成或重算')
     expect(hxMr).toContain('不允许自定义')
     expect(hxMr).toContain('未完成 task 存在时直接失败')

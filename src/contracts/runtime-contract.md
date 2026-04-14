@@ -23,21 +23,26 @@
 - 写权边界：`src/contracts/ownership-contract.md`
 - checkpoint 评审：`src/contracts/checkpoint-contract.md`
 
-## 确定性工具命令
+## 事实工具模式
 
-以下操作通过 CLI 命令完成，AI 不自行实现其内部逻辑：
+所有 `hx-*` 脚本是确定性的事实工具（fact tool）：
+- 脚本通过子命令接口输出 JSON 结构化数据到 stdout
+- AI 调用脚本获取事实，然后自行推理、分析和执行
+- 脚本不做推理决策，AI 不做确定性计算
+- 职责分离：**代码负责确定性事实，AI 负责推理分析**
 
-| 操作 | 命令 |
-|------|------|
-| 查询下一批可执行任务 | `hx progress next <progressFile>` |
-| 阶段一写入（set in-progress） | `hx progress start <progressFile> <taskId>` |
-| 阶段二成功写入（set done） | `hx progress done <progressFile> <taskId> --output <text>` |
-| 阶段二失败写入（keep in-progress） | `hx progress fail <progressFile> <taskId> --exit <status> --reason <text>` |
-| 校验进度文件 | `hx progress validate <progressFile>` |
-| 解析需求文档头部 | `hx feature parse <requirementDoc>` |
-| 归档 feature 产物 | `hx archive <feature>` |
-| 从归档还原 | `hx restore <feature>` |
-| 查看进度摘要 | `hx status [<feature>]` |
+### 子命令模式
+
+每个脚本使用 `hx <cmd> <subcmd> [args]` 格式：
+- `context` / `next`：收集当前阶段所需的事实上下文
+- `validate`：校验产物是否合规
+- `archive`：执行归档等确定性操作
+- `state`：查询完整状态
+
+### 返回格式
+
+- 成功：`{"ok": true, ...}` + exit 0
+- 失败：`{"ok": false, "error": "..."}` + exit 1
 
 ## 执行入口
 
@@ -45,4 +50,4 @@
 2. 读取默认项。
 3. 按 `resolution-contract.md` 找到命中的 command 实体文件。
 4. 按命令正文显式引用继续按需读取其他 contracts。
-5. 执行命令。
+5. 调用对应脚本子命令获取事实，AI 根据事实执行命令逻辑。

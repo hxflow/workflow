@@ -1,7 +1,7 @@
 ---
 name: hx-plan
 description: Phase 02 · 生成执行计划
-usage: hx-plan [<feature>]
+usage: hx-plan <context|validate> <feature>
 hooks:
   - pre
   - post
@@ -13,31 +13,74 @@ hooks:
 
 把 `requirementDoc` 转成可执行的 `planDoc` 和 `progressFile`。
 
-## 使用方式
+## 何时使用
 
-```bash
-hx plan <feature>
-```
+- 适用场景：需求文档已就绪，需要拆分为可执行的任务计划。
+- 不适用场景：需求文档尚未创建，应先运行 `hx doc`。
 
-`hx plan` 会自动完成以下工作，并输出精确的生成指令：
-- 定位需求文档，解析 feature 头部（固化解析）
-- 根据 `Type` 字段选择计划模板（feature / bugfix）
-- 构造最小计划上下文并调用 AI
-- 由代码写入 `planDoc / progressFile` 并执行 schema 校验
+## 输入
 
-## AI 职责：生成 planDoc 和任务拆分结果
+- 脚本是事实工具，AI 调用子命令获取确定性事实后自行推理和写入
+- 子命令：
+  - `hx plan context <feature>`
+  - `hx plan validate <feature>`
+- 必选参数：`<feature>`
+- 依赖输入：需求文档、计划模板、`rules/golden-rules.md`、progressFile schema
 
-AI 只负责返回：
-1. `planDoc` 文本
-2. task 列表：`id / name / dependsOn / parallelizable`
+## 执行步骤
 
-**planDoc 质量标准：**
-- 每个 task 只写目标、修改范围、实施要点、验收标准
-- 不写依赖关系和并行标记
-- 粒度：每个 task 独立可实现、可验证
+1. 调用 `hx plan context <feature>` 获取事实，返回 JSON：
+   ```json
+   {
+     "ok": true,
+     "feature": "<feature>",
+     "displayName": "<展示名>",
+     "sourceId": "<来源ID>",
+     "docType": "feature|bugfix",
+     "planDoc": "<计划文档路径>",
+     "progressFile": "<进度文件路径>",
+     "planExists": true|false,
+     "progressExists": true|false,
+     "requirementContent": "<需求文档全文>",
+     "planTemplate": "<计划模板内容>",
+     "goldenRules": "<规则内容>|null",
+     "progressTemplate": "<进度模板内容>|null",
+     "progressSchemaPath": "<schema路径>"
+   }
+   ```
+2. AI 根据 `requirementContent`、`planTemplate`、`goldenRules` 生成 `planDoc` 和任务拆分结果。
+3. AI 写入 `planDoc` 和 `progressFile`（按 progressTemplate 的 schema 格式）。
+4. 调用 `hx plan validate <feature>` 校验产物，返回 JSON：
+   ```json
+   {
+     "ok": true|false,
+     "feature": "<feature>",
+     "planDoc": "<路径>",
+     "progressFile": "<路径>",
+     "planExists": true|false,
+     "progressExists": true|false,
+     "errors": [],
+     "tasks": [{"id":"...","name":"...","status":"...","dependsOn":[],"parallelizable":false}]
+   }
+   ```
+5. 校验不通过则根据 `errors` 修正后重试。
+
+## 成功结果
+
+- `validate` 返回 `ok: true`，`planDoc` 和 `progressFile` 均存在且合规。
+
+## 失败边界
+
+- 需求文档不存在，`context` 返回错误。
+- `progressFile` schema 校验失败。
+
+## 下一步
+
+- 继续运行 `hx run` 执行任务。
 
 ## 约束
 
+- 脚本只提供事实（需求内容、模板、规则），AI 负责推理和文档生成
 - feature 值固定，来自需求文档头部，不允许重算
-- `progressFile` 由确定性代码按固定 schema 生成，不由 AI 直接写入
-- progressFile 必须通过 `hx progress validate` 才算完成
+- planDoc 每个 task 只写目标、修改范围、实施要点、验收标准
+- 粒度：每个 task 独立可实现、可验证
