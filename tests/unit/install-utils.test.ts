@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { existsSync, lstatSync, mkdtempSync, mkdirSync, readFileSync, readlinkSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { resolve } from 'path'
 
@@ -69,7 +69,7 @@ describe('install-utils', () => {
     ])
   })
 
-  it('generates skill files pointing directly to framework', () => {
+  it('generates skill files with spec-compliant structure', () => {
     const targetDir = createTempDir('hx-skill-target-')
     const frameworkRoot = resolve(process.cwd(), 'src')
     const summary = createSummary()
@@ -83,18 +83,35 @@ describe('install-utils', () => {
     const docSkill = readFileSync(resolve(targetDir, 'hx-doc', 'SKILL.md'), 'utf8')
     const initSkill = readFileSync(resolve(targetDir, 'hx-init', 'SKILL.md'), 'utf8')
 
-    expect(docSkill).toContain('hx-skill: hx-doc')
-    expect(docSkill).toContain(`\`${frameworkRoot}/contracts/runtime-contract.md\``)
-    expect(docSkill).toContain(`\`${frameworkRoot}/commands/hx-doc.md\``)
+    // Agent Skills spec frontmatter
+    expect(docSkill).toContain('name: hx-doc')
+    expect(docSkill).toContain('description:')
+    expect(docSkill).toContain('compatibility:')
+    expect(docSkill).toContain('metadata:')
+    expect(docSkill).toContain('generator: hx-setup')
+    // Relative references (progressive disclosure)
+    expect(docSkill).toContain('references/runtime-contract.md')
+    expect(docSkill).toContain('references/hx-doc.md')
     expect(docSkill).not.toContain('protected')
-    expect(docSkill).not.toContain('优先级')
-    expect(initSkill).toContain('hx-skill: hx-init')
-    expect(initSkill).toContain(`\`${frameworkRoot}/commands/hx-init.md\``)
+    expect(initSkill).toContain('name: hx-init')
     expect(summary.created).toContain('~/.claude/skills/hx-doc/SKILL.md')
     expect(summary.created).toContain('~/.claude/skills/hx-init/SKILL.md')
+
+    // references/ symlinks
+    expect(lstatSync(resolve(targetDir, 'hx-doc', 'references', 'runtime-contract.md')).isSymbolicLink()).toBe(true)
+    expect(readlinkSync(resolve(targetDir, 'hx-doc', 'references', 'runtime-contract.md')))
+      .toBe(resolve(frameworkRoot, 'contracts', 'runtime-contract.md'))
+    expect(lstatSync(resolve(targetDir, 'hx-doc', 'references', 'hx-doc.md')).isSymbolicLink()).toBe(true)
+    expect(readlinkSync(resolve(targetDir, 'hx-doc', 'references', 'hx-doc.md')))
+      .toBe(resolve(frameworkRoot, 'commands', 'hx-doc.md'))
+
+    // scripts/ symlink (hx-doc → doc.ts tool exists)
+    expect(lstatSync(resolve(targetDir, 'hx-doc', 'scripts', 'doc.ts')).isSymbolicLink()).toBe(true)
+    expect(readlinkSync(resolve(targetDir, 'hx-doc', 'scripts', 'doc.ts')))
+      .toBe(resolve(frameworkRoot, 'tools', 'doc.ts'))
   })
 
-  it('generates agents skill files with same template', () => {
+  it('generates agents skill files with same structure', () => {
     const targetDir = createTempDir('hx-agents-target-')
     const frameworkRoot = resolve(process.cwd(), 'src')
     const summary = createSummary()
@@ -103,9 +120,10 @@ describe('install-utils', () => {
     generateSkillFilesForAgent('agents', specs, targetDir, frameworkRoot, summary, { createDir: true })
 
     const skill = readFileSync(resolve(targetDir, 'hx-doc', 'SKILL.md'), 'utf8')
-    expect(skill).toContain('hx-skill: hx-doc')
-    expect(skill).toContain(`\`${frameworkRoot}/contracts/runtime-contract.md\``)
+    expect(skill).toContain('name: hx-doc')
+    expect(skill).toContain('references/runtime-contract.md')
     expect(summary.created).toContain('~/.agents/skills/hx-doc/SKILL.md')
+    expect(existsSync(resolve(targetDir, 'hx-doc', 'references'))).toBe(true)
   })
 
   it('skips writing unchanged skill files', () => {

@@ -1,5 +1,5 @@
 import { execFileSync } from 'child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { resolve } from 'path'
 
@@ -54,7 +54,13 @@ describe('hx setup integration', () => {
     expect(existsSync(resolve(userHxDir, 'pipelines'))).toBe(true)
     expect(readFileSync(resolve(userHxDir, 'settings.yaml'), 'utf8')).toContain(`frameworkRoot: ${process.cwd()}`)
     expect(readFileSync(resolve(userHxDir, 'settings.yaml'), 'utf8')).not.toContain('agents:')
-    expect(readFileSync(resolve(userClaudeDir, 'skills', 'hx-doc', 'SKILL.md'), 'utf8')).toContain('hx-skill: hx-doc')
+    // Agent Skills spec: SKILL.md + references/ + scripts/
+    const claudeSkill = readFileSync(resolve(userClaudeDir, 'skills', 'hx-doc', 'SKILL.md'), 'utf8')
+    expect(claudeSkill).toContain('hx-skill: hx-doc')
+    expect(claudeSkill).toContain('references/runtime-contract.md')
+    expect(lstatSync(resolve(userClaudeDir, 'skills', 'hx-doc', 'references', 'runtime-contract.md')).isSymbolicLink()).toBe(true)
+    expect(lstatSync(resolve(userClaudeDir, 'skills', 'hx-doc', 'references', 'hx-doc.md')).isSymbolicLink()).toBe(true)
+    expect(lstatSync(resolve(userClaudeDir, 'skills', 'hx-doc', 'scripts', 'doc.ts')).isSymbolicLink()).toBe(true)
     expect(readFileSync(resolve(userAgentsDir, 'skills', 'hx-doc', 'SKILL.md'), 'utf8')).toContain('hx-skill: hx-doc')
   })
 

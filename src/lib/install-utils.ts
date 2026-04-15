@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'fs'
+import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'fs'
 import { basename, resolve } from 'path'
 
 export const SUPPORTED_AGENTS = ['claude', 'agents']
@@ -93,14 +93,17 @@ export function generateSkillFilesForAgent(
 
     if (existing === content) {
       summary.skipped.push(`${label} (无变化)`)
-      continue
+    } else {
+      if (!dryRun) {
+        mkdirSync(skillDir, { recursive: true })
+        writeFileSync(dstPath, content, 'utf8')
+      }
+      summary[existing ? 'updated' : 'created'].push(label)
     }
 
     if (!dryRun) {
-      mkdirSync(skillDir, { recursive: true })
-      writeFileSync(dstPath, content, 'utf8')
+      ensureSkillSymlinks(skillDir, spec.name, frameworkRoot)
     }
-    summary[existing ? 'updated' : 'created'].push(label)
   }
 }
 
@@ -142,8 +145,6 @@ function buildSkillContent(
   return renderTemplate(template, {
     name: spec.name,
     description: spec.description,
-    runtimePath: resolve(frameworkRoot, 'contracts', 'runtime-contract.md'),
-    commandPath: resolve(frameworkRoot, 'commands', `${spec.name}.md`),
   })
 }
 
@@ -155,6 +156,51 @@ function loadSkillTemplate(frameworkRoot: string): string {
   }
 
   return TEMPLATE_CACHE.get(templatePath)!
+}
+
+/**
+ * 在 skill 目录下创建 references/ 和 scripts/ 符号链接，
+ * 遵循 Agent Skills 规范的渐进式披露结构。
+ */
+function ensureSkillSymlinks(skillDir: string, commandName: string, frameworkRoot: string) {
+  const refsDir = resolve(skillDir, 'references')
+  mkdirSync(refsDir, { recursive: true })
+
+  // references/runtime-contract.md → framework contracts
+  ensureSymlink(
+    resolve(frameworkRoot, 'contracts', 'runtime-contract.md'),
+    resolve(refsDir, 'runtime-contract.md'),
+  )
+
+  // references/<command>.md → framework command
+  ensureSymlink(
+    resolve(frameworkRoot, 'commands', `${commandName}.md`),
+    resolve(refsDir, `${commandName}.md`),
+  )
+
+  // scripts/<tool>.ts → framework tool (if exists)
+  const toolName = commandName.replace(/^hx-/, '')
+  const toolSource = resolve(frameworkRoot, 'tools', `${toolName}.ts`)
+  if (existsSync(toolSource)) {
+    const scriptsDir = resolve(skillDir, 'scripts')
+    mkdirSync(scriptsDir, { recursive: true })
+    ensureSymlink(toolSource, resolve(scriptsDir, `${toolName}.ts`))
+  }
+}
+
+function ensureSymlink(target: string, linkPath: string) {
+  try {
+    const stat = lstatSync(linkPath)
+    if (stat.isSymbolicLink()) {
+      if (readlinkSync(linkPath) === target) return
+      rmSync(linkPath)
+    } else {
+      rmSync(linkPath)
+    }
+  } catch {
+    // link doesn't exist
+  }
+  symlinkSync(target, linkPath)
 }
 
 function parseCommandFrontmatter(content: string): Record<string, string> {
