@@ -2,7 +2,6 @@
 name: hx-cli
 description: 维护 Harness Workflow CLI 与安装产物
 usage: hx-cli <doctor|issue> [options]
-protected: true
 ---
 
 # 维护 Harness Workflow CLI 与安装产物

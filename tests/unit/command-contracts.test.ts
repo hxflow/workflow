@@ -10,21 +10,6 @@ const commandFiles = readdirSync(COMMANDS_DIR)
   .filter((file) => file.startsWith('hx-') && file.endsWith('.md'))
   .sort()
 
-const PROTECTED_COMMANDS = [
-  'hx-cli',
-  'hx-init',
-  'hx-status',
-]
-
-const HOOKED_COMMANDS = [
-  'hx-check',
-  'hx-doc',
-  'hx-fix',
-  'hx-mr',
-  'hx-plan',
-  'hx-run',
-]
-
 const FAILURE_HANDLING_COMMANDS = [
   'hx-cli',
 ]
@@ -124,27 +109,14 @@ describe('command contracts', () => {
     }
   })
 
-  it('locks the protected and hook-capable command sets', () => {
-    const protectedCommands = []
-    const hookedCommands = []
-
+  it('verifies frontmatter has no deprecated fields', () => {
     for (const file of commandFiles) {
-      const commandName = file.replace(/\.md$/, '')
       const content = readFileSync(resolve(COMMANDS_DIR, file), 'utf8')
       const metadata = parseFrontmatter(content)
 
-      if (metadata.protected === 'true') {
-        protectedCommands.push(commandName)
-      }
-
-      if (Array.isArray(metadata.hooks) && metadata.hooks.length > 0) {
-        hookedCommands.push(commandName)
-        expect(metadata.hooks).toEqual(['pre', 'post'])
-      }
+      expect(metadata).not.toHaveProperty('protected')
+      expect(metadata).not.toHaveProperty('hooks')
     }
-
-    expect(protectedCommands).toEqual(PROTECTED_COMMANDS)
-    expect(hookedCommands).toEqual(HOOKED_COMMANDS)
   })
 
   it('keeps command section usage consistent', () => {
@@ -158,9 +130,7 @@ describe('command contracts', () => {
         failureHandlingCommands.push(commandName)
       }
 
-      if (HOOKED_COMMANDS.includes(commandName)) {
-        expect(content).not.toContain('src/hooks/README.md')
-      }
+      expect(content).not.toContain('src/hooks/README.md')
     }
 
     expect(failureHandlingCommands).toEqual(FAILURE_HANDLING_COMMANDS)
@@ -171,7 +141,6 @@ describe('command contracts', () => {
     const featureContract = readFileSync(resolve(CONTRACTS_DIR, 'feature-contract.md'), 'utf8')
     const runtimeContract = readFileSync(resolve(CONTRACTS_DIR, 'runtime-contract.md'), 'utf8')
     const progressContract = readFileSync(resolve(CONTRACTS_DIR, 'progress-contract.md'), 'utf8')
-    const resolutionContract = readFileSync(resolve(CONTRACTS_DIR, 'resolution-contract.md'), 'utf8')
     const ownershipContract = readFileSync(resolve(CONTRACTS_DIR, 'ownership-contract.md'), 'utf8')
     const hxGo = readFileSync(resolve(COMMANDS_DIR, 'hx-go.md'), 'utf8')
 
@@ -184,7 +153,6 @@ describe('command contracts', () => {
     expect(commandsReadme).toContain('command')
     expect(commandsReadme).toContain('feature')
     expect(commandsReadme).toContain('固定字段顺序')
-    expect(commandsReadme).toContain('post_*` Hook 的 `result` 输入直接复用')
     expect(commandsReadme).toContain('## 参数对象约定')
     expect(commandsReadme).toContain('`raw`')
     expect(commandsReadme).toContain('`positional`')
@@ -202,19 +170,18 @@ describe('command contracts', () => {
     expect(runtimeContract).toContain('## 按需读取')
     expect(runtimeContract).toContain('## 常见映射')
     expect(runtimeContract).toContain('## 执行入口')
-    expect(runtimeContract).toContain('src/contracts/resolution-contract.md')
     expect(runtimeContract).toContain('src/contracts/command-contract.md')
     expect(runtimeContract).toContain('src/contracts/ownership-contract.md')
     expect(runtimeContract).toContain('src/contracts/checkpoint-contract.md')
     expect(runtimeContract).toContain('本文件是所有 `hx-*` 命令的系统层 prompt')
     expect(runtimeContract).toContain('命令正文显式提到哪个 contract，就继续读取哪个 contract')
     expect(runtimeContract).toContain('不要一次性读取整个 `src/contracts/`')
+    expect(runtimeContract).toContain('## 命令来源')
+    expect(runtimeContract).toContain('~/.claude/skills/*/SKILL.md')
+    expect(runtimeContract).toContain('~/.agents/skills/*/SKILL.md')
     expect(featureContract).toContain('Feature Contract')
     expect(progressContract).toContain('Progress Contract')
     expect(hxGo).not.toContain('src/contracts/resolution-contract.md')
-    expect(resolutionContract).toContain('`protected: true` 的 command 只允许读取框架层实体文件。')
-    expect(resolutionContract).toContain('~/.claude/skills/*/SKILL.md')
-    expect(resolutionContract).toContain('~/.agents/skills/*/SKILL.md')
     expect(ownershipContract).toContain('## Feature 写权')
     expect(ownershipContract).toContain('## Progress 写权')
     expect(ownershipContract).toContain('hx-go` 负责编排')

@@ -20,9 +20,8 @@ import { existsSync, readFileSync } from 'fs'
 import {
   BUILTIN_CLI_COMMANDS,
   loadCommandSpecs,
-  mergeCommandSpecs,
 } from '../src/lib/install-utils.ts'
-import { USER_HX_DIR, findProjectRoot, getSafeCwd } from '../src/lib/resolve-context.ts'
+import { findProjectRoot, getSafeCwd } from '../src/lib/resolve-context.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SCRIPTS_DIR = resolve(__dirname, '..', 'src', 'scripts')
@@ -37,14 +36,10 @@ const BUILTIN_SCRIPTS = {
 const runtimeCwd = getSafeCwd()
 const projectRoot = findProjectRoot(runtimeCwd)
 const frameworkSpecs = loadCommandSpecs(FRAMEWORK_COMMAND_DIR)
-const userSpecs = loadCommandSpecs(resolve(USER_HX_DIR, 'commands'))
-const projectSpecs = loadCommandSpecs(resolve(projectRoot, '.hx', 'commands'))
-const installedCommandSpecs = mergeCommandSpecs(frameworkSpecs, userSpecs, projectSpecs)
-const installedCommandNames = new Set(installedCommandSpecs.map((spec) => spec.name))
+const installedCommandNames = new Set(frameworkSpecs.map((spec) => spec.name))
 
 function printHelp() {
   const frameworkContractList = formatCommandList(frameworkSpecs.map((spec) => spec.name))
-  const customSections = buildCustomCommandSections()
 
   console.log(`
   Harness Workflow CLI
@@ -60,7 +55,7 @@ function printHelp() {
 
   Agent skill（AI 通过裸脚本直接调用，不走 hx 路由）:
 ${frameworkContractList}
-${customSections}
+
   全局选项:
     --help    显示帮助
 
@@ -71,22 +66,6 @@ ${customSections}
     hx upgrade                   # 升级到最新版本
     hx version                   # 查看版本
   `)
-}
-
-function buildCustomCommandSections() {
-  const lines = []
-
-  if (projectSpecs.length > 0) {
-    lines.push(`  项目级自定义命令 (.hx/commands/):`)
-    lines.push(formatCommandList(projectSpecs.map((spec) => spec.name)))
-  }
-
-  if (userSpecs.length > 0) {
-    lines.push(`  用户级自定义命令 (~/.hx/commands/):`)
-    lines.push(formatCommandList(userSpecs.map((spec) => spec.name)))
-  }
-
-  return lines.length > 0 ? lines.join('\n') + '\n' : ''
 }
 
 function printVersion() {
@@ -138,8 +117,6 @@ function printUnknownCommand(commandName) {
     console.error(`  "${commandName}" 是 agent skill，AI 通过裸脚本直接调用，不走 hx 路由。`)
   } else {
     console.error(`  未知命令: ${commandName}`)
-    console.error('  新增共享命令：在 ~/.hx/commands/hx-*.md 中编写 contract 后运行 hx setup 安装适配层')
-    console.error(`  项目级覆写：在 ${projectRoot}/.hx/commands/ 中放同名 hx-*.md`)
   }
   console.error(`  当前 CLI 可直接执行: ${[...BUILTIN_CLI_COMMANDS].join(', ')}`)
 }

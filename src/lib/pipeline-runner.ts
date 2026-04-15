@@ -1,17 +1,14 @@
 /**
  * pipeline-runner.ts — Pipeline 解析与步骤编排
  *
- * 读取三层优先级的 pipeline YAML，解析步骤定义，
+ * 读取 pipeline YAML（框架层 + 项目层），解析步骤定义，
  * 结合文件系统状态判断每步完成情况，返回结构化流水线状态。
- *
- * 本模块替代 pipeline-state.ts 中硬编码的 DEFAULT_PIPELINE_STEPS，
- * 改为从 YAML 文件动态读取步骤定义。
  */
 
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 
-import { resolvePipeline } from './command-resolver.ts'
+import { FRAMEWORK_ROOT } from './resolve-context.ts'
 import { isDocDone, isPlanDone, isRunDone } from './pipeline-state.ts'
 
 // ── Types ───────────────────────────────────────────────────
@@ -132,20 +129,26 @@ export function parsePipelineYaml(content: string): { name: string; steps: Pipel
 // ── Pipeline loading ────────────────────────────────────────
 
 /**
- * 加载并解析 pipeline 文件（三层优先级）。
+ * 加载并解析 pipeline 文件（项目层优先，回退框架层）。
  */
 export function loadPipeline(pipelineName: string, projectRoot: string): Pipeline | null {
-  const resolved = resolvePipeline(pipelineName, projectRoot)
-  if (!resolved) return null
+  const fileName = pipelineName.endsWith('.yaml') ? pipelineName : `${pipelineName}.yaml`
 
-  const parsed = parsePipelineYaml(resolved.content)
+  const candidates: Array<{ layer: string; dir: string }> = [
+    { layer: 'project', dir: resolve(projectRoot, '.hx', 'pipelines') },
+    { layer: 'framework', dir: resolve(FRAMEWORK_ROOT, 'pipelines') },
+  ]
 
-  return {
-    name: parsed.name,
-    steps: parsed.steps,
-    filePath: resolved.filePath,
-    layer: resolved.layer,
+  for (const { layer, dir } of candidates) {
+    const filePath = resolve(dir, fileName)
+    if (existsSync(filePath)) {
+      const content = readFileSync(filePath, 'utf8')
+      const parsed = parsePipelineYaml(content)
+      return { name: parsed.name, steps: parsed.steps, filePath, layer }
+    }
   }
+
+  return null
 }
 
 // ── Command → tool script mapping ──────────────────────────
@@ -240,7 +243,7 @@ export function resolveStartStep(
 ): { stepId: string; toolScript: string; pipeline: string } {
   const pipeline = loadPipeline(pipelineName, projectRoot)
   if (!pipeline) {
-    throw new Error(`Pipeline "${pipelineName}" 未找到（框架层、用户层、项目层均不存在）`)
+    throw new Error(`Pipeline "${pipelineName}" 未找到（框架层和项目层均不存在）`)
   }
 
   if (requestedStep) {

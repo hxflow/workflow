@@ -2,7 +2,6 @@
 name: hx-status
 description: 查看任务进度
 usage: bun src/tools/status.ts [<feature> | --feature <name>]
-protected: true
 ---
 
 # 查看任务进度

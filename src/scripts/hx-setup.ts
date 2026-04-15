@@ -16,12 +16,11 @@ import {
   generateSkillFilesForAgent,
   getAgentSkillDir,
   loadCommandSpecs,
-  mergeCommandSpecs,
   resolveAgentTargets,
   SUPPORTED_AGENTS,
 } from '../lib/install-utils.ts'
 
-const USER_LAYER_DIRS = ['commands', 'hooks', 'pipelines']
+const USER_LAYER_DIRS = ['pipelines']
 const USER_SETTINGS_FILE = 'settings.yaml'
 const { options } = parseArgs(process.argv.slice(2))
 
@@ -55,11 +54,7 @@ function main() {
   ensureUserSettingsFile(userHxDir, existingSettings, summary, dryRun)
 
   const frameworkCommandDir = resolve(FRAMEWORK_ROOT, 'commands')
-  const userCommandDir = resolve(userHxDir, 'commands')
-  const commandSpecs = mergeCommandSpecs(
-    loadCommandSpecs(frameworkCommandDir),
-    loadCommandSpecs(userCommandDir)
-  )
+  const commandSpecs = loadCommandSpecs(frameworkCommandDir)
 
   for (const agent of targets) {
     generateSkillFilesForAgent(
@@ -67,7 +62,6 @@ function main() {
       commandSpecs,
       agentHomes[agent],
       FRAMEWORK_ROOT,
-      userHxDir,
       summary,
       { createDir: true, dryRun }
     )
@@ -207,16 +201,13 @@ function buildHelpText() {
     -h, --help          显示帮助
 
   将框架文件安装到用户全局目录：
-    ~/.hx/              用户层目录骨架（commands/、hooks/、pipelines/）
+    ~/.hx/              用户层目录骨架（pipelines/）
     ~/.hx/settings.yaml 用户级配置（记录 frameworkRoot）
     ~/.claude/skills/   Claude skill 目录（默认）
     ~/.agents/skills/   其他 agent 共用的 skill 目录（默认）
 
   hx setup 用于首次安装、手动修复、补装或重跑安装逻辑。
-
-  注意：不会把框架内置 skill、Hook、Pipeline 复制到 ~/.hx/ 下。
-  hx setup 会安装同一套 workflow skill 到 ~/.claude/skills/ 与 ~/.agents/skills/。
-  业务侧自定义 skill 仍由用户自行管理。
+  skill 入口直接指向框架层命令文件，不支持用户层覆盖。
 
   安装后，在 Agent 会话中运行 hx-init 初始化项目。
   `

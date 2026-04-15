@@ -2,7 +2,8 @@
 
 - pipeline 文件统一采用 `<name>.yaml` 命名，例如 `default.yaml`、`release.yaml`。
 - pipeline 只定义流程编排，不承载命令正文。
-- pipeline 的来源和优先级由 `src/contracts/resolution-contract.md` 定义。
+- 框架默认 pipeline 位于 `src/pipelines/`；项目可在 `.hx/pipelines/` 声明额外 pipeline。
+- 同名 pipeline 项目层优先，不做多层 merge。
 
 ## 数据结构
 

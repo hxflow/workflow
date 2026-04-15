@@ -2,7 +2,6 @@
 name: hx-init
 description: 初始化项目规则事实
 usage: bun src/tools/init.ts
-protected: true
 ---
 
 # 初始化项目规则事实

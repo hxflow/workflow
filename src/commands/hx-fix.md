@@ -2,9 +2,6 @@
 name: hx-fix
 description: Phase 05 · 修复错误
 usage: bun src/tools/fix.ts context [<feature>] [--log <text>] [--file <path>]
-hooks:
-  - pre
-  - post
 ---
 
 # Phase 05 · 修复错误

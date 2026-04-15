@@ -2,9 +2,6 @@
 name: hx-run
 description: Phase 04 · 执行需求
 usage: bun src/tools/run.ts <next|validate> <feature> [--plan-task <task-id>]
-hooks:
-  - pre
-  - post
 ---
 
 # Phase 04 · 执行需求

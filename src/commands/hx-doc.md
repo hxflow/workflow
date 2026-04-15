@@ -2,9 +2,6 @@
 name: hx-doc
 description: Phase 01 · 获取需求并创建需求文档
 usage: bun src/tools/doc.ts <context|validate> <feature> [--type <feature|bugfix>]
-hooks:
-  - pre
-  - post
 ---
 
 # Phase 01 · 获取需求并创建需求文档

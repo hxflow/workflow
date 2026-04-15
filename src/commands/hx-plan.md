@@ -2,9 +2,6 @@
 name: hx-plan
 description: Phase 02 · 生成执行计划
 usage: bun src/tools/plan.ts <context|validate> <feature>
-hooks:
-  - pre
-  - post
 ---
 
 # Phase 02 · 生成执行计划

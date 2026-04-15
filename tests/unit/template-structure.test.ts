@@ -35,51 +35,25 @@ describe('template structure', () => {
     expect(progressSchema).toContain('"ranAt"')
   })
 
-  it('keeps skill entry templates complete', () => {
-    const forwarderDir = resolve(ROOT, 'src/templates/forwarders')
-    const files = readdirSync(forwarderDir).sort()
+  it('keeps skill entry template complete', () => {
+    const templatePath = resolve(ROOT, 'src/templates/skill.md')
+    const content = readFileSync(templatePath, 'utf8')
 
-    expect(files).toEqual(['skill-layered.md', 'skill-protected.md'])
-
-    for (const file of files) {
-      const content = readFileSync(resolve(forwarderDir, file), 'utf8')
-      expect(content).toContain('{{name}}')
-      expect(content).toContain('{{runtimePath}}')
-      expect(content).toContain('{{systemPath}}')
-      expect(content).toContain('skill 实体文件未找到')
-
-      if (file.includes('layered')) {
-        expect(content).toContain('{{userCommandPath}}')
-        expect(content).toContain('<项目根>/.hx/commands/{{name}}.md')
-      } else {
-        expect(content).toContain('protected: 此 skill 由框架锁定')
-      }
-    }
+    expect(content).toContain('{{name}}')
+    expect(content).toContain('{{description}}')
+    expect(content).toContain('{{runtimePath}}')
+    expect(content).toContain('{{commandPath}}')
+    expect(content).toContain('skill 实体文件未找到')
   })
 
-  it('keeps framework hook files aligned with command hook conventions', () => {
+  it('keeps framework hook files present', () => {
     const hooksDir = resolve(ROOT, 'src/hooks')
-    const hookContract = readFileSync(resolve(ROOT, 'src/contracts/hook-contract.md'), 'utf8')
     const files = readdirSync(hooksDir).sort()
 
     expect(files).toEqual([
       'pre_doc.md',
       'pre_fix.md',
     ])
-
-    expect(hookContract).toContain('pre_<command>.md')
-    expect(hookContract).toContain('post_<command>.md')
-    expect(hookContract).toContain('### 基础公共字段')
-    expect(hookContract).toContain('### `pre_*` Hook 输入')
-    expect(hookContract).toContain('### `post_*` Hook 输入')
-    expect(hookContract).toContain('`phase: "pre"`')
-    expect(hookContract).toContain('`phase: "post"`')
-    expect(hookContract).toContain('`result`: 主命令结构化结果')
-    expect(hookContract).toContain('`arguments`: 当前命令参数对象')
-    expect(hookContract).toContain('`raw`: 原始参数字符串')
-    expect(hookContract).toContain('`positional`: 位置参数数组')
-    expect(hookContract).toContain('`options`: 选项参数对象')
-    expect(hookContract).toContain('`result.artifacts`、`result.issues`、`result.nextAction`')
   })
 
   it('keeps rule templates under hx auto/manual block conventions', () => {

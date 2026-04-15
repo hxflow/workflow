@@ -2,9 +2,6 @@
 name: hx-mr
 description: Phase 08 · 创建 Merge Request
 usage: bun src/tools/mr.ts <context|archive> <feature> [--project <group/repo>] [--target <branch>]
-hooks:
-  - pre
-  - post
 ---
 
 # Phase 08 · 创建 Merge Request

@@ -2,9 +2,6 @@
 name: hx-check
 description: 核心检查入口
 usage: bun src/tools/check.ts [<feature>] [--scope <review|qa|clean|facts|all>]
-hooks:
-  - pre
-  - post
 ---
 
 # 核心检查入口

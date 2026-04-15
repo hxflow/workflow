@@ -1,11 +1,10 @@
 # Runtime Contract
 
 - 本文件是所有 `hx-*` 命令的系统层 prompt。
-- 作用只有三件事：定义默认读取项、定义按需读取规则、定义命令执行入口顺序。
+- 作用：定义默认读取项、按需读取规则、命令执行入口顺序。
 
 ## 默认读取
 
-- `src/contracts/resolution-contract.md`
 - `src/contracts/command-contract.md`
 
 ## 按需读取
@@ -18,7 +17,6 @@
 
 - `feature` 相关：`src/contracts/feature-contract.md`
 - `progressFile` / 调度 / 恢复：`src/contracts/progress-contract.md`
-- Hook：`src/contracts/hook-contract.md`
 - pipeline：`src/contracts/pipeline-contract.md`
 - 写权边界：`src/contracts/ownership-contract.md`
 - checkpoint 评审：`src/contracts/checkpoint-contract.md`
@@ -44,10 +42,15 @@
 - 成功：`{"ok": true, ...}` + exit 0
 - 失败：`{"ok": false, "error": "..."}` + exit 1
 
+## 命令来源
+
+- 所有 `hx-*` 命令实体文件统一位于框架层 `src/commands/`，不支持覆盖。
+- Skill 入口（`~/.claude/skills/*/SKILL.md`、`~/.agents/skills/*/SKILL.md`）直接指向框架层文件。
+
 ## 执行入口
 
 1. 先读取本文件。
 2. 读取默认项。
-3. 按 `resolution-contract.md` 找到命中的 command 实体文件。
+3. 读取 `src/commands/` 中对应的命令实体文件。
 4. 按命令正文显式引用继续按需读取其他 contracts。
 5. 调用对应脚本子命令获取事实，AI 根据事实执行命令逻辑。

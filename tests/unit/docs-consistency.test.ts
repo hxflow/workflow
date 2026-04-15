@@ -33,7 +33,7 @@ describe('docs consistency', () => {
     const commandIndex = readFileSync(resolve(ROOT, 'docs/guide/hx-command-index.html'), 'utf8')
     const progressContract = readFileSync(resolve(ROOT, 'src/contracts/progress-contract.md'), 'utf8')
 
-    expect(readme).toContain('.hx/commands/')
+    expect(readme).not.toContain('.hx/commands/')
     expect(readme).not.toContain('.hx/skills/')
     expect(readme).not.toContain('hx setup [--agent')
     expect(quickstart).toContain('src/commands/')
@@ -42,7 +42,6 @@ describe('docs consistency', () => {
     expect(configReference).toContain('~/.hx/settings.yaml')
     expect(configReference).toContain('.hx/config.yaml')
     expect(readme).toContain('src/contracts/runtime-contract.md')
-    expect(readme).toContain('src/contracts/resolution-contract.md')
     expect(guide).toContain('~/.claude/skills/')
     expect(guide).toContain('~/.agents/skills/')
     expect(guide).not.toContain('~/.claude/commands/')

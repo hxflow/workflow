@@ -49,8 +49,8 @@ describe('hx setup integration', () => {
     ])
 
     expect(output).toContain('Harness Workflow · setup')
-    expect(existsSync(resolve(userHxDir, 'commands'))).toBe(true)
-    expect(existsSync(resolve(userHxDir, 'hooks'))).toBe(true)
+    expect(existsSync(resolve(userHxDir, 'commands'))).toBe(false)
+    expect(existsSync(resolve(userHxDir, 'hooks'))).toBe(false)
     expect(existsSync(resolve(userHxDir, 'pipelines'))).toBe(true)
     expect(readFileSync(resolve(userHxDir, 'settings.yaml'), 'utf8')).toContain(`frameworkRoot: ${process.cwd()}`)
     expect(readFileSync(resolve(userHxDir, 'settings.yaml'), 'utf8')).not.toContain('agents:')
