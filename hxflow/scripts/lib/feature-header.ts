@@ -7,8 +7,8 @@
 
 import { readFileSync } from 'fs'
 
-const HEADER_FIELDS = ['Feature', 'Display Name', 'Source ID', 'Source Fingerprint']
-const HEADER_LINE_PATTERN = /^>\s*(Feature|Display Name|Source ID|Source Fingerprint):\s*(.*)$/
+const HEADER_FIELDS = ['Feature', 'Display Name', 'Source ID', 'Source Fingerprint', 'Type']
+const HEADER_LINE_PATTERN = /^>\s*(Feature|Display Name|Source ID|Source Fingerprint|Type):\s*(.*)$/
 const REQUIREMENT_DOC_FIELDS = ['Feature', 'Display Name', 'Source ID', 'Source Fingerprint', 'Type'] as const
 
 export type RequirementDocType = 'feature' | 'bugfix'
@@ -22,17 +22,17 @@ export interface RequirementHeaderFields {
 }
 
 /**
- * 从需求文档内容字符串解析头部 4 行。
+ * 从需求文档内容字符串解析头部 5 行。
  *
  * 解析规则（来自 feature-contract）：
- *   - 只识别 4 个固定标签，标签名大小写完全一致
- *   - 4 个字段必须按固定顺序出现
- *   - 4 行头部出现在文档标题下方、正文 ## 小节之前
+ *   - 只识别 5 个固定标签，标签名大小写完全一致
+ *   - 5 个字段必须按固定顺序出现
+ *   - 5 行头部出现在文档标题下方、正文 ## 小节之前
  *   - Feature 值不能为空，否则视为无效需求文档
  *   - 存在重复字段、缺失字段、换序或未知头部字段，视为格式非法
  *
  * @param {string} content - 需求文档内容
- * @returns {{ feature: string, displayName: string, sourceId: string, sourceFingerprint: string }}
+ * @returns {{ feature: string, displayName: string, sourceId: string, sourceFingerprint: string, type: RequirementDocType }}
  * @throws {Error} 头部格式非法或 feature 为空时抛出
  */
 export function parseFeatureHeader(content: string) {
@@ -62,10 +62,10 @@ export function parseFeatureHeader(content: string) {
 
     found.push({ label, value })
 
-    if (found.length === 4) break
+    if (found.length === 5) break
   }
 
-  if (found.length < 4) {
+  if (found.length < 5) {
     const missing = HEADER_FIELDS.filter((f) => !found.some((item) => item.label === f))
     throw new Error(`头部格式非法：缺少字段 ${missing.map((f) => `"${f}"`).join(', ')}`)
   }
@@ -83,11 +83,17 @@ export function parseFeatureHeader(content: string) {
     throw new Error('无效需求文档：Feature 字段值为空')
   }
 
+  const typeValue = found[4].value.toLowerCase()
+  if (typeValue !== 'feature' && typeValue !== 'bugfix') {
+    throw new Error(`头部格式非法：Type 值 "${found[4].value}" 无效，有效值: feature, bugfix`)
+  }
+
   return {
     feature,
     displayName: found[1].value,
     sourceId: found[2].value,
     sourceFingerprint: found[3].value,
+    type: typeValue as RequirementDocType,
   }
 }
 
@@ -95,7 +101,7 @@ export function parseFeatureHeader(content: string) {
  * 从需求文档文件解析头部。
  *
  * @param {string} filePath - 需求文档绝对路径
- * @returns {{ feature: string, displayName: string, sourceId: string, sourceFingerprint: string }}
+ * @returns {{ feature: string, displayName: string, sourceId: string, sourceFingerprint: string, type: RequirementDocType }}
  * @throws {Error} 文件不存在、无法读取或头部格式非法时抛出
  */
 export function parseFeatureHeaderFile(filePath: string) {
