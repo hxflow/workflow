@@ -19,6 +19,7 @@ metadata:
 | plan | [commands/hx-plan.md](commands/hx-plan.md) | 生成执行计划 |
 | run | [commands/hx-run.md](commands/hx-run.md) | 执行需求 |
 | check | [commands/hx-check.md](commands/hx-check.md) | 质量检查 |
+| codereview | [commands/hx-codereview.md](commands/hx-codereview.md) | 代码审查 |
 | mr | [commands/hx-mr.md](commands/hx-mr.md) | 创建 Merge Request |
 | go | [commands/hx-go.md](commands/hx-go.md) | 全自动流水线 |
 | init | [commands/hx-init.md](commands/hx-init.md) | 初始化项目 |

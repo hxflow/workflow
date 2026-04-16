@@ -11,6 +11,7 @@ const commandFiles = readdirSync(COMMANDS_DIR)
 
 const ALL_COMMANDS = [
   'hx-check',
+  'hx-codereview',
   'hx-doc',
   'hx-go',
   'hx-init',
