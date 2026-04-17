@@ -6,10 +6,6 @@
 2. 自行核对未完成 task、目标分支和变更摘要，不依赖额外事实脚本。
 3. 需要归档时执行 `bun scripts/tools/mr.ts archive <feature>`。
 
-## 下一步
-
-- `hx status <feature>`
-
 ## 约束
 
 - 不允许在 MR 阶段生成或重算需求、计划、任务

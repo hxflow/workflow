@@ -4,10 +4,6 @@
 
 1. 执行 `bun scripts/tools/init.ts`，直接完成当前初始化阶段。
 
-## 下一步
-
-- `hx doc <feature>`
-
 ## 约束
 
 - 只执行初始化脚本，不补充项目分析

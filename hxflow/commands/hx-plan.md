@@ -5,10 +5,6 @@
 1. 执行 `bun scripts/tools/plan.ts context <feature>`，读取需求文档、计划模板和进度文件。
 2. 生成或续接 `planDoc`，让运行时初始化或校验 `progressFile`。
 
-## 下一步
-
-- `hx run <feature>`
-
 ## 约束
 
 - 任务结构和进度文件格式由 `scripts/lib/types.ts` 和 `scripts/lib/progress-context.ts` 定义

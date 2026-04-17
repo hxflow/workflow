@@ -25,3 +25,7 @@ metadata:
 | status | [commands/hx-status.md](commands/hx-status.md) | 查看任务进度 |
 
 无参数时默认执行 `go`。未匹配到命令时提示可用命令列表。
+
+## 典型流程
+
+`init` → `doc` → `plan` → `run` → `check` → `mr`
