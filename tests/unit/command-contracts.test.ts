@@ -97,7 +97,7 @@ describe('command contracts', () => {
     expect(hxPlan).toContain('每个 task 保持独立可实现、可验证')
     const hxPlanScript = readFileSync(resolve(TOOLS_DIR, 'plan.ts'), 'utf8')
     expect(hxPlanScript).toContain('parseFeatureHeaderFile')
-    expect(hxPlanScript).toContain('validateProgressFile')
+    expect(hxPlanScript).toContain('loadValidatedProgressFile')
     expect(hxPlanScript).not.toContain('progressSchemaPath')
     expect(hxPlanScript).not.toContain('progressTemplate')
 

@@ -26,6 +26,10 @@ metadata:
 
 无参数时默认执行 `go`。未匹配到命令时提示可用命令列表。
 
+## 典型流程
+
+`init` → `doc` → `plan` → `run` → `check` → `mr`
+
 ## 全局约束
 
 - 执行 `scripts/tools/*.ts` 或 `scripts/lib/*.ts` 时统一优先使用 `bun`；无 bun 时改用 `npx tsx`
