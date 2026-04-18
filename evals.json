@@ -3,13 +3,14 @@
   "version": 1,
   "updatedAt": null,
   "metrics": {
-    "accuracy": 0,
-    "passed": 0,
-    "failed": 0,
-    "total": 0
+    "accuracy": null,
+    "passed": null,
+    "failed": null,
+    "total": null
   },
   "lastRun": {
     "status": "unknown",
-    "exitCode": null
+    "exitCode": null,
+    "parseWarning": null
   }
 }

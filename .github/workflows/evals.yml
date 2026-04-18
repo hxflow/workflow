@@ -41,40 +41,59 @@ jobs:
           const fs = require('node:fs')
           const path = require('node:path')
 
-          const root = process.cwd()
-          const evalsPath = path.join(root, 'evals.json')
-          const logPath = '/tmp/hx-test-output.log'
+          function findSummaryCount(logText, kind) {
+            const lines = logText.split('\n').map((line) => line.trim()).filter(Boolean)
+            const pattern = kind === 'pass'
+              ? /^(\d+)\s+pass(?:ed)?\b/i
+              : /^(\d+)\s+fail(?:ed)?\b/i
 
-          const base = JSON.parse(fs.readFileSync(evalsPath, 'utf8'))
-          const log = fs.existsSync(logPath) ? fs.readFileSync(logPath, 'utf8') : ''
-
-          const passMatches = [...log.matchAll(/(\d+)\s+pass(?:ed)?/gi)]
-          const failMatches = [...log.matchAll(/(\d+)\s+fail(?:ed)?/gi)]
-
-          const passed = passMatches.length > 0 ? Number(passMatches.at(-1)[1]) : 0
-          const failed = failMatches.length > 0 ? Number(failMatches.at(-1)[1]) : 0
-          const total = passed + failed
-
-          const fallbackTotal = total > 0 ? total : 1
-          const fallbackPassed = total > 0 ? passed : (process.env.TEST_EXIT_CODE === '0' ? 1 : 0)
-          const accuracy = Number(((fallbackPassed / fallbackTotal) * 100).toFixed(2))
-
-          const updated = {
-            ...base,
-            updatedAt: new Date().toISOString(),
-            metrics: {
-              accuracy,
-              passed: fallbackPassed,
-              failed: fallbackTotal - fallbackPassed,
-              total: fallbackTotal,
-            },
-            lastRun: {
-              status: process.env.TEST_EXIT_CODE === '0' ? 'passed' : 'failed',
-              exitCode: Number(process.env.TEST_EXIT_CODE ?? 1),
-            },
+            for (let index = lines.length - 1; index >= 0; index -= 1) {
+              const match = lines[index].match(pattern)
+              if (match) return Number(match[1])
+            }
+            return null
           }
 
-          fs.writeFileSync(evalsPath, `${JSON.stringify(updated, null, 2)}\n`, 'utf8')
+          try {
+            const root = process.cwd()
+            const evalsPath = path.join(root, 'evals.json')
+            const logPath = '/tmp/hx-test-output.log'
+
+            const base = JSON.parse(fs.readFileSync(evalsPath, 'utf8'))
+            const log = fs.existsSync(logPath) ? fs.readFileSync(logPath, 'utf8') : ''
+
+            const passed = findSummaryCount(log, 'pass')
+            const failed = findSummaryCount(log, 'fail')
+            const total = passed !== null && failed !== null ? passed + failed : null
+            const accuracy = total && total > 0 ? Number(((passed / total) * 100).toFixed(2)) : null
+
+            const rawExitCode = process.env.TEST_EXIT_CODE
+            const exitCode = rawExitCode === undefined || rawExitCode === '' ? null : Number(rawExitCode)
+            const parseWarning = total === null
+              ? 'Unable to parse final test pass/fail summary from bun output'
+              : null
+
+            const updated = {
+              ...base,
+              updatedAt: new Date().toISOString(),
+              metrics: {
+                accuracy,
+                passed,
+                failed,
+                total,
+              },
+              lastRun: {
+                status: exitCode === 0 ? 'passed' : 'failed',
+                exitCode,
+                parseWarning,
+              },
+            }
+
+            fs.writeFileSync(evalsPath, `${JSON.stringify(updated, null, 2)}\n`, 'utf8')
+          } catch (error) {
+            console.error('Failed to update evals.json:', error)
+            process.exit(1)
+          }
           NODE
 
       - name: Commit evals.json
