@@ -39,30 +39,44 @@ jobs:
             const suite = base.suite && typeof base.suite === 'object' ? base.suite : {}
             const cases = Array.isArray(suite.cases) ? suite.cases : []
             const hasCases = cases.length > 0
+            const DEFAULT_EXPECTED_EXIT_CODE = 0
+            const DEFAULT_WEIGHT = 1
+            const PERCENTAGE_MULTIPLIER = 100
+            const ACCURACY_PRECISION = 2
+            const ALLOWED_COMMANDS = new Set(['npm', 'bun', 'node'])
 
             let weightedPassed = 0
             let weightedTotal = 0
             let passed = 0
             let failed = 0
             const results = []
+            const sanitizeWeight = (value) => (typeof value === 'number' && value > 0 ? value : DEFAULT_WEIGHT)
 
-            for (const testCase of cases) {
+            for (const [index, testCase] of cases.entries()) {
+              const caseId = testCase.id ?? `case-${index + 1}`
+              const weight = sanitizeWeight(testCase.weight)
               const command = Array.isArray(testCase.command) ? testCase.command : []
-              if (command.length === 0 || typeof command[0] !== 'string') {
+              const commandName = command[0]
+              if (
+                command.length === 0
+                || typeof commandName !== 'string'
+                || !ALLOWED_COMMANDS.has(commandName)
+              ) {
                 failed += 1
                 results.push({
-                  id: testCase.id ?? null,
+                  id: caseId,
                   passed: false,
                   reason: 'invalid-command',
-                  expectedExitCode: testCase.expect?.exitCode ?? 0,
+                  expectedExitCode: testCase.expect?.exitCode ?? DEFAULT_EXPECTED_EXIT_CODE,
                   actualExitCode: null,
                 })
-                weightedTotal += typeof testCase.weight === 'number' ? testCase.weight : 1
+                weightedTotal += weight
                 continue
               }
 
-              const expectedExitCode = Number.isInteger(testCase.expect?.exitCode) ? testCase.expect.exitCode : 0
-              const weight = typeof testCase.weight === 'number' && testCase.weight > 0 ? testCase.weight : 1
+              const expectedExitCode = Number.isInteger(testCase.expect?.exitCode)
+                ? testCase.expect.exitCode
+                : DEFAULT_EXPECTED_EXIT_CODE
               const run = childProcess.spawnSync(command[0], command.slice(1), {
                 cwd: root,
                 encoding: 'utf8',
@@ -80,7 +94,7 @@ jobs:
 
               weightedTotal += weight
               results.push({
-                id: testCase.id ?? null,
+                id: caseId,
                 passed: runPassed,
                 expectedExitCode,
                 actualExitCode,
@@ -89,7 +103,7 @@ jobs:
 
             const total = hasCases ? passed + failed : null
             const accuracy = hasCases && weightedTotal > 0
-              ? Number(((weightedPassed / weightedTotal) * 100).toFixed(2))
+              ? Number(((weightedPassed / weightedTotal) * PERCENTAGE_MULTIPLIER).toFixed(ACCURACY_PRECISION))
               : null
             const hasFailures = hasCases && failed > 0
             const exitCode = hasCases ? (hasFailures ? 1 : 0) : null
@@ -117,11 +131,12 @@ jobs:
             }
 
             fs.writeFileSync(evalsPath, `${JSON.stringify(updated, null, 2)}\n`, 'utf8')
-            if (process.env.GITHUB_OUTPUT) {
-              fs.appendFileSync(process.env.GITHUB_OUTPUT, `exit_code=${exitCode === null ? '' : String(exitCode)}\n`)
-            } else {
-              console.log(`exit_code=${exitCode === null ? '' : String(exitCode)}`)
+            const outputPath = process.env.GITHUB_OUTPUT
+            if (!outputPath) {
+              throw new Error('GITHUB_OUTPUT is not set')
             }
+            fs.appendFileSync(outputPath, `exit_code=${exitCode === null ? '' : String(exitCode)}\n`)
+            fs.appendFileSync(outputPath, `run_status=${updated.lastRun.status}\n`)
           } catch (error) {
             console.error('Failed to update evals.json:', error)
             process.exit(1)
@@ -142,7 +157,7 @@ jobs:
           git push
 
       - name: Fail if evals failed
-        if: steps.run_evals.outputs.exit_code != '0'
+        if: steps.run_evals.outputs.run_status == 'failed'
         run: |
           echo "Eval scenarios failed"
           exit 1
