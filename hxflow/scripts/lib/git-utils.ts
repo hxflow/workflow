@@ -43,10 +43,36 @@ export interface BranchCheckResult {
 }
 
 /**
+ * Gets the current branch name by trying, in order:
+ * 1) rev-parse --abbrev-ref HEAD (normal repositories with commits)
+ * 2) symbolic-ref --short HEAD (fallback for unborn branches)
+ * 3) branch --show-current (final fallback for mixed git versions/states)
+ * Returns null when no branch can be detected.
+ */
+function detectCurrentBranch(cwd: string): string | null {
+  const revParseBranch = runGit(cwd, 'rev-parse', '--abbrev-ref', 'HEAD')
+  if (revParseBranch && revParseBranch !== 'HEAD') {
+    return revParseBranch
+  }
+
+  const symbolicBranch = runGit(cwd, 'symbolic-ref', '--short', 'HEAD')
+  if (symbolicBranch) {
+    return symbolicBranch
+  }
+
+  const showCurrentBranch = runGit(cwd, 'branch', '--show-current')
+  if (showCurrentBranch) {
+    return showCurrentBranch
+  }
+
+  return null
+}
+
+/**
  * 检查当前分支名是否符合 `<type>/<scope>` 规范。
  */
 export function checkBranchName(cwd: string): BranchCheckResult {
-  const branch = runGit(cwd, 'rev-parse', '--abbrev-ref', 'HEAD')
+  const branch = detectCurrentBranch(cwd)
   if (!branch) {
     return { ok: true, branch: '(unknown)', reason: null }
   }

@@ -31,6 +31,19 @@ gates:
   return projectRoot
 }
 
+function writeHxConfig(projectRoot: string, testGateCommand: string) {
+  mkdirSync(join(projectRoot, '.hx', 'rules'), { recursive: true })
+  writeFileSync(
+    join(projectRoot, '.hx', 'config.yaml'),
+    `paths:\n  src: src\ngates:\n  test: ${testGateCommand}\n`,
+    'utf8',
+  )
+}
+
+function configureGitIdentity(projectRoot: string) {
+  spawnSync('git', ['config', 'user.name', 'Test User'], { cwd: projectRoot, encoding: 'utf8' })
+  spawnSync('git', ['config', 'user.email', 'test@example.com'], { cwd: projectRoot, encoding: 'utf8' })
+}
 
 function setupGitProject(branch: string, testGateCommand = 'echo qa-pass') {
   const projectRoot = mkdtempSync(join(tmpdir(), 'hx-check-branch-'))
@@ -42,12 +55,19 @@ function setupGitProject(branch: string, testGateCommand = 'echo qa-pass') {
   spawnSync('git', ['config', 'user.email', 'hx-check-test@example.com'], { cwd: projectRoot, encoding: 'utf8' })
   spawnSync('git', ['commit', '--allow-empty', '-m', 'init'], { cwd: projectRoot, encoding: 'utf8' })
 
-  mkdirSync(join(projectRoot, '.hx', 'rules'), { recursive: true })
-  writeFileSync(
-    join(projectRoot, '.hx', 'config.yaml'),
-    `paths:\n  src: src\ngates:\n  test: ${testGateCommand}\n`,
-    'utf8',
-  )
+  writeHxConfig(projectRoot, testGateCommand)
+
+  return projectRoot
+}
+
+function setupUnbornGitProject(branch: string, testGateCommand = 'echo qa-pass') {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'hx-check-branch-unborn-'))
+  tempDirs.push(projectRoot)
+
+  spawnSync('git', ['init', '-b', branch], { cwd: projectRoot, encoding: 'utf8' })
+  configureGitIdentity(projectRoot)
+
+  writeHxConfig(projectRoot, testGateCommand)
 
   return projectRoot
 }
@@ -94,6 +114,20 @@ describe('checkBranchName via hx-check --scope qa', () => {
     expect(summary.qa.branchCheck.ok).toBe(false)
     expect(typeof summary.qa.branchCheck.reason).toBe('string')
     expect(summary.qa.branchCheck.reason.length).toBeGreaterThan(0)
+  })
+
+  it('detects branch name for unborn branch repositories', () => {
+    const branch = 'feat/unborn'
+    const projectRoot = setupUnbornGitProject(branch)
+    const result = spawnSync('bun', [SCRIPT_PATH, '--scope', 'qa'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+    expect(result.status).toBe(0)
+    const summary = JSON.parse(result.stdout)
+    expect(summary.qa.branchCheck.ok).toBe(true)
+    expect(summary.qa.branchCheck.branch).toBe(branch)
+    expect(summary.qa.branchCheck.reason).toBeNull()
   })
 })
 
