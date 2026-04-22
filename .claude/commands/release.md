@@ -117,18 +117,7 @@ git commit -m "chore: release v<NEW_VERSION>"
 git tag v<NEW_VERSION>
 ```
 
-### 8. 发布到 GitHub Packages
-
-```bash
-npm publish
-```
-
-发布失败时：
-- 回滚 tag：`git tag -d v<NEW_VERSION>`
-- 回滚 commit：`git reset --soft HEAD~1`
-- 报告错误原因，停止
-
-### 9. 推送到 GitHub
+### 8. 推送到 GitHub
 
 ```bash
 git push origin <branch>
@@ -138,6 +127,11 @@ git push origin v<NEW_VERSION>
 推送失败时：
 - 不再回滚本地 commit 和 tag
 - 明确说明“本地已完成发布，但远端未同步”
+
+### 9. 等待 GitHub Actions 发布
+
+- 推送 `v<NEW_VERSION>` tag 后，GitHub Actions 会自动发布到 GitHub Packages
+- 若 workflow 失败，保留本地 commit 和 tag，按 Actions 日志排查
 
 ### 10. 输出发布报告
 
@@ -149,17 +143,17 @@ git push origin v<NEW_VERSION>
 ✓ Tag    v<NEW_VERSION>
 ✓ 推送   origin/<branch>
 
-运行 npm install <name>@<NEW_VERSION> 验证安装
+在 GitHub Actions 中确认 `Publish package` workflow 成功
 ```
 
 ## --dry-run 模式
 
-每个步骤前输出 `[dry-run]` 前缀，不执行任何写操作（git commit / npm version / npm publish / git push / CHANGELOG 写入均跳过，但会打印将要写入的 changelog 内容）。
+每个步骤前输出 `[dry-run]` 前缀，不执行任何写操作（git commit / npm version / git push / CHANGELOG 写入均跳过，但会打印将要写入的 changelog 内容）。
 
 ## 说明
 
 - 不需要运行 `scan-docs.sh`
 - `publishConfig.registry` 应指向 `https://npm.pkg.github.com`
-- 发布前先确认 `NODE_AUTH_TOKEN` 可用，且具有 GitHub Packages 发布权限
+- 发布由 GitHub Actions 执行，默认依赖 `GITHUB_TOKEN`
 - `origin` 应指向 GitHub 仓库；当前项目使用 `https://github.com/hxflow/cli`
 - CHANGELOG.md 不存在时自动创建

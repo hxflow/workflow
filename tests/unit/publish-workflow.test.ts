@@ -13,6 +13,9 @@ describe('publish workflow', () => {
 
     const workflow = readFileSync(WORKFLOW_PATH, 'utf8')
 
+    expect(workflow).toContain('push:')
+    expect(workflow).toContain("      - 'v*'")
+    expect(workflow).not.toContain('release:')
     expect(workflow).toContain('actions/setup-node@v4')
     expect(workflow).toContain('registry-url: https://npm.pkg.github.com')
     expect(workflow).toContain("scope: '@hxflow'")

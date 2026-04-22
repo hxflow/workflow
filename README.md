@@ -98,6 +98,7 @@ hxflow/
 
 - 当前发布仓库：`https://github.com/hxflow/cli`
 - npm 包发布到 GitHub Packages：`https://npm.pkg.github.com`
+- 推送 `v*` tag 到 GitHub 后自动触发发布 workflow
 - 本地发布前在环境中提供 `NODE_AUTH_TOKEN`
 - 项目 `.npmrc` 已固定 `@hxflow` scope 到 GitHub Packages
 
