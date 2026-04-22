@@ -1,6 +1,6 @@
 {
   "name": "@hxflow/cli",
-  "version": "4.0.0",
+  "version": "4.0.2",
   "description": "Harness Workflow — Agent Skill for requirement-to-delivery pipeline.",
   "repository": {
     "type": "git",

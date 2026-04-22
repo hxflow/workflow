@@ -1,5 +1,24 @@
 # Changelog
 
+## v4.0.2 — 2026-04-22
+
+### 新功能
+- 支持 workspace 多项目执行
+- add workspace
+
+### 修复
+- align hx-check test setup with main conflict region
+- stabilize hx-check CI execution
+- robust hx-check branch detection in test repos
+
+### 重构
+- tidy hx-check branch detection helpers
+
+### 其他
+- merge: resolve conflicts with origin/main
+- cover unborn branch detection in hx-check
+- Initial plan
+
 ## v3.2.3 — 2026-04-10
 
 ### 新功能
