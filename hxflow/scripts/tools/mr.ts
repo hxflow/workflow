@@ -13,16 +13,18 @@ import {
   archiveFeature,
   getFeatureArtifactExistence,
   getFeatureArtifactPaths,
+  resolveFeatureArtifactRoot,
 } from '../lib/file-paths.ts'
 import { createToolContext } from '../lib/tool-cli.ts'
 
-const { sub, positional, projectRoot } = createToolContext()
+const { sub, positional, projectRoot: initialProjectRoot } = createToolContext()
 const [feature] = positional
 
 switch (sub) {
   case 'archive': {
     if (!feature) err('用法：hx mr archive <feature>')
 
+    const projectRoot = resolveFeatureArtifactRoot(initialProjectRoot, feature)
     const artifacts = getFeatureArtifactPaths(projectRoot, feature)
     const artifactExists = getFeatureArtifactExistence(artifacts)
     const alreadyArchived = !artifactExists.progressFile && artifactExists.archivedProgressFile

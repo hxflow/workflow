@@ -72,6 +72,117 @@ function setupUnbornGitProject(branch: string, testGateCommand = 'echo qa-pass')
   return projectRoot
 }
 
+function setupWorkspaceProject() {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'hx-check-workspace-'))
+  tempDirs.push(projectRoot)
+
+  mkdirSync(join(projectRoot, '.hx'), { recursive: true })
+  mkdirSync(join(projectRoot, 'docs', 'plans'), { recursive: true })
+  mkdirSync(join(projectRoot, 'apps', 'admin', '.hx'), { recursive: true })
+  mkdirSync(join(projectRoot, 'apps', 'h5', '.hx'), { recursive: true })
+
+  writeFileSync(
+    join(projectRoot, '.hx', 'workspace.yaml'),
+    `version: 1
+gates:
+  test: echo workspace-test
+projects:
+  - id: admin
+    path: ./apps/admin
+    type: node
+  - id: h5
+    path: ./apps/h5
+    type: node
+`,
+    'utf8',
+  )
+  writeFileSync(
+    join(projectRoot, 'apps', 'admin', '.hx', 'config.yaml'),
+    `paths:
+  src: app
+  requirementDoc: ignored.md
+gates:
+  test: echo admin-test
+runtime:
+  hooks:
+    hx-run:
+      pre:
+        - ignored
+`,
+    'utf8',
+  )
+  writeFileSync(
+    join(projectRoot, 'apps', 'h5', '.hx', 'config.yaml'),
+    `paths:
+  src: src
+gates:
+  lint: echo h5-lint
+`,
+    'utf8',
+  )
+  writeFileSync(
+    join(projectRoot, 'docs', 'plans', 'AUTH-001.md'),
+    `# Plan
+
+## 任务拆分
+
+### TASK-1
+
+- 目标: 管理端改造
+- 执行服务: admin
+- 执行目录: apps/admin
+- 修改范围: app
+
+### TASK-2
+
+- 目标: H5 改造
+- 执行服务: h5
+- 执行目录: apps/h5
+- 修改范围: src
+`,
+    'utf8',
+  )
+  writeFileSync(
+    join(projectRoot, 'docs', 'plans', 'AUTH-001-progress.json'),
+    JSON.stringify({
+      feature: 'AUTH-001',
+      requirementDoc: 'docs/requirement/AUTH-001.md',
+      planDoc: 'docs/plans/AUTH-001.md',
+      createdAt: '2026-04-21T00:00:00Z',
+      updatedAt: '2026-04-21T00:00:00Z',
+      completedAt: null,
+      lastRun: null,
+      tasks: [
+        {
+          id: 'TASK-1',
+          name: '管理端改造',
+          status: 'pending',
+          dependsOn: [],
+          parallelizable: false,
+          output: '',
+          startedAt: null,
+          completedAt: null,
+          durationSeconds: null,
+        },
+        {
+          id: 'TASK-2',
+          name: 'H5 改造',
+          status: 'pending',
+          dependsOn: [],
+          parallelizable: false,
+          output: '',
+          startedAt: null,
+          completedAt: null,
+          durationSeconds: null,
+        },
+      ],
+    }, null, 2) + '\n',
+    'utf8',
+  )
+
+  return projectRoot
+}
+
 describe('checkBranchName via hx-check --scope qa', () => {
   it.each([
     ['feat/my-feature', true],
@@ -153,6 +264,9 @@ describe('hx-check script', () => {
           {
             name: 'test',
             command: 'echo qa-pass',
+            projectRoot: expect.stringContaining('hx-check-script-'),
+            cwd: '',
+            source: 'project',
             ok: true,
             exitCode: 0,
             stdout: 'qa-pass',
@@ -178,6 +292,43 @@ describe('hx-check script', () => {
         reason: null,
       },
     })
+  })
+
+  it('runs workspace feature gates in each task execution project', () => {
+    const projectRoot = setupWorkspaceProject()
+    const result = spawnSync('bun', [SCRIPT_PATH, 'AUTH-001', '--scope', 'qa'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).toBe(0)
+    const summary = JSON.parse(result.stdout)
+    expect(summary.qa.gates).toMatchObject([
+      {
+        name: 'test',
+        command: 'echo admin-test',
+        projectRoot: expect.stringContaining('/apps/admin'),
+        cwd: 'apps/admin',
+        source: 'project',
+        stdout: 'admin-test',
+      },
+      {
+        name: 'lint',
+        command: 'echo h5-lint',
+        projectRoot: expect.stringContaining('/apps/h5'),
+        cwd: 'apps/h5',
+        source: 'project',
+        stdout: 'h5-lint',
+      },
+      {
+        name: 'test',
+        command: 'echo workspace-test',
+        projectRoot: expect.stringContaining('/apps/h5'),
+        cwd: 'apps/h5',
+        source: 'workspace',
+        stdout: 'workspace-test',
+      },
+    ])
   })
 
   it('outputs needsAiReview context for review and clean scopes', () => {

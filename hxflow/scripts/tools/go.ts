@@ -10,16 +10,18 @@
  */
 
 import { exitWithJsonError as err, printJson as out } from '../lib/json-cli.ts'
+import { resolveFeatureArtifactRoot } from '../lib/file-paths.ts'
 import { getPipelineFullState, resolveStartStep } from '../lib/pipeline-runner.ts'
 import { createToolContext } from '../lib/tool-cli.ts'
 
-const { sub, positional, options, projectRoot } = createToolContext()
+const { sub, positional, options, projectRoot: initialProjectRoot } = createToolContext()
 const [feature] = positional
 
 switch (sub) {
   case 'next': {
     if (!feature) err('用法：bun scripts/tools/go.ts next <feature> [--from <step>]（未安装 bun 时用：npx tsx scripts/tools/go.ts next <feature> [--from <step>]）')
 
+    const projectRoot = resolveFeatureArtifactRoot(initialProjectRoot, feature)
     const fromStep = (options.from as string) ?? null
 
     let result: { stepId: string; toolScript: string; pipeline: string; preHooks: string[] }
@@ -52,6 +54,7 @@ switch (sub) {
   case 'state': {
     if (!feature) err('用法：bun scripts/tools/go.ts state <feature>（未安装 bun 时用：npx tsx scripts/tools/go.ts state <feature>）')
 
+    const projectRoot = resolveFeatureArtifactRoot(initialProjectRoot, feature)
     const state = getPipelineFullState(projectRoot, feature)
     if (!state) err('Pipeline "default" 未找到')
 

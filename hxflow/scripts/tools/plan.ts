@@ -14,6 +14,7 @@ import {
   getRequirementDocPath,
   getActivePlanDocPath,
   getActiveProgressFilePath,
+  resolveFeatureArtifactRoot,
 } from '../lib/file-paths.ts'
 import { parseFeatureHeaderFile, parseRequirementHeaderFields } from '../lib/feature-header.ts'
 import { exitWithJsonError as err, printJson as out } from '../lib/json-cli.ts'
@@ -21,13 +22,14 @@ import { loadValidatedProgressFile } from '../lib/progress-context.ts'
 import { resolveRequiredRuleTemplatePath } from '../lib/rule-resolver.ts'
 import { createToolContext } from '../lib/tool-cli.ts'
 
-const { sub, positional, projectRoot } = createToolContext()
+const { sub, positional, projectRoot: initialProjectRoot } = createToolContext()
 const [feature] = positional
 
 switch (sub) {
   case 'context': {
     if (!feature) err('用法：hx plan context <feature>')
 
+    const projectRoot = resolveFeatureArtifactRoot(initialProjectRoot, feature)
     const requirementDoc = getRequirementDocPath(projectRoot, feature)
     if (!existsSync(requirementDoc)) err(`需求文档不存在: ${requirementDoc}，请先运行 hx doc context ${feature}`)
 
@@ -84,6 +86,7 @@ switch (sub) {
   case 'validate': {
     if (!feature) err('用法：hx plan validate <feature>')
 
+    const projectRoot = resolveFeatureArtifactRoot(initialProjectRoot, feature)
     const planDoc = getActivePlanDocPath(projectRoot, feature)
     const progressFile = getActiveProgressFilePath(projectRoot, feature)
     const planExists = existsSync(planDoc)

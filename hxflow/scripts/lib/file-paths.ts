@@ -5,8 +5,15 @@
  * 所有路径规则以当前脚本实现和固定目录结构为准。
  */
 
-import { existsSync, mkdirSync, renameSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, renameSync } from 'fs'
 import { basename, resolve } from 'path'
+
+export interface WorkspaceProject {
+  id: string
+  path: string
+  type: string
+  root: string
+}
 
 // ── 路径计算 ────────────────────────────────────────────────
 
@@ -67,6 +74,98 @@ export function getFeatureArtifactExistence(paths: {
     archivedPlanDoc: existsSync(paths.archivedPlanDoc),
     archivedProgressFile: existsSync(paths.archivedProgressFile),
   }
+}
+
+// ── Workspace feature resolution ────────────────────────────
+
+function getWorkspaceConfigPath(projectRoot: string) {
+  return resolve(projectRoot, '.hx', 'workspace.yaml')
+}
+
+export function getWorkspaceProjectRoots(projectRoot: string): string[] {
+  return getWorkspaceProjects(projectRoot).map((project) => project.root)
+}
+
+export function getWorkspaceProjects(projectRoot: string): WorkspaceProject[] {
+  const workspaceConfig = getWorkspaceConfigPath(projectRoot)
+  if (!existsSync(workspaceConfig)) return []
+
+  const content = readFileSync(workspaceConfig, 'utf8')
+  const projects: WorkspaceProject[] = []
+  let currentProject: Partial<WorkspaceProject> | null = null
+  let inProjects = false
+
+  function flushProject() {
+    if (!currentProject?.path) return
+    const path = currentProject.path
+    projects.push({
+      id: currentProject.id ?? basename(path),
+      path,
+      type: currentProject.type ?? 'unknown',
+      root: resolve(projectRoot, path),
+    })
+  }
+
+  for (const rawLine of content.replaceAll('\r\n', '\n').split('\n')) {
+    const trimmed = rawLine.trim()
+    const indent = rawLine.length - rawLine.trimStart().length
+
+    if (!trimmed || trimmed.startsWith('#')) continue
+
+    if (indent === 0) {
+      if (inProjects) flushProject()
+      currentProject = null
+      inProjects = trimmed === 'projects:'
+      continue
+    }
+
+    if (!inProjects) continue
+
+    if (trimmed.startsWith('- ')) {
+      flushProject()
+      currentProject = {}
+      const inlineMatch = trimmed.match(/^-\s+(\w+):\s*(.+)$/)
+      if (inlineMatch) currentProject[inlineMatch[1] as keyof WorkspaceProject] = normalizeWorkspaceScalar(inlineMatch[2])
+      continue
+    }
+
+    const fieldMatch = trimmed.match(/^(\w+):\s*(.+)$/)
+    if (!fieldMatch || !currentProject) continue
+    currentProject[fieldMatch[1] as keyof WorkspaceProject] = normalizeWorkspaceScalar(fieldMatch[2])
+  }
+
+  if (inProjects) flushProject()
+
+  const seen = new Set<string>()
+  return projects.filter((project) => {
+    if (seen.has(project.root)) return false
+    seen.add(project.root)
+    return true
+  })
+}
+
+function normalizeWorkspaceScalar(rawValue: string): string {
+  return rawValue.replace(/\s+#.*$/, '').trim().replace(/^['"]|['"]$/g, '')
+}
+
+export function getFeatureArtifactRoots(projectRoot: string, feature: string): string[] {
+  if (existsSync(getWorkspaceConfigPath(projectRoot))) {
+    const existence = getFeatureArtifactExistence(getFeatureArtifactPaths(projectRoot, feature))
+    return Object.values(existence).some(Boolean) ? [projectRoot] : []
+  }
+
+  const candidates = getWorkspaceProjectRoots(projectRoot)
+  if (!candidates.includes(projectRoot)) candidates.push(projectRoot)
+
+  return candidates.filter((candidateRoot) => {
+    const existence = getFeatureArtifactExistence(getFeatureArtifactPaths(candidateRoot, feature))
+    return Object.values(existence).some(Boolean)
+  })
+}
+
+export function resolveFeatureArtifactRoot(projectRoot: string, feature: string): string {
+  if (existsSync(getWorkspaceConfigPath(projectRoot))) return projectRoot
+  return getFeatureArtifactRoots(projectRoot, feature)[0] ?? projectRoot
 }
 
 // ── Archive / Restore ───────────────────────────────────────

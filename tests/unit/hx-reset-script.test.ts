@@ -130,6 +130,52 @@ function createGitProject() {
   return projectRoot
 }
 
+function createWorkspaceGitProject() {
+  const workspaceRoot = mkdtempSync(join(tmpdir(), 'hx-reset-workspace-script-'))
+  tempDirs.push(workspaceRoot)
+
+  const appRoot = join(workspaceRoot, 'apps', 'admin')
+  mkdirSync(join(workspaceRoot, '.hx'), { recursive: true })
+  mkdirSync(join(workspaceRoot, 'docs', 'requirement'), { recursive: true })
+  mkdirSync(join(workspaceRoot, 'docs', 'plans'), { recursive: true })
+  mkdirSync(join(appRoot, 'src'), { recursive: true })
+
+  runGit(workspaceRoot, 'init', '-b', 'feat/auth-001')
+  runGit(workspaceRoot, 'config', 'user.name', 'Test User')
+  runGit(workspaceRoot, 'config', 'user.email', 'test@example.com')
+
+  writeFileSync(join(workspaceRoot, '.hx', 'workspace.yaml'), [
+    'version: 1',
+    'projects:',
+    '  - id: admin',
+    '    path: ./apps/admin',
+    '    type: node',
+    '',
+  ].join('\n'), 'utf8')
+  writeFileSync(join(appRoot, 'src', 'feature.ts'), 'export const version = 1\n', 'utf8')
+  runGit(workspaceRoot, 'add', '.')
+  runGit(workspaceRoot, 'commit', '-m', 'base')
+
+  writeFileSync(join(workspaceRoot, 'docs', 'requirement', 'AUTH-001.md'), '# Requirement\n', 'utf8')
+  runGit(workspaceRoot, 'add', 'docs/requirement/AUTH-001.md')
+  runGit(workspaceRoot, 'commit', '-m', 'add requirement')
+
+  writeFileSync(join(workspaceRoot, 'docs', 'plans', 'AUTH-001.md'), '# Plan\n', 'utf8')
+  writeFileSync(
+    join(workspaceRoot, 'docs', 'plans', 'AUTH-001-progress.json'),
+    JSON.stringify(createProgressData(), null, 2) + '\n',
+    'utf8',
+  )
+  writeFileSync(join(appRoot, 'src', 'feature.ts'), 'export const version = 2\n', 'utf8')
+  runGit(workspaceRoot, 'add', '.')
+  runGit(workspaceRoot, 'commit', '-m', 'feature progress')
+
+  writeFileSync(join(appRoot, 'src', 'feature.ts'), 'export const version = 3\n', 'utf8')
+  writeFileSync(join(appRoot, 'src', 'scratch.ts'), 'export const scratch = true\n', 'utf8')
+
+  return { workspaceRoot, appRoot }
+}
+
 describe('hx-reset script', () => {
   it('resets code doc and plan artifacts by default', () => {
     const projectRoot = createGitProject()
@@ -153,6 +199,28 @@ describe('hx-reset script', () => {
     expect(existsSync(join(projectRoot, 'docs', 'requirement', 'AUTH-001.md'))).toBe(false)
     expect(existsSync(join(projectRoot, 'docs', 'plans', 'AUTH-001.md'))).toBe(false)
     expect(existsSync(join(projectRoot, 'docs', 'plans', 'AUTH-001-progress.json'))).toBe(false)
+  })
+
+  it('resets workspace-managed feature artifacts while code lives in child projects', () => {
+    const { workspaceRoot, appRoot } = createWorkspaceGitProject()
+    const result = spawnSync('bun', [SCRIPT_PATH, 'AUTH-001'], {
+      cwd: workspaceRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).toBe(0)
+    const summary = JSON.parse(result.stdout)
+    expect(summary.ok).toBe(true)
+    expect(summary.target).toBe('all')
+    expect(summary.codeReset.cleaned).toContain('apps/admin/src/scratch.ts')
+    expect(summary.removed).toContain('docs/requirement/AUTH-001.md')
+    expect(summary.removed).toContain('docs/plans/AUTH-001.md')
+    expect(summary.removed).toContain('docs/plans/AUTH-001-progress.json')
+    expect(readFileSync(join(appRoot, 'src', 'feature.ts'), 'utf8')).toBe('export const version = 1\n')
+    expect(existsSync(join(appRoot, 'src', 'scratch.ts'))).toBe(false)
+    expect(existsSync(join(workspaceRoot, 'docs', 'requirement', 'AUTH-001.md'))).toBe(false)
+    expect(existsSync(join(workspaceRoot, 'docs', 'plans', 'AUTH-001.md'))).toBe(false)
+    expect(existsSync(join(workspaceRoot, 'docs', 'plans', 'AUTH-001-progress.json'))).toBe(false)
   })
 
   it('resets only plan artifacts for plan target', () => {

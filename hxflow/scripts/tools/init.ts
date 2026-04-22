@@ -120,6 +120,16 @@ function initWorkspace(): void {
     written.push(workspacePath)
   }
 
+  mkdirSync(rulesDir, { recursive: true })
+  for (const file of listFrameworkRuleFiles(frameworkRulesDir)) {
+    const dest = resolve(rulesDir, file)
+    const src = resolve(frameworkRulesDir, file)
+    if (!existsSync(dest) && existsSync(src)) {
+      writeFileSync(dest, readFileSync(src, 'utf8'), 'utf8')
+      written.push(dest)
+    }
+  }
+
   console.log(JSON.stringify({
     ok: true,
     status: written.length > 0 ? 'initialized' : 'complete',
@@ -149,6 +159,23 @@ function buildWorkspaceYaml(candidates: InitCandidate[]): string {
     '  planDoc: docs/plans/{feature}.md',
     '  progressFile: docs/plans/{feature}-progress.json',
     '  mrBundle: docs/plans/{feature}-mr-bundle.md',
+    '',
+    'gates:',
+    '  lint:',
+    '  build:',
+    '  type:',
+    '  test:',
+    '',
+    'runtime:',
+    '  hooks: {}',
+    '  pipelines: {}',
+    '',
+    'rules:',
+    '  templates:',
+    '    requirement: .hx/rules/requirement-template.md',
+    '    plan: .hx/rules/plan-template.md',
+    '    bugfixRequirement: .hx/rules/bugfix-requirement-template.md',
+    '    bugfixPlan: .hx/rules/bugfix-plan-template.md',
     '',
     candidates.length > 0 ? 'projects:' : 'projects: []',
     ...(candidates.length > 0 ? projectLines : []),

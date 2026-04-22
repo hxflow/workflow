@@ -6,12 +6,18 @@
  */
 
 import { spawnSync } from 'child_process'
+import { existsSync, readFileSync } from 'fs'
+import { resolve } from 'path'
 
 import { createSimpleContext } from '../lib/tool-cli.ts'
-import { readGatesConfig, GATE_ORDER } from '../lib/runtime-config.ts'
-import type { GateName, GatesConfig } from '../lib/runtime-config.ts'
+import { GATE_ORDER } from '../lib/runtime-config.ts'
+import type { GateName } from '../lib/runtime-config.ts'
 import { runGit, splitLines, checkBranchName } from '../lib/git-utils.ts'
 import type { BranchCheckResult } from '../lib/git-utils.ts'
+import { resolveExecutionConfig, resolveWorkspaceExecutionConfigs } from '../lib/execution-config.ts'
+import type { ExecutionConfig } from '../lib/execution-config.ts'
+import { getWorkspaceProjects } from '../lib/file-paths.ts'
+import { loadFeatureProgress } from '../lib/progress-context.ts'
 
 const VALID_SCOPES = ['review', 'qa', 'clean', 'all', 'facts'] as const
 type CheckScope = (typeof VALID_SCOPES)[number]
@@ -19,6 +25,9 @@ type CheckScope = (typeof VALID_SCOPES)[number]
 interface GateResult {
   name: GateName
   command: string
+  projectRoot: string
+  cwd: string
+  source: 'project' | 'workspace'
   ok: boolean
   exitCode: number
   stdout: string
@@ -43,7 +52,7 @@ if (!VALID_SCOPES.includes(scope as CheckScope)) {
   process.exit(1)
 }
 
-const gates = readGatesConfig(projectRoot)
+const executionConfigs = resolveCheckExecutionConfigs(projectRoot, feature)
 const diffStat = runGit(projectRoot, 'diff', '--stat', 'HEAD') ?? ''
 const changedFiles = splitLines(runGit(projectRoot, 'diff', '--name-only', 'HEAD') ?? '')
 
@@ -51,13 +60,21 @@ const selectedScope = scope as CheckScope
 
 // ── facts 子命令：只返回确定性事实，不触发 AI ─────────────────────────────────
 if (selectedScope === ('facts' as CheckScope)) {
-  const activeGates = GATE_ORDER.filter((gate) => gates[gate])
+  const activeGates = executionConfigs.flatMap((execution) => GATE_ORDER
+    .filter((gate) => execution.gates[gate])
+    .map((gate) => ({
+      name: gate,
+      command: execution.gates[gate],
+      projectRoot: execution.root,
+      cwd: execution.cwd,
+      source: execution.gateSources[gate],
+    })))
 
   console.log(JSON.stringify({
     ok: true,
     feature: feature ?? null,
     scope: 'facts',
-    gates: Object.fromEntries(activeGates.map((g) => [g, gates[g]])),
+    gates: activeGates,
     branchCheck: checkBranchName(projectRoot),
     diffStat,
     changedFiles,
@@ -69,7 +86,7 @@ const doReview = selectedScope === 'review' || selectedScope === 'all'
 const doQa = selectedScope === 'qa' || selectedScope === 'all'
 const doClean = selectedScope === 'clean' || selectedScope === 'all'
 
-const qa = doQa ? runQa(projectRoot, gates) : { enabled: false, ok: true, summary: '未执行 qa', gates: [], branchCheck: null }
+const qa = doQa ? runQa(projectRoot, executionConfigs) : { enabled: false, ok: true, summary: '未执行 qa', gates: [], branchCheck: null }
 const review = doReview
   ? runSemanticScope('review', feature, {
       projectRoot,
@@ -105,8 +122,10 @@ printSummary({
 
 process.exit(ok ? 0 : 1)
 
-function runQa(projectRootPath: string, gatesMap: GatesConfig) {
-  const activeGates = GATE_ORDER.filter((gate) => gatesMap[gate])
+function runQa(projectRootPath: string, executions: ExecutionConfig[]) {
+  const activeGates = executions.flatMap((execution) => GATE_ORDER
+    .filter((gate) => execution.gates[gate])
+    .map((gate) => ({ gate, execution, command: execution.gates[gate] as string })))
   const results: GateResult[] = []
   const branchCheck = checkBranchName(projectRootPath)
 
@@ -120,10 +139,9 @@ function runQa(projectRootPath: string, gatesMap: GatesConfig) {
     }
   }
 
-  for (const gate of activeGates) {
-    const command = gatesMap[gate] as string
+  for (const { gate, execution, command } of activeGates) {
     const result = spawnSync('bash', ['-lc', command], {
-      cwd: projectRootPath,
+      cwd: execution.root,
       encoding: 'utf8',
       timeout: 120000,
       maxBuffer: 10 * 1024 * 1024,
@@ -133,6 +151,9 @@ function runQa(projectRootPath: string, gatesMap: GatesConfig) {
     const gateResult: GateResult = {
       name: gate,
       command,
+      projectRoot: execution.root,
+      cwd: execution.cwd,
+      source: execution.gateSources[gate] ?? execution.source,
       ok: result.status === 0,
       exitCode: result.status ?? 1,
       stdout: (result.stdout ?? '').trim(),
@@ -155,10 +176,57 @@ function runQa(projectRootPath: string, gatesMap: GatesConfig) {
   return {
     enabled: true,
     ok: true,
-    summary: `${activeGates.join(', ')} 全部通过`,
+    summary: `${activeGates.map((item) => item.gate).join(', ')} 全部通过`,
     gates: results,
     branchCheck,
   }
+}
+
+function resolveCheckExecutionConfigs(root: string, featureValue: string | undefined): ExecutionConfig[] {
+  const workspaceProjects = getWorkspaceProjects(root)
+  if (workspaceProjects.length === 0) {
+    return [resolveExecutionConfig(root, '')]
+  }
+
+  if (!featureValue) {
+    return [resolveExecutionConfig(root, '')]
+  }
+
+  const taskCwds = readFeatureTaskCwds(root, featureValue)
+  return resolveWorkspaceExecutionConfigs(root, taskCwds)
+}
+
+function readFeatureTaskCwds(root: string, featureValue: string): string[] {
+  try {
+    const progress = loadFeatureProgress(root, featureValue)
+    const planDoc = resolve(root, progress.data.planDoc)
+    if (!existsSync(planDoc)) return []
+
+    const planContent = readFileSync(planDoc, 'utf8')
+    return progress.data.tasks
+      .map((task) => readTaskCwd(planContent, task.id))
+      .filter(Boolean)
+  } catch {
+    return []
+  }
+}
+
+function readTaskCwd(planContent: string, taskId: string): string {
+  const section = extractTaskSection(planContent, taskId)
+  const match = section.match(/^- 执行目录:\s*(.*)$/m)
+  return match ? match[1].trim() : ''
+}
+
+function extractTaskSection(planContent: string, taskId: string): string {
+  const escapedTaskId = taskId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const headingPattern = new RegExp(`^###\\s+${escapedTaskId}(?:\\s.*)?$`, 'm')
+  const headingMatch = headingPattern.exec(planContent)
+  if (!headingMatch || headingMatch.index === undefined) return ''
+
+  const sectionStart = headingMatch.index + headingMatch[0].length
+  const remaining = planContent.slice(sectionStart).replace(/^\r?\n/, '')
+  const nextHeadingIndex = remaining.search(/^###\s+/m)
+  return (nextHeadingIndex === -1 ? remaining : remaining.slice(0, nextHeadingIndex)).trim()
 }
 
 function runSemanticScope(

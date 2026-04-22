@@ -13,7 +13,7 @@
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 
-import { getRequirementDocPath } from '../lib/file-paths.ts'
+import { getRequirementDocPath, getWorkspaceProjects, resolveFeatureArtifactRoot } from '../lib/file-paths.ts'
 import { exitWithJsonError as err, printJson as out } from '../lib/json-cli.ts'
 import { resolveRequiredRuleTemplatePath } from '../lib/rule-resolver.ts'
 import { createToolContext } from '../lib/tool-cli.ts'
@@ -29,7 +29,7 @@ type DocType = (typeof VALID_TYPES)[number]
 
 const REQUIRED_HEADER_FIELDS = ['Feature', 'Display Name', 'Source ID', 'Source Fingerprint', 'Type'] as const
 
-const { cwd, sub, positional, options, projectRoot } = createToolContext()
+const { cwd, sub, positional, options, projectRoot: initialProjectRoot } = createToolContext()
 const [feature] = positional
 
 switch (sub) {
@@ -42,6 +42,7 @@ switch (sub) {
     const sourceFile = typeof options['source-file'] === 'string' ? options['source-file'] : null
     const force = options.force !== undefined
 
+    const projectRoot = resolveFeatureArtifactRoot(initialProjectRoot, feature)
     const requirementDoc = getRequirementDocPath(projectRoot, feature)
     const docExists = existsSync(requirementDoc)
 
@@ -55,6 +56,7 @@ switch (sub) {
     const templatePath = resolveRequiredRuleTemplatePath(projectRoot, configKey)
     const templateContent = stripRequirementRuntimeMetadata(readFileSync(templatePath, 'utf8'))
     const headerTemplate = buildRequirementHeader(feature, docType, existingHeader)
+    const workspaceProjects = getWorkspaceProjects(projectRoot)
 
     out({
       ok: true,
@@ -68,6 +70,7 @@ switch (sub) {
       sourceContent,
       existingHeader,
       requiredHeaderFields: [...REQUIRED_HEADER_FIELDS],
+      workspace: workspaceProjects.length > 0 ? { projects: workspaceProjects } : null,
     })
     break
   }
@@ -79,6 +82,7 @@ switch (sub) {
     if (!VALID_TYPES.includes(rawType as DocType)) err(`--type "${rawType}" 无效，有效值: ${VALID_TYPES.join(', ')}`)
     const docType = rawType as DocType
 
+    const projectRoot = resolveFeatureArtifactRoot(initialProjectRoot, feature)
     const requirementDoc = getRequirementDocPath(projectRoot, feature)
     if (!existsSync(requirementDoc)) {
       out({ ok: false, feature, docType, requirementDoc, exists: false, errors: ['需求文档不存在'] })

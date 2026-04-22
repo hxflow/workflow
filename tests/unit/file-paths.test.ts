@@ -7,6 +7,9 @@ import {
   getActivePlanDocPath,
   getRequirementDocPath,
   getArchiveDirPath,
+  getFeatureArtifactRoots,
+  getWorkspaceProjectRoots,
+  resolveFeatureArtifactRoot,
   archiveFeature,
   restoreFeature,
   resolveProgressFile,
@@ -43,6 +46,42 @@ describe('path getters', () => {
   it('getArchiveDirPath returns correct path', () => {
     const p = getArchiveDirPath('/project', 'AUTH-001')
     expect(p).toBe(resolve('/project', 'docs', 'archive', 'AUTH-001'))
+  })
+})
+
+describe('workspace feature resolution', () => {
+  it('reads workspace project roots from .hx/workspace.yaml', () => {
+    mkdirSync(join(tmpDir, '.hx'), { recursive: true })
+    writeFileSync(join(tmpDir, '.hx', 'workspace.yaml'), [
+      'version: 1',
+      'projects:',
+      '  - id: admin',
+      '    path: ./apps/admin',
+      '    type: node',
+      '',
+    ].join('\n'), 'utf8')
+
+    expect(getWorkspaceProjectRoots(tmpDir)).toEqual([resolve(tmpDir, 'apps', 'admin')])
+  })
+
+  it('keeps feature artifacts at the workspace root', () => {
+    const appRoot = join(tmpDir, 'apps', 'admin')
+    mkdirSync(join(tmpDir, '.hx'), { recursive: true })
+    mkdirSync(join(tmpDir, 'docs', 'requirement'), { recursive: true })
+    mkdirSync(join(appRoot, 'docs', 'requirement'), { recursive: true })
+    writeFileSync(join(tmpDir, '.hx', 'workspace.yaml'), [
+      'version: 1',
+      'projects:',
+      '  - id: admin',
+      '    path: ./apps/admin',
+      '    type: node',
+      '',
+    ].join('\n'), 'utf8')
+    writeFileSync(join(tmpDir, 'docs', 'requirement', 'AUTH-001.md'), '# Workspace Requirement\n', 'utf8')
+    writeFileSync(join(appRoot, 'docs', 'requirement', 'AUTH-001.md'), '# Requirement\n', 'utf8')
+
+    expect(getFeatureArtifactRoots(tmpDir, 'AUTH-001')).toEqual([tmpDir])
+    expect(resolveFeatureArtifactRoot(tmpDir, 'AUTH-001')).toBe(tmpDir)
   })
 })
 

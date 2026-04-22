@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 
+import { resolveExecutionConfig, type ExecutionConfig } from './execution-config.ts'
+import { getWorkspaceProjects, type WorkspaceProject } from './file-paths.ts'
 import { summarizeRequirement } from './requirement-summary.ts'
 import type { ProgressData, ProgressTask } from './types.ts'
 
@@ -21,6 +23,8 @@ export interface TaskContextPayload {
     id: string
     name: string
     goal: string
+    service: string
+    cwd: string
     scope: string[]
     implementationNotes: string[]
     acceptance: string[]
@@ -30,6 +34,10 @@ export interface TaskContextPayload {
   requirement: {
     summary: string
   }
+  workspace: {
+    projects: WorkspaceProject[]
+  } | null
+  execution: ExecutionConfig
   dependencies: TaskDependencyContext[]
 }
 
@@ -43,6 +51,8 @@ interface BuildTaskContextInput {
 
 const TASK_FIELD_LABELS = {
   goal: '目标',
+  service: '执行服务',
+  cwd: '执行目录',
   scope: '修改范围',
   implementationNotes: '实施要点',
   acceptance: '验收标准',
@@ -54,6 +64,7 @@ export function buildTaskContext(input: BuildTaskContextInput): TaskContextPaylo
   const planDoc = resolve(input.projectRoot, input.progressData.planDoc)
   const requirementDoc = resolve(input.projectRoot, input.progressData.requirementDoc)
   const planSection = existsSync(planDoc) ? extractTaskSection(readFileSync(planDoc, 'utf8'), task.id) : ''
+  const taskCwd = readTaskField(planSection, TASK_FIELD_LABELS.cwd)
   const requirementSummary = existsSync(requirementDoc)
     ? summarizeRequirement(readFileSync(requirementDoc, 'utf8'))
     : ''
@@ -68,6 +79,8 @@ export function buildTaskContext(input: BuildTaskContextInput): TaskContextPaylo
       id: task.id,
       name: task.name,
       goal: readTaskField(planSection, TASK_FIELD_LABELS.goal),
+      service: readTaskField(planSection, TASK_FIELD_LABELS.service),
+      cwd: taskCwd,
       scope: splitListField(readTaskField(planSection, TASK_FIELD_LABELS.scope)),
       implementationNotes: splitListField(readTaskField(planSection, TASK_FIELD_LABELS.implementationNotes)),
       acceptance: splitListField(readTaskField(planSection, TASK_FIELD_LABELS.acceptance)),
@@ -77,6 +90,8 @@ export function buildTaskContext(input: BuildTaskContextInput): TaskContextPaylo
     requirement: {
       summary: requirementSummary,
     },
+    workspace: buildWorkspaceContext(input.projectRoot),
+    execution: resolveExecutionConfig(input.projectRoot, taskCwd),
     dependencies: task.dependsOn
       .map((dependencyId) => input.progressData.tasks.find((candidate) => candidate.id === dependencyId))
       .filter((item): item is ProgressTask => item !== undefined)
@@ -87,6 +102,11 @@ export function buildTaskContext(input: BuildTaskContextInput): TaskContextPaylo
         output: dependencyTask.output,
       })),
   }
+}
+
+function buildWorkspaceContext(projectRoot: string) {
+  const projects = getWorkspaceProjects(projectRoot)
+  return projects.length > 0 ? { projects } : null
 }
 
 function getTask(progressData: ProgressData, taskId: string): ProgressTask {

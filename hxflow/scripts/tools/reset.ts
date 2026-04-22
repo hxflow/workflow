@@ -13,13 +13,13 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { dirname, relative, sep } from 'path'
 
-import { getFeatureArtifactExistence, getFeatureArtifactPaths } from '../lib/file-paths.ts'
+import { getFeatureArtifactExistence, getFeatureArtifactPaths, resolveFeatureArtifactRoot } from '../lib/file-paths.ts'
 import { runGit, runGitCommand, splitLines } from '../lib/git-utils.ts'
 import { exitWithJsonError as err, printJson as out } from '../lib/json-cli.ts'
 import { resetExecutionState } from '../lib/progress-ops.ts'
 import { createSimpleContext } from '../lib/tool-cli.ts'
 
-const { positional, projectRoot } = createSimpleContext()
+const { positional, projectRoot: initialProjectRoot } = createSimpleContext()
 const [feature, rawTarget] = positional
 
 if (!feature) {
@@ -31,6 +31,7 @@ if (rawTarget && rawTarget !== 'plan' && rawTarget !== 'doc' && rawTarget !== 'c
 }
 
 const target = rawTarget ?? 'all'
+const projectRoot = resolveFeatureArtifactRoot(initialProjectRoot, feature)
 const paths = getFeatureArtifactPaths(projectRoot, feature)
 const existence = getFeatureArtifactExistence(paths)
 

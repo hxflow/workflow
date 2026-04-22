@@ -83,8 +83,10 @@ describe('hx-init script', () => {
     expect(summary.mode).toBe('workspace')
     expect(summary.status).toBe('initialized')
     expect(summary.written.some((file: string) => file.endsWith('.hx/workspace.yaml'))).toBe(true)
+    expect(summary.written.some((file: string) => file.endsWith('.hx/rules/requirement-template.md'))).toBe(true)
     expect(existsSync(join(workspaceRoot, '.hx', 'workspace.yaml'))).toBe(true)
     expect(existsSync(join(workspaceRoot, '.hx', 'config.yaml'))).toBe(false)
+    expect(existsSync(join(workspaceRoot, '.hx', 'rules', 'requirement-template.md'))).toBe(true)
     expect(summary.projects.map((project: { id: string }) => project.id)).toEqual(['admin-web', 'order-service'])
 
     const workspaceYaml = readFileSync(join(workspaceRoot, '.hx', 'workspace.yaml'), 'utf8')
@@ -92,6 +94,8 @@ describe('hx-init script', () => {
     expect(workspaceYaml).toContain('id: admin-web')
     expect(workspaceYaml).toContain('path: ./admin-web')
     expect(workspaceYaml).toContain('id: order-service')
+    expect(workspaceYaml).toContain('rules:')
+    expect(workspaceYaml).toContain('requirement: .hx/rules/requirement-template.md')
   })
 
   it('initializes an explicit child target as a project from a workspace directory', () => {

@@ -76,6 +76,8 @@ describe('command contracts', () => {
     const hxDoc = readFileSync(resolve(COMMANDS_DIR, 'hx-doc.md'), 'utf8')
 
     expect(hxDoc).toContain('先复用后生成')
+    expect(hxDoc).toContain('runtime 和 rules 优先级最高')
+    expect(hxDoc).toContain('子项目只覆盖执行目录、源码路径和质量门')
     expect(hxDoc).toContain('sourceId')
     expect(hxDoc).not.toContain('contracts/feature-contract.md')
     expect(hxGo).not.toContain('contracts/resolution-contract.md')
@@ -116,7 +118,8 @@ describe('command contracts', () => {
     expect(hxCheck).not.toContain('review-checklist.md')
     expect(hxCheck).not.toContain('hx fix')
     const hxCheckScript = readFileSync(resolve(TOOLS_DIR, 'check.ts'), 'utf8')
-    expect(hxCheckScript).toContain('readGatesConfig')
+    expect(hxCheckScript).toContain('resolveExecutionConfig')
+    expect(hxCheckScript).toContain('resolveWorkspaceExecutionConfigs')
     expect(hxCheckScript).toContain('GATE_ORDER')
     expect(hxCheckScript).toContain("runSemanticScope('review'")
     expect(hxCheckScript).toContain("runSemanticScope('clean'")

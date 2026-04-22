@@ -13,13 +13,12 @@ import { readdirSync, existsSync } from 'fs'
 import { resolve } from 'path'
 import { loadValidatedProgressFile } from '../lib/progress-context.ts'
 import { computeProgressStats } from '../lib/progress-stats.ts'
-import { getActiveProgressFilePath } from '../lib/file-paths.ts'
+import { getActiveProgressFilePath, getWorkspaceProjectRoots, resolveFeatureArtifactRoot } from '../lib/file-paths.ts'
 import { createSimpleContext } from '../lib/tool-cli.ts'
 
 import type { ProgressTask } from '../lib/types.ts'
 
 const { positional, options, projectRoot } = createSimpleContext()
-const plansDir = resolve(projectRoot, 'docs', 'plans')
 
 function printSeparator() {
   console.log('─'.repeat(60))
@@ -71,7 +70,8 @@ function printFeatureStatus(filePath: string) {
 const featureArg = positional[0] || (typeof options.feature === 'string' ? options.feature : undefined)
 
 if (featureArg) {
-  const filePath = getActiveProgressFilePath(projectRoot, featureArg)
+  const featureRoot = resolveFeatureArtifactRoot(projectRoot, featureArg)
+  const filePath = getActiveProgressFilePath(featureRoot, featureArg)
 
   if (!existsSync(filePath)) {
     console.error(`progressFile 不存在：${filePath}`)
@@ -83,12 +83,18 @@ if (featureArg) {
   printSeparator()
 } else {
   // 扫描全部 *-progress.json
-  if (!existsSync(plansDir)) {
+  const roots = [projectRoot, ...getWorkspaceProjectRoots(projectRoot)]
+  const plansDirs = Array.from(new Set(roots.map((root) => resolve(root, 'docs', 'plans'))))
+    .filter((plansDir) => existsSync(plansDir))
+
+  if (plansDirs.length === 0) {
     console.log('docs/plans/ 目录不存在，暂无进度文件。')
     process.exit(0)
   }
 
-  const files = readdirSync(plansDir).filter((f) => f.endsWith('-progress.json'))
+  const files = plansDirs.flatMap((plansDir) => readdirSync(plansDir)
+    .filter((file) => file.endsWith('-progress.json'))
+    .map((file) => resolve(plansDir, file)))
 
   if (files.length === 0) {
     console.log('docs/plans/ 中暂无进度文件。')
@@ -97,7 +103,7 @@ if (featureArg) {
 
   printSeparator()
   for (const file of files) {
-    printFeatureStatus(resolve(plansDir, file))
+    printFeatureStatus(file)
     printSeparator()
   }
 }

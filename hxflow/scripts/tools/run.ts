@@ -11,17 +11,19 @@
 import { getRecoverableTasks, getRunnableTasks, getScheduledBatch } from '../lib/task-scheduler.ts'
 import { buildTaskContext } from '../lib/task-context.ts'
 import { loadFeatureProgress } from '../lib/progress-context.ts'
+import { resolveFeatureArtifactRoot } from '../lib/file-paths.ts'
 import { exitWithJsonError as err, printJson as out } from '../lib/json-cli.ts'
 import { createToolContext } from '../lib/tool-cli.ts'
 import type { ProgressData, ScheduledBatch } from '../lib/types.ts'
 
-const { sub, positional, options, projectRoot } = createToolContext()
+const { sub, positional, options, projectRoot: initialProjectRoot } = createToolContext()
 const [feature] = positional
 
 switch (sub) {
   case 'next': {
     if (!feature) err('用法：hx run next <feature> [--plan-task <taskId>]')
 
+    const projectRoot = resolveFeatureArtifactRoot(initialProjectRoot, feature)
     const planTaskId = typeof options['plan-task'] === 'string' ? options['plan-task'] : null
 
     const progress = (() => {
@@ -79,6 +81,7 @@ switch (sub) {
   case 'validate': {
     if (!feature) err('用法：hx run validate <feature>')
 
+    const projectRoot = resolveFeatureArtifactRoot(initialProjectRoot, feature)
     const progress = (() => {
       try {
         return loadFeatureProgress(projectRoot, feature)
