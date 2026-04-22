@@ -44,4 +44,16 @@ describe('resolve-context', () => {
     expect(findProjectRoot(nested)).toBe(root)
     expect(findProjectRoot(standalone)).toBe(standalone)
   })
+
+  it('rejects a directory that is both workspace and project', () => {
+    const root = createTempDir('hx-conflict-root-')
+    const nested = resolve(root, 'src')
+
+    mkdirSync(resolve(root, '.hx'), { recursive: true })
+    mkdirSync(nested, { recursive: true })
+    writeFileSync(resolve(root, '.hx', 'config.yaml'), 'paths:\n  src: src\n')
+    writeFileSync(resolve(root, '.hx', 'workspace.yaml'), 'version: 1\nprojects: []\n')
+
+    expect(() => findProjectRoot(nested)).toThrow('同时存在 .hx/config.yaml 与 .hx/workspace.yaml')
+  })
 })

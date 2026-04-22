@@ -9,7 +9,8 @@ import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const HX_CONFIG_FILE = '.hx/config.yaml'
+export const HX_CONFIG_FILE = '.hx/config.yaml'
+export const HX_WORKSPACE_FILE = '.hx/workspace.yaml'
 
 /** 框架根目录（hxflow 目录） */
 export const FRAMEWORK_ROOT = resolve(__dirname, '../..')
@@ -48,10 +49,20 @@ export function findProjectRoot(startDir?: string): string {
   const root = resolve('/')
 
   while (dir !== root) {
+    assertNoHxModeConflict(dir)
     if (existsSync(resolve(dir, HX_CONFIG_FILE))) return dir
     if (existsSync(resolve(dir, '.git'))) return dir
     dir = dirname(dir)
   }
 
   return resolvedStartDir
+}
+
+export function hasHxModeConflict(dir: string): boolean {
+  return existsSync(resolve(dir, HX_CONFIG_FILE)) && existsSync(resolve(dir, HX_WORKSPACE_FILE))
+}
+
+export function assertNoHxModeConflict(dir: string): void {
+  if (!hasHxModeConflict(dir)) return
+  throw new Error(`.hx 配置冲突：${dir} 同时存在 ${HX_CONFIG_FILE} 与 ${HX_WORKSPACE_FILE}`)
 }

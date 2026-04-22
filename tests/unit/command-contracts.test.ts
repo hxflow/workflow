@@ -151,7 +151,9 @@ describe('command contracts', () => {
 
     expect(hxInit).toContain('bun scripts/tools/init.ts')
     expect(hxInit).not.toContain('npx tsx')
-    expect(hxInit).toContain('直接完成当前初始化阶段')
+    expect(hxInit).toContain('直接完成当前目录或指定目录的初始化阶段')
+    expect(hxInit).toContain('多项目根目录初始化为 workspace')
+    expect(hxInit).toContain('不允许在同一目录并存')
     expect(hxInit).not.toContain('## 下一步')
     expect(hxInit).toContain('只做初始化')
     expect((hxInit.match(/\n1\./g) ?? []).length).toBe(1)

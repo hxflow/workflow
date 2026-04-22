@@ -64,4 +64,66 @@ describe('hx-init script', () => {
     expect(result.status).toBe(0)
     expect(readFileSync(join(rulesDir, 'requirement-template.md'), 'utf8')).toBe('# Custom Requirement Template\n')
   })
+
+  it('initializes a workspace when the current directory contains multiple projects', () => {
+    const workspaceRoot = createProject()
+    mkdirSync(join(workspaceRoot, 'admin-web'), { recursive: true })
+    mkdirSync(join(workspaceRoot, 'order-service', '.git'), { recursive: true })
+    writeFileSync(join(workspaceRoot, 'admin-web', 'package.json'), '{}\n', 'utf8')
+
+    const result = spawnSync('bun', [SCRIPT_PATH], {
+      cwd: workspaceRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).toBe(0)
+
+    const summary = JSON.parse(result.stdout)
+    expect(summary.ok).toBe(true)
+    expect(summary.mode).toBe('workspace')
+    expect(summary.status).toBe('initialized')
+    expect(summary.written.some((file: string) => file.endsWith('.hx/workspace.yaml'))).toBe(true)
+    expect(existsSync(join(workspaceRoot, '.hx', 'workspace.yaml'))).toBe(true)
+    expect(existsSync(join(workspaceRoot, '.hx', 'config.yaml'))).toBe(false)
+    expect(summary.projects.map((project: { id: string }) => project.id)).toEqual(['admin-web', 'order-service'])
+
+    const workspaceYaml = readFileSync(join(workspaceRoot, '.hx', 'workspace.yaml'), 'utf8')
+    expect(workspaceYaml).toContain('projects:')
+    expect(workspaceYaml).toContain('id: admin-web')
+    expect(workspaceYaml).toContain('path: ./admin-web')
+    expect(workspaceYaml).toContain('id: order-service')
+  })
+
+  it('initializes an explicit child target as a project from a workspace directory', () => {
+    const workspaceRoot = createProject()
+    mkdirSync(join(workspaceRoot, 'order-service'), { recursive: true })
+
+    const result = spawnSync('bun', [SCRIPT_PATH, './order-service'], {
+      cwd: workspaceRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).toBe(0)
+
+    const summary = JSON.parse(result.stdout)
+    expect(summary.ok).toBe(true)
+    expect(summary.mode).toBe('project')
+    expect(existsSync(join(workspaceRoot, 'order-service', '.hx', 'config.yaml'))).toBe(true)
+    expect(existsSync(join(workspaceRoot, '.hx', 'workspace.yaml'))).toBe(false)
+  })
+
+  it('rejects directories that contain both workspace and project config files', () => {
+    const projectRoot = createProject()
+    mkdirSync(join(projectRoot, '.hx'), { recursive: true })
+    writeFileSync(join(projectRoot, '.hx', 'config.yaml'), 'paths:\n  src: src\n', 'utf8')
+    writeFileSync(join(projectRoot, '.hx', 'workspace.yaml'), 'version: 1\nprojects: []\n', 'utf8')
+
+    const result = spawnSync('bun', [SCRIPT_PATH], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('同时存在 .hx/config.yaml 与 .hx/workspace.yaml')
+  })
 })
