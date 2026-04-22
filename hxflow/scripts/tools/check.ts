@@ -122,7 +122,7 @@ function runQa(projectRootPath: string, gatesMap: GatesConfig) {
 
   for (const gate of activeGates) {
     const command = gatesMap[gate] as string
-    const result = spawnSync('zsh', ['-lc', command], {
+    const result = spawnSync('bash', ['-lc', command], {
       cwd: projectRootPath,
       encoding: 'utf8',
       timeout: 120000,
