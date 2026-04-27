@@ -41,10 +41,10 @@ describe('package manifest', () => {
   it('keeps GitHub repository metadata aligned', () => {
     const pkg = JSON.parse(readFileSync(PACKAGE_JSON_PATH, 'utf8'))
 
-    expect(pkg.name).toBe('@hxflow/cli')
+    expect(pkg.name).toBe('@hxflow/workflow')
     expect(pkg.repository).toEqual({
       type: 'git',
-      url: 'https://github.com/hxflow/cli.git',
+      url: 'https://github.com/hxflow/workflow.git',
     })
     expect(pkg.publishConfig).toEqual({
       registry: 'https://npm.pkg.github.com',

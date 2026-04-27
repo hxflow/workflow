@@ -158,7 +158,6 @@ function buildWorkspaceYaml(candidates: InitCandidate[]): string {
     '  requirementDoc: docs/requirement/{feature}.md',
     '  planDoc: docs/plans/{feature}.md',
     '  progressFile: docs/plans/{feature}-progress.json',
-    '  mrBundle: docs/plans/{feature}-mr-bundle.md',
     '',
     'gates:',
     '  lint:',

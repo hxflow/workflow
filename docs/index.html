@@ -304,7 +304,7 @@
       <a href="#commands">命令参考</a>
       <a href="#pipeline">流水线</a>
       <a href="#structure">项目结构</a>
-      <a href="https://github.com/hxflow/cli" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/hxflow/workflow" target="_blank" rel="noopener">GitHub</a>
     </nav>
   </div>
 </header>
@@ -320,7 +320,7 @@
     </p>
     <div class="cta">
       <a class="btn primary" href="#quickstart">开始使用 →</a>
-      <a class="btn" href="https://github.com/hxflow/cli" target="_blank" rel="noopener">查看源码</a>
+      <a class="btn" href="https://github.com/hxflow/workflow" target="_blank" rel="noopener">查看源码</a>
       <a class="btn" href="#commands">命令速查</a>
     </div>
   </section>
@@ -359,7 +359,7 @@
           <h3>安装 Skill</h3>
           <p>把 <code class="inline">hxflow/</code> 作为 Agent Skill 引入。Claude Code 安装时直接指定目录；其他 Agent 按 Skills 规范引用 <code class="inline">hxflow/SKILL.md</code>。</p>
 <pre><span class="c"># 克隆仓库</span>
-<span class="k">git</span> clone https://github.com/hxflow/cli.git
+<span class="k">git</span> clone https://github.com/hxflow/workflow.git
 <span class="k">cd</span> cli
 <span class="k">bun</span> install  <span class="c"># 或使用 npm / pnpm</span></pre>
         </div>
@@ -368,9 +368,10 @@
       <div class="step">
         <div>
           <h3>初始化项目</h3>
-          <p>在目标仓库中运行 <code class="inline">/hx init</code>，自动生成 <code class="inline">.hx/config.yaml</code> 与 <code class="inline">.hx/rules/*.md</code>。已存在配置时不会覆盖。</p>
+          <p>在目标仓库中运行 <code class="inline">/hx init</code>，自动生成配置文件与 <code class="inline">.hx/rules/*.md</code>。单项目生成 <code class="inline">config.yaml</code>，多项目（workspace）生成 <code class="inline">workspace.yaml</code>。已存在配置时不会覆盖。</p>
 <pre><span class="o">/hx</span> init
-<span class="c"># → 生成 .hx/config.yaml</span>
+<span class="c"># → 单项目：生成 .hx/config.yaml</span>
+<span class="c"># → 多项目：生成 .hx/workspace.yaml</span>
 <span class="c"># → 落地 rules/ 模板（需求、计划、bugfix）</span></pre>
         </div>
       </div>
@@ -454,7 +455,7 @@
           <tr>
             <td><code class="inline">/hx init</code></td>
             <td>初始化</td>
-            <td>生成 <code class="inline">.hx/config.yaml</code> 与规则模板</td>
+            <td>生成 <code class="inline">.hx/config.yaml</code>（单项目）或 <code class="inline">.hx/workspace.yaml</code>（多项目）与规则模板</td>
             <td><code class="inline">doc</code></td>
           </tr>
           <tr>
@@ -528,7 +529,8 @@
       <div>
         <h3 style="margin-top:0;">使用者产物 <code class="inline">.hx/</code></h3>
 <pre class="tree"><span class="dir">.hx/</span>
-├─ <span class="file">config.yaml</span>         <span class="cmt"># 项目配置（运行时只认这里）</span>
+├─ <span class="file">config.yaml</span>         <span class="cmt"># 单项目模式</span>
+├─ <span class="file">workspace.yaml</span>      <span class="cmt"># workspace 模式（多项目）</span>
 ├─ <span class="dir">rules/</span>              <span class="cmt"># 规则模板（需求/计划等）</span>
 ├─ <span class="dir">hooks/</span>              <span class="cmt"># 自定义 hook（可选）</span>
 └─ <span class="dir">pipelines/</span>          <span class="cmt"># 自定义 pipeline（可选）</span></pre>
@@ -567,17 +569,17 @@
   <section id="learn-more">
     <h2><span class="num">07</span>继续深入</h2>
     <div class="grid cols-3">
-      <a class="card" href="https://github.com/hxflow/cli" target="_blank" rel="noopener">
+      <a class="card" href="https://github.com/hxflow/workflow" target="_blank" rel="noopener">
         <div class="icon">↗</div>
         <h3>源码仓库</h3>
         <p>命令契约、事实脚本、模板与测试的完整代码。</p>
       </a>
-      <a class="card" href="https://github.com/hxflow/cli/blob/main/AGENTS.md" target="_blank" rel="noopener">
+      <a class="card" href="https://github.com/hxflow/workflow/blob/main/AGENTS.md" target="_blank" rel="noopener">
         <div class="icon">◈</div>
         <h3>Repository Guidelines</h3>
         <p>贡献规范、Prompt 写作约束、Self-Hosting 纪律。</p>
       </a>
-      <a class="card" href="https://github.com/hxflow/cli/blob/main/docs/prompt-script-boundary.md" target="_blank" rel="noopener">
+      <a class="card" href="https://github.com/hxflow/workflow/blob/main/docs/prompt-script-boundary.md" target="_blank" rel="noopener">
         <div class="icon">⌘</div>
         <h3>Prompt/脚本边界</h3>
         <p>哪些放命令契约、哪些下沉到事实脚本的判定原则。</p>
@@ -589,8 +591,8 @@
 
 <footer>
   <p>
-    @hxflow/cli · MIT License ·
-    <a href="https://github.com/hxflow/cli" target="_blank" rel="noopener">GitHub</a>
+    @hxflow/workflow · MIT License ·
+    <a href="https://github.com/hxflow/workflow" target="_blank" rel="noopener">GitHub</a>
   </p>
 </footer>
 

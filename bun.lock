@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@hxflow/cli",
+      "name": "@hxflow/workflow",
       "devDependencies": {
         "@types/node": "^20.0.0",
         "typescript": "^5.0.0",

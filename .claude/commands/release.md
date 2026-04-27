@@ -155,5 +155,5 @@ git push origin v<NEW_VERSION>
 - 不需要运行 `scan-docs.sh`
 - `publishConfig.registry` 应指向 `https://npm.pkg.github.com`
 - 发布由 GitHub Actions 执行，默认依赖 `GITHUB_TOKEN`
-- `origin` 应指向 GitHub 仓库；当前项目使用 `https://github.com/hxflow/cli`
+- `origin` 应指向 GitHub 仓库；当前项目使用 `https://github.com/hxflow/workflow`
 - CHANGELOG.md 不存在时自动创建

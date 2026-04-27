@@ -24,7 +24,6 @@ export interface PathsConfig {
   requirementDoc?: string
   planDoc?: string
   progressFile?: string
-  mrBundle?: string
 }
 
 export const GATE_ORDER = ['lint', 'build', 'type', 'test'] as const
@@ -122,7 +121,7 @@ function parseConfigSections(content: string): ParsedConfigSections {
 
     if (inPaths && indent === 2) {
       const match = trimmed.match(/^(\w+):\s*(.*)/)
-      if (match && ['src', 'requirementDoc', 'planDoc', 'progressFile', 'mrBundle'].includes(match[1])) {
+      if (match && ['src', 'requirementDoc', 'planDoc', 'progressFile'].includes(match[1])) {
         const value = normalizeYamlScalar(match[2])
         if (value) paths[match[1] as keyof PathsConfig] = value
       }
