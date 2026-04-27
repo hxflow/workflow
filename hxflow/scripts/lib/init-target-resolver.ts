@@ -19,7 +19,7 @@ export interface InitTarget {
   candidates: InitCandidate[]
 }
 
-type ProjectType = 'frontend' | 'backend' | 'unknown'
+type ProjectType = 'frontend' | 'backend' | 'mobile' | 'unknown'
 
 const EXCLUDED_CHILDREN = new Set([
   '.git',
@@ -34,20 +34,30 @@ const EXCLUDED_CHILDREN = new Set([
 ])
 
 const PROJECT_MARKERS = [
+  // 通用
   '.git',
   HX_CONFIG_FILE,
+  // 前端 / Node
   'package.json',
   'pnpm-workspace.yaml',
   'bun.lockb',
   'vite.config.js',
   'vite.config.ts',
   'tsconfig.json',
-  'pom.xml',
-  'go.mod',
-  'Cargo.toml',
-  'pyproject.toml',
-  'build.gradle',
+  // 移动端
+  'pubspec.yaml',       // Flutter
+  'Podfile',            // iOS (CocoaPods)
+  'metro.config.js',    // React Native
+  'metro.config.ts',    // React Native
+  'AndroidManifest.xml',// Android native
+  // 后端
+  'go.mod',             // Go
+  'go.sum',             // Go (补充)
+  'pom.xml',            // Java/Maven
+  'build.gradle',       // Java/Kotlin/Android
   'build.gradle.kts',
+  'Cargo.toml',         // Rust
+  'pyproject.toml',     // Python
 ]
 
 export function resolveInitTarget(
@@ -117,12 +127,26 @@ function isProjectCandidate(dir: string): boolean {
 }
 
 function detectProjectType(dir: string): ProjectType {
-  if (existsSync(resolve(dir, 'package.json')) || existsSync(resolve(dir, 'vite.config.ts')) || existsSync(resolve(dir, 'vite.config.js'))) {
+  // 移动端优先判断（React Native 含 package.json，需在 frontend 前检测）
+  if (
+    existsSync(resolve(dir, 'pubspec.yaml')) ||        // Flutter
+    existsSync(resolve(dir, 'metro.config.js')) ||     // React Native
+    existsSync(resolve(dir, 'metro.config.ts')) ||     // React Native
+    existsSync(resolve(dir, 'Podfile')) ||             // iOS
+    existsSync(resolve(dir, 'AndroidManifest.xml'))    // Android native
+  ) {
+    return 'mobile'
+  }
+  if (
+    existsSync(resolve(dir, 'package.json')) ||
+    existsSync(resolve(dir, 'vite.config.ts')) ||
+    existsSync(resolve(dir, 'vite.config.js'))
+  ) {
     return 'frontend'
   }
   if (
-    existsSync(resolve(dir, 'pom.xml')) ||
     existsSync(resolve(dir, 'go.mod')) ||
+    existsSync(resolve(dir, 'pom.xml')) ||
     existsSync(resolve(dir, 'Cargo.toml')) ||
     existsSync(resolve(dir, 'pyproject.toml')) ||
     existsSync(resolve(dir, 'build.gradle')) ||
