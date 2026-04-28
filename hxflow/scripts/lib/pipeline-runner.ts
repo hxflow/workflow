@@ -8,6 +8,8 @@
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 
+import { parse as parseYaml } from 'yaml'
+
 import { getActiveProgressFilePath, getArchiveDirPath, getRequirementDocPath } from './file-paths.ts'
 import { resolveCommandHooks } from './hook-resolver.ts'
 import { readRuntimeConfig } from './runtime-config.ts'
@@ -51,80 +53,30 @@ export interface PipelineState {
   steps: PipelineStepStatus[]
 }
 
-// ── YAML 轻量解析（避免引入外部依赖）────────────────────────
+// ── YAML 解析 ──────────────────────────────────────────────
 
-/**
- * 解析简单的 pipeline YAML。
- * 只处理项目中实际使用的 YAML 子集：顶层 name + steps 数组。
- */
 export function parsePipelineYaml(content: string): { name: string; steps: PipelineStep[] } {
-  const lines = content.split('\n')
-  let name = ''
-  const steps: PipelineStep[] = []
-  let currentStep: Partial<PipelineStep> | null = null
-  let inCheckpoint = false
+  const doc = (parseYaml(content) ?? {}) as Record<string, unknown>
+  const name = typeof doc.name === 'string' ? doc.name : ''
+  const rawSteps = Array.isArray(doc.steps) ? doc.steps : []
 
-  for (const line of lines) {
-    const trimmed = line.trimEnd()
-
-    if (trimmed.startsWith('#') || trimmed === '') continue
-
-    const nameMatch = trimmed.match(/^name:\s*(.+)$/)
-    if (nameMatch) {
-      name = nameMatch[1].trim()
-      continue
-    }
-
-    if (trimmed === 'steps:') continue
-
-    // New step item
-    if (/^\s+-\s+id:\s*(.+)$/.test(trimmed)) {
-      if (currentStep?.id) {
-        steps.push(currentStep as PipelineStep)
+  const steps: PipelineStep[] = rawSteps
+    .filter((s): s is Record<string, unknown> => typeof s === 'object' && s !== null)
+    .filter((s) => typeof s.id === 'string' && s.id)
+    .map((s) => {
+      const step: PipelineStep = {
+        id: s.id as string,
+        name: typeof s.name === 'string' ? s.name : '',
+        command: typeof s.command === 'string' ? s.command : '',
       }
-      currentStep = { id: trimmed.match(/id:\s*(.+)$/)?.[1]?.trim() ?? '' }
-      inCheckpoint = false
-      continue
-    }
-
-    if (!currentStep) continue
-
-    const kvMatch = trimmed.match(/^\s+(\w[\w.]*?):\s*(.+)$/)
-    if (kvMatch) {
-      const [, key, value] = kvMatch
-
-      if (key === 'checkpoint') {
-        inCheckpoint = true
-        continue
+      if (typeof s.phase === 'string') step.phase = s.phase
+      if (s.on_fail === 'stop') step.on_fail = 'stop'
+      if (typeof s.checkpoint === 'object' && s.checkpoint !== null) {
+        const cp = s.checkpoint as Record<string, unknown>
+        if (typeof cp.message === 'string') step.checkpoint = { message: cp.message }
       }
-
-      if (inCheckpoint && key === 'message') {
-        currentStep.checkpoint = { message: value.trim() }
-        inCheckpoint = false
-        continue
-      }
-
-      if (key === 'on_fail') {
-        currentStep.on_fail = value.trim() as 'stop'
-      } else if (key === 'phase') {
-        currentStep.phase = value.trim()
-      } else if (key === 'name') {
-        currentStep.name = value.trim()
-      } else if (key === 'command') {
-        currentStep.command = value.trim()
-      }
-      continue
-    }
-
-    // checkpoint: block start (no value on same line)
-    if (/^\s+checkpoint:$/.test(trimmed)) {
-      inCheckpoint = true
-    }
-  }
-
-  if (currentStep?.id) {
-    steps.push(currentStep as PipelineStep)
-  }
+      return step
+    })
 
   return { name, steps }
 }
@@ -150,10 +102,13 @@ export function loadPipeline(pipelineName: string, projectRoot: string): Pipelin
 // ── Command → tool script mapping ──────────────────────────
 
 /**
- * 将 pipeline 中的 command（如 hx-doc）映射为裸脚本路径。
+ * 将 pipeline 中的 command（如 doc）映射为裸脚本路径。
  */
 export function commandToToolScript(command: string): string {
-  const name = command.replace(/^hx-/, '').replace(/^hx\s+/, '')
+  const name = command.trim()
+  if (!/^[a-z][a-z0-9-]*$/.test(name) || name.startsWith('hx-')) {
+    throw new Error(`pipeline command "${command}" 无效，请使用 doc/plan/run/check/mr 这类命令名`)
+  }
   return `scripts/tools/${name}.ts`
 }
 

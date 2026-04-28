@@ -37,17 +37,20 @@ describe('hx-init script', () => {
     expect(summary.written.some((file: string) => file.endsWith('.hx/rules/plan-template.md'))).toBe(true)
     expect(summary.written.some((file: string) => file.endsWith('.hx/rules/bugfix-requirement-template.md'))).toBe(true)
     expect(summary.written.some((file: string) => file.endsWith('.hx/rules/bugfix-plan-template.md'))).toBe(true)
+    expect(summary.written.some((file: string) => file.endsWith('.hx/pipelines/default.yaml'))).toBe(true)
     expect(summary.missing).toEqual([])
     expect(summary.nextAction).toBe('hx doc <feature>')
 
     const rulesDir = join(projectRoot, '.hx', 'rules')
-    expect(readFileSync(join(projectRoot, '.hx', 'config.yaml'), 'utf8')).toContain('src: src')
+    const configYaml = readFileSync(join(projectRoot, '.hx', 'config.yaml'), 'utf8')
+    expect(configYaml).toContain('src: src')
+    expect(configYaml).toContain('default: .hx/pipelines/default.yaml')
     expect(existsSync(join(rulesDir, 'requirement-template.md'))).toBe(true)
     expect(existsSync(join(rulesDir, 'plan-template.md'))).toBe(true)
     expect(existsSync(join(rulesDir, 'bugfix-requirement-template.md'))).toBe(true)
     expect(existsSync(join(rulesDir, 'bugfix-plan-template.md'))).toBe(true)
     expect(existsSync(join(projectRoot, '.hx', 'hooks'))).toBe(false)
-    expect(existsSync(join(projectRoot, '.hx', 'pipelines'))).toBe(false)
+    expect(existsSync(join(projectRoot, '.hx', 'pipelines', 'default.yaml'))).toBe(true)
   })
 
   it('keeps existing customized template content untouched', () => {
@@ -63,6 +66,59 @@ describe('hx-init script', () => {
 
     expect(result.status).toBe(0)
     expect(readFileSync(join(rulesDir, 'requirement-template.md'), 'utf8')).toBe('# Custom Requirement Template\n')
+  })
+
+  it('adds default pipeline registration to existing config without replacing custom values', () => {
+    const projectRoot = createProject()
+    mkdirSync(join(projectRoot, '.hx'), { recursive: true })
+    writeFileSync(
+      join(projectRoot, '.hx', 'config.yaml'),
+      `paths:
+  src: services
+runtime:
+  hooks: {}
+  pipelines: {}
+`,
+      'utf8',
+    )
+
+    const result = spawnSync('bun', [SCRIPT_PATH], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).toBe(0)
+
+    const configYaml = readFileSync(join(projectRoot, '.hx', 'config.yaml'), 'utf8')
+    expect(configYaml).toContain('src: services')
+    expect(configYaml).toContain('default: .hx/pipelines/default.yaml')
+    expect(existsSync(join(projectRoot, '.hx', 'pipelines', 'default.yaml'))).toBe(true)
+  })
+
+  it('keeps an existing custom default pipeline registration', () => {
+    const projectRoot = createProject()
+    mkdirSync(join(projectRoot, '.hx'), { recursive: true })
+    writeFileSync(
+      join(projectRoot, '.hx', 'config.yaml'),
+      `runtime:
+  hooks: {}
+  pipelines:
+    default: .hx/pipelines/custom.yaml
+`,
+      'utf8',
+    )
+
+    const result = spawnSync('bun', [SCRIPT_PATH], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).toBe(0)
+
+    const configYaml = readFileSync(join(projectRoot, '.hx', 'config.yaml'), 'utf8')
+    expect(configYaml).toContain('default: .hx/pipelines/custom.yaml')
+    expect(configYaml).not.toContain('default: .hx/pipelines/default.yaml')
+    expect(existsSync(join(projectRoot, '.hx', 'pipelines', 'default.yaml'))).toBe(true)
   })
 
   it('initializes a workspace when the current directory contains multiple projects', () => {
@@ -84,9 +140,11 @@ describe('hx-init script', () => {
     expect(summary.status).toBe('initialized')
     expect(summary.written.some((file: string) => file.endsWith('.hx/workspace.yaml'))).toBe(true)
     expect(summary.written.some((file: string) => file.endsWith('.hx/rules/requirement-template.md'))).toBe(true)
+    expect(summary.written.some((file: string) => file.endsWith('.hx/pipelines/default.yaml'))).toBe(true)
     expect(existsSync(join(workspaceRoot, '.hx', 'workspace.yaml'))).toBe(true)
     expect(existsSync(join(workspaceRoot, '.hx', 'config.yaml'))).toBe(false)
     expect(existsSync(join(workspaceRoot, '.hx', 'rules', 'requirement-template.md'))).toBe(true)
+    expect(existsSync(join(workspaceRoot, '.hx', 'pipelines', 'default.yaml'))).toBe(true)
     expect(summary.projects.map((project: { id: string }) => project.id)).toEqual(['admin-web', 'order-service'])
 
     const workspaceYaml = readFileSync(join(workspaceRoot, '.hx', 'workspace.yaml'), 'utf8')
@@ -94,6 +152,7 @@ describe('hx-init script', () => {
     expect(workspaceYaml).toContain('id: admin-web')
     expect(workspaceYaml).toContain('path: ./admin-web')
     expect(workspaceYaml).toContain('id: order-service')
+    expect(workspaceYaml).toContain('default: .hx/pipelines/default.yaml')
     expect(workspaceYaml).toContain('rules:')
     expect(workspaceYaml).toContain('requirement: .hx/rules/requirement-template.md')
   })

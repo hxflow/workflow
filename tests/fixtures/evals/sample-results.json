@@ -6,7 +6,7 @@
   },
   {
     "id": "hook-and-progress-in-lib",
-    "output": "progress 和 hook 应下沉到 lib，而不是继续作为一级命令。",
+    "output": "progress 和 hook 应下沉到 lib，具体路径是 hxflow/scripts/lib/progress.ts 和 hxflow/scripts/lib/hook.ts。",
     "toolCalls": [
       {
         "name": "file_edit",
@@ -24,12 +24,12 @@
   },
   {
     "id": "init.only-initialization",
-    "output": "init 现在负责初始化 .hx/config.yaml 与 .hx/rules，但仍保留 hooks/pipelines 骨架。",
+    "output": "init 只做初始化：生成 .hx/config.yaml、.hx/rules 和 .hx/pipelines/default.yaml，但仍保留 hooks 骨架。",
     "toolCalls": []
   },
   {
     "id": "mr.no-context-subcommand",
-    "output": "移除 mr context 子命令，只保留 archive。",
+    "output": "hx-mr 不应保留 context 子命令，归档操作通过 archive 触发。",
     "toolCalls": [
       {
         "name": "file_edit",

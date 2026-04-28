@@ -8,6 +8,8 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs'
 import { resolve } from 'path'
 
+import { parse as parseYaml, parseDocument } from 'yaml'
+
 import { FRAMEWORK_ROOT } from '../lib/resolve-context.ts'
 import type { InitCandidate } from '../lib/init-target-resolver.ts'
 import { resolveInitTarget } from '../lib/init-target-resolver.ts'
@@ -20,8 +22,11 @@ const hxDir = resolve(projectRoot, '.hx')
 const configPath = resolve(hxDir, 'config.yaml')
 const workspacePath = resolve(hxDir, 'workspace.yaml')
 const rulesDir = resolve(hxDir, 'rules')
+const pipelinesDir = resolve(hxDir, 'pipelines')
 const frameworkRulesDir = resolve(FRAMEWORK_ROOT, 'templates', 'rules')
+const frameworkPipelinesDir = resolve(FRAMEWORK_ROOT, 'templates', 'pipelines')
 const frameworkConfigTemplate = resolve(FRAMEWORK_ROOT, 'templates', 'config.yaml')
+const DEFAULT_PIPELINE_REGISTRATION = 'default: .hx/pipelines/default.yaml'
 
 if (initTarget.mode === 'workspace') {
   initWorkspace()
@@ -31,6 +36,7 @@ if (initTarget.mode === 'workspace') {
 // ── 1. 检测初始化状态 ─────────────────────────────────────────────────────────
 
 const REQUIRED_RULE_FILES = listFrameworkRuleFiles(frameworkRulesDir)
+const REQUIRED_PIPELINE_FILES = listFrameworkPipelineFiles(frameworkPipelinesDir)
 const initStatus = detectInitStatus()
 
 if (initStatus.complete) {
@@ -62,6 +68,10 @@ if (!existsSync(configPath) && existsSync(frameworkConfigTemplate)) {
   written.push(configPath)
 }
 
+if (existsSync(configPath) && ensureDefaultPipelineRegistration(configPath)) {
+  written.push(configPath)
+}
+
 // ── 3. 规则模板（纯模板复制，无需 AI）────────────────────────────────────────
 
 mkdirSync(rulesDir, { recursive: true })
@@ -69,6 +79,17 @@ mkdirSync(rulesDir, { recursive: true })
 for (const file of REQUIRED_RULE_FILES) {
   const dest = resolve(rulesDir, file)
   const src = resolve(frameworkRulesDir, file)
+  if (!existsSync(dest) && existsSync(src)) {
+    writeFileSync(dest, readFileSync(src, 'utf8'), 'utf8')
+    written.push(dest)
+  }
+}
+
+mkdirSync(pipelinesDir, { recursive: true })
+
+for (const file of REQUIRED_PIPELINE_FILES) {
+  const dest = resolve(pipelinesDir, file)
+  const src = resolve(frameworkPipelinesDir, file)
   if (!existsSync(dest) && existsSync(src)) {
     writeFileSync(dest, readFileSync(src, 'utf8'), 'utf8')
     written.push(dest)
@@ -96,9 +117,16 @@ function detectInitStatus(): InitStatus {
   const missing: string[] = []
 
   if (!existsSync(configPath)) missing.push('config')
+  if (existsSync(configPath) && !hasDefaultPipelineRegistration(readFileSync(configPath, 'utf8'))) {
+    missing.push('runtime.pipelines.default')
+  }
 
   for (const rf of REQUIRED_RULE_FILES) {
     if (!existsSync(resolve(rulesDir, rf))) missing.push(`rules/${rf}`)
+  }
+
+  for (const pf of REQUIRED_PIPELINE_FILES) {
+    if (!existsSync(resolve(pipelinesDir, pf))) missing.push(`pipelines/${pf}`)
   }
 
   return { complete: missing.length === 0, missing }
@@ -111,6 +139,47 @@ function listFrameworkRuleFiles(dir: string): string[] {
     .sort()
 }
 
+function listFrameworkPipelineFiles(dir: string): string[] {
+  if (!existsSync(dir)) return []
+  return readdirSync(dir)
+    .filter((f) => f.endsWith('.yaml'))
+    .sort()
+}
+
+function hasDefaultPipelineRegistration(content: string): boolean {
+  const doc = parseYaml(content) as Record<string, unknown> | null
+  const pipelines = (doc?.runtime as Record<string, unknown> | undefined)?.pipelines
+  return typeof pipelines === 'object' && pipelines !== null && 'default' in pipelines
+}
+
+function ensureDefaultPipelineRegistration(filePath: string): boolean {
+  const content = readFileSync(filePath, 'utf8')
+  if (hasDefaultPipelineRegistration(content)) return false
+
+  const updated = addDefaultPipelineRegistration(content)
+  if (updated === content) return false
+
+  writeFileSync(filePath, updated, 'utf8')
+  return true
+}
+
+function addDefaultPipelineRegistration(content: string): string {
+  const doc = parseDocument(content)
+
+  if (!doc.has('runtime')) {
+    doc.set('runtime', { hooks: {}, pipelines: { default: '.hx/pipelines/default.yaml' } })
+  } else {
+    const pipelines = doc.getIn(['runtime', 'pipelines'])
+    if (pipelines === null || pipelines === undefined) {
+      doc.setIn(['runtime', 'pipelines'], { default: '.hx/pipelines/default.yaml' })
+    } else {
+      doc.setIn(['runtime', 'pipelines', 'default'], '.hx/pipelines/default.yaml')
+    }
+  }
+
+  return doc.toString()
+}
+
 function initWorkspace(): void {
   mkdirSync(hxDir, { recursive: true })
 
@@ -120,10 +189,24 @@ function initWorkspace(): void {
     written.push(workspacePath)
   }
 
+  if (existsSync(workspacePath) && ensureDefaultPipelineRegistration(workspacePath)) {
+    written.push(workspacePath)
+  }
+
   mkdirSync(rulesDir, { recursive: true })
   for (const file of listFrameworkRuleFiles(frameworkRulesDir)) {
     const dest = resolve(rulesDir, file)
     const src = resolve(frameworkRulesDir, file)
+    if (!existsSync(dest) && existsSync(src)) {
+      writeFileSync(dest, readFileSync(src, 'utf8'), 'utf8')
+      written.push(dest)
+    }
+  }
+
+  mkdirSync(pipelinesDir, { recursive: true })
+  for (const file of listFrameworkPipelineFiles(frameworkPipelinesDir)) {
+    const dest = resolve(pipelinesDir, file)
+    const src = resolve(frameworkPipelinesDir, file)
     if (!existsSync(dest) && existsSync(src)) {
       writeFileSync(dest, readFileSync(src, 'utf8'), 'utf8')
       written.push(dest)
@@ -167,7 +250,8 @@ function buildWorkspaceYaml(candidates: InitCandidate[]): string {
     '',
     'runtime:',
     '  hooks: {}',
-    '  pipelines: {}',
+    '  pipelines:',
+    '    default: .hx/pipelines/default.yaml',
     '',
     'rules:',
     '  templates:',

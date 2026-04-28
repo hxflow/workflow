@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'fs'
+import { existsSync, readFileSync, readdirSync } from 'fs'
 import { resolve } from 'path'
 
 import { describe, expect, it } from 'bun:test'
@@ -57,5 +57,20 @@ describe('template structure', () => {
     expect(configTemplate).toContain('runtime:')
     expect(configTemplate).toContain('hooks:')
     expect(configTemplate).toContain('pipelines:')
+    expect(configTemplate).toContain('default: .hx/pipelines/default.yaml')
+  })
+
+  it('keeps the built-in default pipeline template present', () => {
+    const pipelinePath = resolve(ROOT, 'hxflow', 'templates', 'pipelines', 'default.yaml')
+    expect(existsSync(pipelinePath)).toBe(true)
+
+    const pipelineTemplate = readFileSync(pipelinePath, 'utf8')
+    expect(pipelineTemplate).toContain('name: Default')
+    expect(pipelineTemplate).toContain('command: doc')
+    expect(pipelineTemplate).toContain('command: plan')
+    expect(pipelineTemplate).toContain('command: run')
+    expect(pipelineTemplate).toContain('command: check')
+    expect(pipelineTemplate).toContain('command: mr')
+    expect(pipelineTemplate).not.toContain('command: hx-')
   })
 })

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
-import { normalizeYamlScalar } from './config-utils.ts'
+
+import { parse as parseYaml } from 'yaml'
 
 export interface RuntimeHookEntry {
   pre: string[]
@@ -81,120 +82,86 @@ export function readPathsConfig(projectRoot: string): PathsConfig {
 }
 
 function parseConfigSections(content: string): ParsedConfigSections {
+  const doc = (parseYaml(content) ?? {}) as Record<string, unknown>
+  return {
+    paths: parsePaths(doc.paths),
+    runtime: parseRuntime(doc.runtime),
+    ruleTemplates: parseRuleTemplates(doc.rules),
+    gates: parseGates(doc.gates),
+  }
+}
+
+function parsePaths(raw: unknown): PathsConfig {
+  if (typeof raw !== 'object' || raw === null) return {}
+  const obj = raw as Record<string, unknown>
+  const result: PathsConfig = {}
+  for (const key of ['src', 'requirementDoc', 'planDoc', 'progressFile'] as const) {
+    if (typeof obj[key] === 'string') result[key] = obj[key] as string
+  }
+  return result
+}
+
+function parseRuntime(raw: unknown): RuntimeConfig {
+  if (typeof raw !== 'object' || raw === null) return { hooks: {}, pipelines: {} }
+  const obj = raw as Record<string, unknown>
+  return {
+    hooks: parseHooks(obj.hooks),
+    pipelines: parsePipelines(obj.pipelines),
+  }
+}
+
+function parseHooks(raw: unknown): Record<string, RuntimeHookEntry> {
+  if (typeof raw !== 'object' || raw === null) return {}
   const hooks: Record<string, RuntimeHookEntry> = {}
-  const pipelines: Record<string, string> = {}
-  const ruleTemplates: RuleTemplateConfig = {}
-  const gates: GatesConfig = {}
-  const paths: PathsConfig = {}
-  const lines = content.replaceAll('\r\n', '\n').split('\n')
-
-  let inPaths = false
-  let inRuntime = false
-  let inHooks = false
-  let inPipelines = false
-  let inRules = false
-  let inRuleTemplates = false
-  let inGates = false
-  let currentCommand: string | null = null
-  let currentPhase: 'pre' | 'post' | null = null
-
-  for (const rawLine of lines) {
-    const line = rawLine.trimEnd()
-    const trimmed = line.trim()
-
-    if (!trimmed || trimmed.startsWith('#')) continue
-
-    const indent = rawLine.length - rawLine.trimStart().length
-
-    if (indent === 0) {
-      inPaths = trimmed === 'paths:'
-      inRuntime = trimmed === 'runtime:'
-      inRules = trimmed === 'rules:'
-      inGates = trimmed === 'gates:'
-      inHooks = false
-      inPipelines = false
-      inRuleTemplates = false
-      currentCommand = null
-      currentPhase = null
-      continue
+  for (const [command, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!isValidRuntimeCommandName(command)) {
+      throw new Error(`runtime.hooks.${command} 无效，请使用 doc/plan/run/check/mr 这类命令名`)
     }
-
-    if (inPaths && indent === 2) {
-      const match = trimmed.match(/^(\w+):\s*(.*)/)
-      if (match && ['src', 'requirementDoc', 'planDoc', 'progressFile'].includes(match[1])) {
-        const value = normalizeYamlScalar(match[2])
-        if (value) paths[match[1] as keyof PathsConfig] = value
-      }
-      continue
-    }
-
-    if (inGates && indent === 2) {
-      const match = trimmed.match(/^(\w+):\s*(.*)/)
-      if (match) {
-        const value = normalizeYamlScalar(match[2])
-        if (value && GATE_ORDER.includes(match[1] as GateName)) {
-          gates[match[1] as GateName] = value
-        }
-      }
-      continue
-    }
-
-    if (indent === 2) {
-      if (inRuntime) {
-        inHooks = trimmed === 'hooks:'
-        inPipelines = trimmed === 'pipelines:'
-      } else {
-        inHooks = false
-        inPipelines = false
-      }
-
-      if (inRules) {
-        inRuleTemplates = trimmed === 'templates:'
-      } else {
-        inRuleTemplates = false
-      }
-
-      currentCommand = null
-      currentPhase = null
-      continue
-    }
-
-    if (inRuntime && inHooks) {
-      if (indent === 4 && trimmed.endsWith(':')) {
-        currentCommand = trimmed.slice(0, -1).trim()
-        hooks[currentCommand] ??= { pre: [], post: [] }
-        currentPhase = null
-        continue
-      }
-
-      if (!currentCommand) continue
-
-      if (indent === 6 && (trimmed === 'pre:' || trimmed === 'post:')) {
-        currentPhase = trimmed.slice(0, -1) as 'pre' | 'post'
-        continue
-      }
-
-      if (indent >= 8 && trimmed.startsWith('- ') && currentPhase) {
-        hooks[currentCommand][currentPhase].push(normalizeYamlScalar(trimmed.slice(2)))
-      }
-
-      continue
-    }
-
-    if (inRuntime && inPipelines && indent === 4) {
-      const match = trimmed.match(/^([A-Za-z0-9_-]+):\s*(.+)$/)
-      if (match) {
-        pipelines[match[1]] = normalizeYamlScalar(match[2])
-      }
-    }
-
-    if (inRules && inRuleTemplates && indent === 4) {
-      const match = trimmed.match(/^(requirement|plan|bugfixRequirement|bugfixPlan):\s*(.+)$/)
-      if (match) {
-        ruleTemplates[match[1] as keyof RuleTemplateConfig] = normalizeYamlScalar(match[2])
-      }
+    if (typeof value !== 'object' || value === null) continue
+    const entry = value as Record<string, unknown>
+    hooks[command] = {
+      pre: toStringArray(entry.pre),
+      post: toStringArray(entry.post),
     }
   }
+  return hooks
+}
 
-  return { runtime: { hooks, pipelines }, ruleTemplates, gates, paths }
+function parsePipelines(raw: unknown): Record<string, string> {
+  if (typeof raw !== 'object' || raw === null) return {}
+  const pipelines: Record<string, string> = {}
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof value === 'string') pipelines[key] = value
+  }
+  return pipelines
+}
+
+function parseRuleTemplates(raw: unknown): RuleTemplateConfig {
+  if (typeof raw !== 'object' || raw === null) return {}
+  const obj = raw as Record<string, unknown>
+  const templates = (typeof obj.templates === 'object' && obj.templates !== null ? obj.templates : {}) as Record<string, unknown>
+  const result: RuleTemplateConfig = {}
+  for (const key of ['requirement', 'plan', 'bugfixRequirement', 'bugfixPlan'] as const) {
+    if (typeof templates[key] === 'string') result[key] = templates[key] as string
+  }
+  return result
+}
+
+function parseGates(raw: unknown): GatesConfig {
+  if (typeof raw !== 'object' || raw === null) return {}
+  const obj = raw as Record<string, unknown>
+  const gates: GatesConfig = {}
+  for (const key of GATE_ORDER) {
+    if (typeof obj[key] === 'string') gates[key] = obj[key] as string
+  }
+  return gates
+}
+
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((v): v is string => typeof v === 'string')
+}
+
+function isValidRuntimeCommandName(command: string): boolean {
+  return /^[a-z][a-z0-9-]*$/.test(command) && !command.startsWith('hx-')
 }

@@ -33,7 +33,7 @@ describe('evals system', () => {
     expect(summary.totals.failed).toBe(1)
     expect(summary.failures).toHaveLength(1)
     expect(summary.failures[0]?.id).toBe('init.only-initialization')
-    expect(summary.failures[0]?.checks.forbiddenFragments.found).toEqual(['hooks/pipelines 骨架'])
+    expect(summary.failures[0]?.checks.forbiddenFragments.found).toEqual(['hooks 骨架'])
   })
 
   it('extracts failed cases as regression candidates', () => {

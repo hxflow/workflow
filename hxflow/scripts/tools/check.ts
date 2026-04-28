@@ -18,6 +18,7 @@ import { resolveExecutionConfig, resolveWorkspaceExecutionConfigs } from '../lib
 import type { ExecutionConfig } from '../lib/execution-config.ts'
 import { getWorkspaceProjects } from '../lib/file-paths.ts'
 import { loadFeatureProgress } from '../lib/progress-context.ts'
+import { extractTaskSection, readTaskField } from '../lib/plan-utils.ts'
 
 const VALID_SCOPES = ['review', 'qa', 'clean', 'all', 'facts'] as const
 type CheckScope = (typeof VALID_SCOPES)[number]
@@ -212,21 +213,7 @@ function readFeatureTaskCwds(root: string, featureValue: string): string[] {
 }
 
 function readTaskCwd(planContent: string, taskId: string): string {
-  const section = extractTaskSection(planContent, taskId)
-  const match = section.match(/^- 执行目录:\s*(.*)$/m)
-  return match ? match[1].trim() : ''
-}
-
-function extractTaskSection(planContent: string, taskId: string): string {
-  const escapedTaskId = taskId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const headingPattern = new RegExp(`^###\\s+${escapedTaskId}(?:\\s.*)?$`, 'm')
-  const headingMatch = headingPattern.exec(planContent)
-  if (!headingMatch || headingMatch.index === undefined) return ''
-
-  const sectionStart = headingMatch.index + headingMatch[0].length
-  const remaining = planContent.slice(sectionStart).replace(/^\r?\n/, '')
-  const nextHeadingIndex = remaining.search(/^###\s+/m)
-  return (nextHeadingIndex === -1 ? remaining : remaining.slice(0, nextHeadingIndex)).trim()
+  return readTaskField(extractTaskSection(planContent, taskId), '执行目录')
 }
 
 function runSemanticScope(

@@ -3,6 +3,7 @@ import { resolve } from 'path'
 
 import { resolveExecutionConfig, type ExecutionConfig } from './execution-config.ts'
 import { getWorkspaceProjects, type WorkspaceProject } from './file-paths.ts'
+import { extractTaskSection, readTaskField } from './plan-utils.ts'
 import { summarizeRequirement } from './requirement-summary.ts'
 import type { ProgressData, ProgressTask } from './types.ts'
 
@@ -117,27 +118,6 @@ function getTask(progressData: ProgressData, taskId: string): ProgressTask {
   return task
 }
 
-function extractTaskSection(planContent: string, taskId: string): string {
-  const escapedTaskId = escapeRegExp(taskId)
-  const headingPattern = new RegExp(`^###\\s+${escapedTaskId}(?:\\s.*)?$`, 'm')
-  const headingMatch = headingPattern.exec(planContent)
-  if (!headingMatch || headingMatch.index === undefined) {
-    return ''
-  }
-
-  const sectionStart = headingMatch.index + headingMatch[0].length
-  const remaining = planContent.slice(sectionStart).replace(/^\r?\n/, '')
-  const nextHeadingIndex = remaining.search(/^###\s+/m)
-  return (nextHeadingIndex === -1 ? remaining : remaining.slice(0, nextHeadingIndex)).trim()
-}
-
-function readTaskField(section: string, label: string): string {
-  if (!section) return ''
-  const pattern = new RegExp(`^-\\s*${escapeRegExp(label)}:\\s*(.*)$`, 'm')
-  const match = section.match(pattern)
-  return match ? match[1].trim() : ''
-}
-
 function splitListField(value: string): string[] {
   if (!value) return []
   return value
@@ -146,6 +126,3 @@ function splitListField(value: string): string[] {
     .filter(Boolean)
 }
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}

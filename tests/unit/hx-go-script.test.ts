@@ -29,7 +29,7 @@ gates:
   test: echo qa-pass
 runtime:
   hooks:
-    hx-doc:
+    doc:
       pre:
         - .hx/hooks/pre_doc.md
   pipelines:
@@ -44,19 +44,19 @@ runtime:
 steps:
   - id: doc
     name: 需求文档
-    command: hx-doc
+    command: doc
   - id: plan
     name: 执行计划
-    command: hx-plan
+    command: plan
   - id: run
     name: 执行需求
-    command: hx-run
+    command: run
   - id: check
     name: 核心检查
-    command: hx-check
+    command: check
   - id: mr
     name: MR 描述
-    command: hx-mr
+    command: mr
 `,
       'utf8',
     )

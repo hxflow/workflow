@@ -105,7 +105,7 @@ gates:
   test: echo admin-test
 runtime:
   hooks:
-    hx-run:
+    run:
       pre:
         - ignored
 `,

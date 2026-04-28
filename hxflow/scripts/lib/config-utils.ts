@@ -52,38 +52,3 @@ export function parseArgs(argv: string[]): { positional: string[]; options: Reco
   return { positional, options }
 }
 
-export function normalizeYamlScalar(rawValue: string): string {
-  const value = stripInlineYamlComment(rawValue).trim()
-
-  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-    return value.slice(1, -1)
-  }
-
-  return value
-}
-
-function stripInlineYamlComment(line: string): string {
-  let inSingle = false
-  let inDouble = false
-
-  for (let index = 0; index < line.length; index += 1) {
-    const char = line[index]
-    const previous = index > 0 ? line[index - 1] : ''
-
-    if (char === "'" && !inDouble && previous !== '\\') {
-      inSingle = !inSingle
-      continue
-    }
-
-    if (char === '"' && !inSingle && previous !== '\\') {
-      inDouble = !inDouble
-      continue
-    }
-
-    if (char === '#' && !inSingle && !inDouble && (index === 0 || /\s/.test(previous))) {
-      return line.slice(0, index)
-    }
-  }
-
-  return line
-}

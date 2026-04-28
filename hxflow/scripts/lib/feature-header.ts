@@ -7,9 +7,8 @@
 
 import { readFileSync } from 'fs'
 
-const HEADER_FIELDS = ['Feature', 'Display Name', 'Source ID', 'Source Fingerprint', 'Type']
+const HEADER_FIELDS = ['Feature', 'Display Name', 'Source ID', 'Source Fingerprint', 'Type'] as const
 const HEADER_LINE_PATTERN = /^>\s*(Feature|Display Name|Source ID|Source Fingerprint|Type):\s*(.*)$/
-const REQUIREMENT_DOC_FIELDS = ['Feature', 'Display Name', 'Source ID', 'Source Fingerprint', 'Type'] as const
 
 export type RequirementDocType = 'feature' | 'bugfix'
 
@@ -156,26 +155,21 @@ export function validateRequirementHeader(
   expectedFeature: string,
   expectedType: RequirementDocType,
 ): Record<string, string> {
-  const fields = parseRequirementHeaderFields(content)
+  const parsed = parseFeatureHeader(content)
 
-  for (const required of REQUIREMENT_DOC_FIELDS) {
-    if (!fields[required] || !fields[required].trim()) {
-      throw new Error(`需求文档头部缺少必填字段: "${required}"`)
-    }
+  if (parsed.feature !== expectedFeature) {
+    throw new Error(`头部 Feature 值 "${parsed.feature}" 与参数 feature "${expectedFeature}" 不匹配`)
   }
 
-  if (fields.Feature !== expectedFeature) {
-    throw new Error(`头部 Feature 值 "${fields.Feature}" 与参数 feature "${expectedFeature}" 不匹配`)
+  if (parsed.type !== expectedType) {
+    throw new Error(`头部 Type "${parsed.type}" 与 --type "${expectedType}" 不匹配`)
   }
 
-  const aiType = fields.Type.toLowerCase()
-  if (aiType !== 'feature' && aiType !== 'bugfix') {
-    throw new Error(`头部 Type 值 "${fields.Type}" 无效，有效值: feature, bugfix`)
+  return {
+    Feature: parsed.feature,
+    'Display Name': parsed.displayName,
+    'Source ID': parsed.sourceId,
+    'Source Fingerprint': parsed.sourceFingerprint,
+    Type: parsed.type,
   }
-
-  if (aiType !== expectedType) {
-    throw new Error(`头部 Type "${aiType}" 与 --type "${expectedType}" 不匹配`)
-  }
-
-  return fields
 }

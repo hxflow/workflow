@@ -21,19 +21,19 @@ function createProject() {
 }
 
 describe('hx-hook script', () => {
-  it('resolves configured pre-hook for hx-doc', () => {
+  it('resolves configured pre-hook for doc', () => {
     const projectRoot = createProject()
     writeFileSync(
       join(projectRoot, '.hx', 'config.yaml'),
       `runtime:
   hooks:
-    hx-doc:
+    doc:
       pre:
         - .hx/hooks/pre_doc.md
 `,
       'utf8',
     )
-    const result = spawnSync('bun', [SCRIPT_PATH, 'resolve', 'hx-doc'], {
+    const result = spawnSync('bun', [SCRIPT_PATH, 'resolve', 'doc'], {
       cwd: projectRoot,
       encoding: 'utf8',
     })
@@ -41,7 +41,7 @@ describe('hx-hook script', () => {
     expect(result.status).toBe(0)
     const parsed = JSON.parse(result.stdout)
     expect(parsed.ok).toBe(true)
-    expect(parsed.command).toBe('hx-doc')
+    expect(parsed.command).toBe('doc')
     expect(parsed.preHooks).toEqual([
       { scope: 'project', phase: 'pre', path: '.hx/hooks/pre_doc.md' },
     ])
@@ -58,8 +58,42 @@ describe('hx-hook script', () => {
     expect(result.status).toBe(0)
     const parsed = JSON.parse(result.stdout)
     expect(parsed.ok).toBe(true)
-    expect(parsed.command).toBe('hx-plan')
+    expect(parsed.command).toBe('plan')
     expect(parsed.preHooks).toEqual([])
     expect(parsed.postHooks).toEqual([])
+  })
+
+  it('rejects hx-prefixed command names', () => {
+    const projectRoot = createProject()
+    const result = spawnSync('bun', [SCRIPT_PATH, 'resolve', 'hx-doc'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('hx-doc')
+    expect(result.stderr).toContain('无效')
+  })
+
+  it('rejects hx-prefixed hook config keys', () => {
+    const projectRoot = createProject()
+    writeFileSync(
+      join(projectRoot, '.hx', 'config.yaml'),
+      `runtime:
+  hooks:
+    hx-doc:
+      pre:
+        - .hx/hooks/pre_doc.md
+`,
+      'utf8',
+    )
+
+    const result = spawnSync('bun', [SCRIPT_PATH, 'resolve', 'doc'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('runtime.hooks.hx-doc 无效')
   })
 })

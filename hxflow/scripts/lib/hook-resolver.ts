@@ -18,9 +18,11 @@ function normalizeCommandName(command: string): string {
     throw new Error('命令名不能为空')
   }
 
-  if (trimmed.startsWith('hx-')) return trimmed
-  if (trimmed.startsWith('hx ')) return `hx-${trimmed.slice(3).trim()}`
-  return `hx-${trimmed}`
+  if (!/^[a-z][a-z0-9-]*$/.test(trimmed) || trimmed.startsWith('hx-')) {
+    throw new Error(`命令名 "${command}" 无效，请使用 doc/plan/run/check/mr 这类命令名`)
+  }
+
+  return trimmed
 }
 
 export function resolveCommandHooks(projectRoot: string, command: string): ResolvedHooks {

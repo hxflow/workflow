@@ -1,0 +1,17 @@
+name: Default
+steps:
+  - id: doc
+    name: 需求文档
+    command: doc
+  - id: plan
+    name: 执行计划
+    command: plan
+  - id: run
+    name: 执行需求
+    command: run
+  - id: check
+    name: 核心检查
+    command: check
+  - id: mr
+    name: MR 描述
+    command: mr

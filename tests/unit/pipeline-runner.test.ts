@@ -32,7 +32,7 @@ describe('pipeline-runner', () => {
     ensureDir(PROJECT_ROOT)
     writeRuntimeConfig(PROJECT_ROOT, `runtime:
   hooks:
-    hx-doc:
+    doc:
       pre:
         - .hx/hooks/pre_doc.md
   pipelines:
@@ -43,13 +43,13 @@ steps:
   - id: doc
     phase: Phase 01
     name: 需求文档
-    command: hx-doc
+    command: doc
   - id: plan
     name: 执行计划
-    command: hx-plan
+    command: plan
   - id: run
     name: 执行需求
-    command: hx-run
+    command: run
 `)
   })
 
@@ -65,17 +65,17 @@ steps:
   - id: doc
     phase: Phase 01
     name: 需求文档
-    command: hx-doc
+    command: doc
     checkpoint:
       message: 审查完整性
 
   - id: plan
     name: 执行计划
-    command: hx-plan
+    command: plan
 
   - id: run
     name: 执行需求
-    command: hx-run
+    command: run
     on_fail: stop`
 
       const result = parsePipelineYaml(yaml)
@@ -85,18 +85,18 @@ steps:
         id: 'doc',
         phase: 'Phase 01',
         name: '需求文档',
-        command: 'hx-doc',
+        command: 'doc',
         checkpoint: { message: '审查完整性' },
       })
       expect(result.steps[1]).toEqual({
         id: 'plan',
         name: '执行计划',
-        command: 'hx-plan',
+        command: 'plan',
       })
       expect(result.steps[2]).toEqual({
         id: 'run',
         name: '执行需求',
-        command: 'hx-run',
+        command: 'run',
         on_fail: 'stop',
       })
     })
@@ -109,7 +109,7 @@ name: Simple
 steps:
   - id: test
     name: Test
-    command: hx-test`
+    command: test`
 
       const result = parsePipelineYaml(yaml)
       expect(result.name).toBe('Simple')
@@ -118,20 +118,20 @@ steps:
   })
 
   describe('commandToToolScript', () => {
-    it('should map hx-doc to scripts/tools/doc.ts', () => {
-      expect(commandToToolScript('hx-doc')).toBe('scripts/tools/doc.ts')
+    it('should map doc to scripts/tools/doc.ts', () => {
+      expect(commandToToolScript('doc')).toBe('scripts/tools/doc.ts')
     })
 
-    it('should map hx-plan to scripts/tools/plan.ts', () => {
-      expect(commandToToolScript('hx-plan')).toBe('scripts/tools/plan.ts')
+    it('should map plan to scripts/tools/plan.ts', () => {
+      expect(commandToToolScript('plan')).toBe('scripts/tools/plan.ts')
     })
 
-    it('should map hx-reset to scripts/tools/reset.ts', () => {
-      expect(commandToToolScript('hx-reset')).toBe('scripts/tools/reset.ts')
+    it('should map reset to scripts/tools/reset.ts', () => {
+      expect(commandToToolScript('reset')).toBe('scripts/tools/reset.ts')
     })
 
-    it('should handle "hx run" format', () => {
-      expect(commandToToolScript('hx run')).toBe('scripts/tools/run.ts')
+    it('should reject hx-prefixed command names', () => {
+      expect(() => commandToToolScript('hx-run')).toThrow('pipeline command "hx-run" 无效')
     })
   })
 
@@ -148,7 +148,7 @@ steps:
 steps:
   - id: custom
     name: Custom Step
-    command: hx-test`
+    command: test`
       writeFile(resolve(PROJECT_ROOT, '.hx', 'pipelines', 'default.yaml'), yaml)
 
       const pipeline = loadPipeline('default', PROJECT_ROOT)
@@ -159,6 +159,16 @@ steps:
 
     it('should return null for non-existent pipeline', () => {
       const pipeline = loadPipeline('nonexistent', PROJECT_ROOT)
+      expect(pipeline).toBeNull()
+    })
+
+    it('should return null when default is not registered in runtime config', () => {
+      writeRuntimeConfig(PROJECT_ROOT, `runtime:
+  hooks: {}
+  pipelines: {}
+`)
+
+      const pipeline = loadPipeline('default', PROJECT_ROOT)
       expect(pipeline).toBeNull()
     })
   })

@@ -27,7 +27,8 @@ runtime:
   # 命令级 hook 中间件链。
   hooks: {}
   # pipeline 名称到文件路径的映射。
-  pipelines: {}
+  pipelines:
+    default: .hx/pipelines/default.yaml
 
 # 规则模板显式映射。
 rules:
