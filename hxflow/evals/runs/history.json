@@ -1,1 +1,37 @@
-[]
+[
+  {
+    "createdAt": "2026-05-04T05:41:22.989Z",
+    "runLabel": "/tmp/hx-eval-results.json",
+    "spec": "hxflow-agent-regression",
+    "totals": {
+      "total": 4,
+      "passed": 0,
+      "failed": 4,
+      "passRate": 0,
+      "regressionPassRate": 0
+    },
+    "datasetTotals": [
+      {
+        "dataset": "core",
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "passRate": 0
+      },
+      {
+        "dataset": "edge",
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "passRate": 0
+      },
+      {
+        "dataset": "regressions",
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "passRate": 0
+      }
+    ]
+  }
+]
