@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
-const SCRIPT_PATH = resolve(process.cwd(), 'hxflow', 'scripts', 'tools', 'check.ts')
+const SCRIPT_PATH = resolve(process.cwd(), 'hxflow', 'scripts', 'tools', 'review.ts')
 const tempDirs: string[] = []
 
 afterEach(() => {
@@ -14,7 +14,7 @@ afterEach(() => {
 })
 
 function setupProject(testGateCommand: string) {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'hx-check-script-'))
+  const projectRoot = mkdtempSync(join(tmpdir(), 'hx-review-script-'))
   tempDirs.push(projectRoot)
 
   mkdirSync(join(projectRoot, '.hx', 'rules'), { recursive: true })
@@ -46,13 +46,13 @@ function configureGitIdentity(projectRoot: string) {
 }
 
 function setupGitProject(branch: string, testGateCommand = 'echo qa-pass') {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'hx-check-branch-'))
+  const projectRoot = mkdtempSync(join(tmpdir(), 'hx-review-branch-'))
   tempDirs.push(projectRoot)
 
   // init a real git repo on the desired branch
   spawnSync('git', ['init', '-b', branch], { cwd: projectRoot, encoding: 'utf8' })
-  spawnSync('git', ['config', 'user.name', 'hx-check-test'], { cwd: projectRoot, encoding: 'utf8' })
-  spawnSync('git', ['config', 'user.email', 'hx-check-test@example.com'], { cwd: projectRoot, encoding: 'utf8' })
+  spawnSync('git', ['config', 'user.name', 'hx-review-test'], { cwd: projectRoot, encoding: 'utf8' })
+  spawnSync('git', ['config', 'user.email', 'hx-review-test@example.com'], { cwd: projectRoot, encoding: 'utf8' })
   spawnSync('git', ['commit', '--allow-empty', '-m', 'init'], { cwd: projectRoot, encoding: 'utf8' })
 
   writeHxConfig(projectRoot, testGateCommand)
@@ -61,7 +61,7 @@ function setupGitProject(branch: string, testGateCommand = 'echo qa-pass') {
 }
 
 function setupUnbornGitProject(branch: string, testGateCommand = 'echo qa-pass') {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'hx-check-branch-unborn-'))
+  const projectRoot = mkdtempSync(join(tmpdir(), 'hx-review-branch-unborn-'))
   tempDirs.push(projectRoot)
 
   spawnSync('git', ['init', '-b', branch], { cwd: projectRoot, encoding: 'utf8' })
@@ -73,7 +73,7 @@ function setupUnbornGitProject(branch: string, testGateCommand = 'echo qa-pass')
 }
 
 function setupWorkspaceProject() {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'hx-check-workspace-'))
+  const projectRoot = mkdtempSync(join(tmpdir(), 'hx-review-workspace-'))
   tempDirs.push(projectRoot)
 
   mkdirSync(join(projectRoot, '.hx'), { recursive: true })
@@ -183,7 +183,7 @@ gates:
   return projectRoot
 }
 
-describe('checkBranchName via hx-check --scope qa', () => {
+describe('checkBranchName via hx-review --scope qa', () => {
   it.each([
     ['feat/my-feature', true],
     ['fix/issue-42', true],
@@ -242,7 +242,7 @@ describe('checkBranchName via hx-check --scope qa', () => {
   })
 })
 
-describe('hx-check script', () => {
+describe('hx-review script', () => {
   it('runs qa gates directly and returns a structured summary', () => {
     const projectRoot = setupProject('echo qa-pass')
     const result = spawnSync('bun', [SCRIPT_PATH, 'AUTH-001', '--scope', 'qa'], {
@@ -264,7 +264,7 @@ describe('hx-check script', () => {
           {
             name: 'test',
             command: 'echo qa-pass',
-            projectRoot: expect.stringContaining('hx-check-script-'),
+            projectRoot: expect.stringContaining('hx-review-script-'),
             cwd: '',
             source: 'project',
             ok: true,

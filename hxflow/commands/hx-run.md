@@ -12,7 +12,7 @@
 
 ## 下一步
 
-- `hx check <feature>`
+- `hx review <feature>`
 
 ## 约束
 

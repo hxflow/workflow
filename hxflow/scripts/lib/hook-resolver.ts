@@ -1,4 +1,4 @@
-import { readRuntimeConfig } from './runtime-config.ts'
+import { formatRuntimeCommandNames, isValidRuntimeCommandName, readRuntimeConfig } from './runtime-config.ts'
 
 export interface HookFile {
   scope: 'project'
@@ -18,8 +18,8 @@ function normalizeCommandName(command: string): string {
     throw new Error('命令名不能为空')
   }
 
-  if (!/^[a-z][a-z0-9-]*$/.test(trimmed) || trimmed.startsWith('hx-')) {
-    throw new Error(`命令名 "${command}" 无效，请使用 doc/plan/run/check/mr 这类命令名`)
+  if (!isValidRuntimeCommandName(trimmed)) {
+    throw new Error(`命令名 "${command}" 无效，请使用 ${formatRuntimeCommandNames()} 这类命令名`)
   }
 
   return trimmed

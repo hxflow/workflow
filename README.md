@@ -37,7 +37,7 @@ After installation, run `/hx init` in your project to initialize.
 /hx doc feature-name       # gather requirements
 /hx plan feature-name      # generate plan
 /hx run feature-name       # execute tasks
-/hx check feature-name     # quality check
+/hx review feature-name    # quality review
 /hx mr feature-name        # create MR
 /hx reset feature-name [plan|doc|code]
 ```
@@ -48,11 +48,11 @@ After installation, run `/hx init` in your project to initialize.
 
 | Command | Description |
 |---------|-------------|
-| `go` | Full pipeline: `doc → plan → run → check → mr` |
+| `go` | Full pipeline: `doc → plan → run → review → mr` |
 | `doc` | Gather requirements and create requirement doc |
 | `plan` | Generate execution plan and `progress.json` |
 | `run` | Execute tasks |
-| `check` | Quality gate (review, gates, engineering hygiene) |
+| `review` | Quality gate (review, gates, engineering hygiene) |
 | `mr` | Create Merge Request |
 | `init` | Generate config, rule templates, and default pipeline |
 | `status` | View task progress |

@@ -101,6 +101,18 @@ describe('hx-hook script', () => {
     expect(result.stderr).toContain('无效')
   })
 
+  it('rejects retired check command names', () => {
+    const projectRoot = createProject()
+    const result = spawnSync('bun', [SCRIPT_PATH, 'resolve', 'check'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('check')
+    expect(result.stderr).toContain('无效')
+  })
+
   it('rejects hx-prefixed hook config keys', () => {
     const projectRoot = createProject()
     writeFileSync(
@@ -121,5 +133,27 @@ describe('hx-hook script', () => {
 
     expect(result.status).not.toBe(0)
     expect(result.stderr).toContain('runtime.hooks.hx-doc 无效')
+  })
+
+  it('rejects retired check hook config keys', () => {
+    const projectRoot = createProject()
+    writeFileSync(
+      join(projectRoot, '.hx', 'config.yaml'),
+      `runtime:
+  hooks:
+    check:
+      pre:
+        - .hx/hooks/pre_check.md
+`,
+      'utf8',
+    )
+
+    const result = spawnSync('bun', [SCRIPT_PATH, 'resolve', 'doc'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('runtime.hooks.check 无效')
   })
 })

@@ -394,7 +394,7 @@
 <span class="o">/hx</span> doc   <span class="t">login-sso</span>
 <span class="o">/hx</span> plan  <span class="t">login-sso</span>
 <span class="o">/hx</span> run   <span class="t">login-sso</span>
-<span class="o">/hx</span> check <span class="t">login-sso</span>
+<span class="o">/hx</span> review <span class="t">login-sso</span>
 <span class="o">/hx</span> mr    <span class="t">login-sso</span></pre>
         </div>
       </div>
@@ -411,7 +411,7 @@
   <section id="pipeline">
     <h2><span class="num">03</span>Pipeline Overview</h2>
     <p class="sub">
-      <code class="inline">/hx go</code> advances through each node in order. At <code class="inline">check</code>, a sub-agent runs a quality review — the pipeline only continues on pass.
+      <code class="inline">/hx go</code> advances through each node in order. At <code class="inline">review</code>, a sub-agent runs a quality review — the pipeline only continues on pass.
     </p>
 
     <div class="pipeline">
@@ -423,7 +423,7 @@
       <span class="arrow">→</span>
       <span class="node">run</span>
       <span class="arrow">→</span>
-      <span class="node gate">check</span>
+      <span class="node gate">review</span>
       <span class="arrow">→</span>
       <span class="node">mr</span>
     </div>
@@ -481,10 +481,10 @@
             <td><code class="inline">/hx run &lt;feature&gt;</code></td>
             <td>Phase 04</td>
             <td>Execute tasks in batches and write back progress</td>
-            <td><code class="inline">check</code></td>
+            <td><code class="inline">review</code></td>
           </tr>
           <tr>
-            <td><code class="inline">/hx check &lt;feature&gt;</code></td>
+            <td><code class="inline">/hx review &lt;feature&gt;</code></td>
             <td>Phase 06</td>
             <td>Quality gate, code review, engineering hygiene</td>
             <td><code class="inline">mr</code></td>
@@ -498,7 +498,7 @@
           <tr>
             <td><code class="inline">/hx go &lt;feature&gt;</code></td>
             <td>Full</td>
-            <td>Full pipeline: <code class="inline">doc → plan → run → check → mr</code></td>
+            <td>Full pipeline: <code class="inline">doc → plan → run → review → mr</code></td>
             <td>auto</td>
           </tr>
           <tr>

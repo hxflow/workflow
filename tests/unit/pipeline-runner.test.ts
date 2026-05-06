@@ -133,6 +133,10 @@ steps:
     it('should reject hx-prefixed command names', () => {
       expect(() => commandToToolScript('hx-run')).toThrow('pipeline command "hx-run" 无效')
     })
+
+    it('should reject retired check command names', () => {
+      expect(() => commandToToolScript('check')).toThrow('pipeline command "check" 无效')
+    })
   })
 
   describe('loadPipeline', () => {

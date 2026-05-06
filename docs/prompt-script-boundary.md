@@ -106,7 +106,7 @@
 ## 约束
 - 自动恢复时不得跳过最早未完成的 step
 - --from 参数必须是有效的 step 名称
-- 按 doc → plan → run → check → mr 顺序执行
+- 按 doc → plan → run → review → mr 顺序执行
 ```
 
 ✅ **正确**：引用脚本和配置
@@ -246,7 +246,7 @@ return {
 ### 集成测试（tests/integration/）
 
 - 测试工具脚本的 JSON 输出
-- 测试命令链路（doc → plan → run → check）
+- 测试命令链路（doc → plan → run → review）
 - 验证提示词引用的脚本确实存在
 - 不测试 AI 语义判断的正确性
 

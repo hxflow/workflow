@@ -1,5 +1,5 @@
 /**
- * hx-check.ts — 核心检查 orchestrator
+ * hx-review.ts — 质量评审 orchestrator
  *
  * 确定性工作：加载 gates、执行 qa、收集 diff 与规则文件、汇总结果。
  * AI 工作：review / clean 的语义判断。
@@ -21,7 +21,7 @@ import { loadFeatureProgress } from '../lib/progress-context.ts'
 import { extractTaskSection, readTaskField } from '../lib/plan-utils.ts'
 
 const VALID_SCOPES = ['review', 'qa', 'clean', 'all', 'facts'] as const
-type CheckScope = (typeof VALID_SCOPES)[number]
+type ReviewScope = (typeof VALID_SCOPES)[number]
 
 interface GateResult {
   name: GateName
@@ -48,19 +48,19 @@ const { positional, options, projectRoot } = createSimpleContext()
 const [feature] = positional
 const scope = options.scope ?? 'all'
 
-if (!VALID_SCOPES.includes(scope as CheckScope)) {
+if (!VALID_SCOPES.includes(scope as ReviewScope)) {
   console.error(`❌ --scope "${scope}" 无效，有效值: ${VALID_SCOPES.join(', ')}`)
   process.exit(1)
 }
 
-const executionConfigs = resolveCheckExecutionConfigs(projectRoot, feature)
+const executionConfigs = resolveReviewExecutionConfigs(projectRoot, feature)
 const diffStat = runGit(projectRoot, 'diff', '--stat', 'HEAD') ?? ''
 const changedFiles = splitLines(runGit(projectRoot, 'diff', '--name-only', 'HEAD') ?? '')
 
-const selectedScope = scope as CheckScope
+const selectedScope = scope as ReviewScope
 
 // ── facts 子命令：只返回确定性事实，不触发 AI ─────────────────────────────────
-if (selectedScope === ('facts' as CheckScope)) {
+if (selectedScope === ('facts' as ReviewScope)) {
   const activeGates = executionConfigs.flatMap((execution) => GATE_ORDER
     .filter((gate) => execution.gates[gate])
     .map((gate) => ({
@@ -183,7 +183,7 @@ function runQa(projectRootPath: string, executions: ExecutionConfig[]) {
   }
 }
 
-function resolveCheckExecutionConfigs(root: string, featureValue: string | undefined): ExecutionConfig[] {
+function resolveReviewExecutionConfigs(root: string, featureValue: string | undefined): ExecutionConfig[] {
   const workspaceProjects = getWorkspaceProjects(root)
   if (workspaceProjects.length === 0) {
     return [resolveExecutionConfig(root, '')]
@@ -244,7 +244,7 @@ function runSemanticScope(
 function printSummary(summary: {
   ok: boolean
   feature: string | null
-  scope: CheckScope
+  scope: ReviewScope
   qa: ScopeResult & { gates?: GateResult[]; branchCheck?: BranchCheckResult | null }
   review: ScopeResult
   clean: ScopeResult

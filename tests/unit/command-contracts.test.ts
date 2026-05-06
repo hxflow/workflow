@@ -10,13 +10,13 @@ const commandFiles = readdirSync(COMMANDS_DIR)
   .sort()
 
 const ALL_COMMANDS = [
-  'hx-check',
   'hx-doc',
   'hx-go',
   'hx-init',
   'hx-mr',
   'hx-plan',
   'hx-reset',
+  'hx-review',
   'hx-run',
   'hx-status',
 ]
@@ -85,7 +85,7 @@ describe('command contracts', () => {
 
   it('keeps the main-chain prompts minimal and aligned', () => {
     const hxDoc = readFileSync(resolve(COMMANDS_DIR, 'hx-doc.md'), 'utf8')
-    const hxCheck = readFileSync(resolve(COMMANDS_DIR, 'hx-check.md'), 'utf8')
+    const hxReview = readFileSync(resolve(COMMANDS_DIR, 'hx-review.md'), 'utf8')
     const hxGo = readFileSync(resolve(COMMANDS_DIR, 'hx-go.md'), 'utf8')
     const hxInit = readFileSync(resolve(COMMANDS_DIR, 'hx-init.md'), 'utf8')
     const hxRun = readFileSync(resolve(COMMANDS_DIR, 'hx-run.md'), 'utf8')
@@ -111,18 +111,18 @@ describe('command contracts', () => {
     expect(hxPlanScript).not.toContain('progressSchemaPath')
     expect(hxPlanScript).not.toContain('progressTemplate')
 
-    expect(hxCheck).toContain('bun scripts/tools/check.ts')
-    expect(hxCheck).not.toContain('npx tsx')
-    expect(hxCheck).toContain('qa')
-    expect(hxCheck).not.toContain('## 下一步')
-    expect(hxCheck).not.toContain('review-checklist.md')
-    expect(hxCheck).not.toContain('hx fix')
-    const hxCheckScript = readFileSync(resolve(TOOLS_DIR, 'check.ts'), 'utf8')
-    expect(hxCheckScript).toContain('resolveExecutionConfig')
-    expect(hxCheckScript).toContain('resolveWorkspaceExecutionConfigs')
-    expect(hxCheckScript).toContain('GATE_ORDER')
-    expect(hxCheckScript).toContain("runSemanticScope('review'")
-    expect(hxCheckScript).toContain("runSemanticScope('clean'")
+    expect(hxReview).toContain('bun scripts/tools/review.ts')
+    expect(hxReview).not.toContain('npx tsx')
+    expect(hxReview).toContain('qa')
+    expect(hxReview).not.toContain('## 下一步')
+    expect(hxReview).not.toContain('review-checklist.md')
+    expect(hxReview).not.toContain('hx fix')
+    const hxReviewScript = readFileSync(resolve(TOOLS_DIR, 'review.ts'), 'utf8')
+    expect(hxReviewScript).toContain('resolveExecutionConfig')
+    expect(hxReviewScript).toContain('resolveWorkspaceExecutionConfigs')
+    expect(hxReviewScript).toContain('GATE_ORDER')
+    expect(hxReviewScript).toContain("runSemanticScope('review'")
+    expect(hxReviewScript).toContain("runSemanticScope('clean'")
 
     expect(hxRun).not.toContain('--task <task-id>')
     expect(hxRun).toContain('bun scripts/tools/run.ts next <feature>')
@@ -130,7 +130,7 @@ describe('command contracts', () => {
     expect(hxRun).not.toContain('npx tsx')
     expect(hxRun).toContain('继续读取下一批并执行')
     expect(hxRun).toContain('不得中途等待确认')
-    expect(hxRun).toContain('`hx check <feature>`')
+    expect(hxRun).toContain('`hx review <feature>`')
     expect(hxRun).not.toContain('golden-rules.md')
     const hxRunScript = readFileSync(resolve(TOOLS_DIR, 'run.ts'), 'utf8')
     expect(hxRunScript).toContain('getScheduledBatch')

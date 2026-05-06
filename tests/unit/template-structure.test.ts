@@ -69,7 +69,7 @@ describe('template structure', () => {
     expect(pipelineTemplate).toContain('command: doc')
     expect(pipelineTemplate).toContain('command: plan')
     expect(pipelineTemplate).toContain('command: run')
-    expect(pipelineTemplate).toContain('command: check')
+    expect(pipelineTemplate).toContain('command: review')
     expect(pipelineTemplate).toContain('command: mr')
     expect(pipelineTemplate).not.toContain('command: hx-')
   })

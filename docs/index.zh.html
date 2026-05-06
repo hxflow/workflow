@@ -382,7 +382,7 @@
 <span class="o">/hx</span> doc   <span class="t">login-sso</span>
 <span class="o">/hx</span> plan  <span class="t">login-sso</span>
 <span class="o">/hx</span> run   <span class="t">login-sso</span>
-<span class="o">/hx</span> check <span class="t">login-sso</span>
+<span class="o">/hx</span> review <span class="t">login-sso</span>
 <span class="o">/hx</span> mr    <span class="t">login-sso</span></pre>
         </div>
       </div>
@@ -399,7 +399,7 @@
   <section id="pipeline">
     <h2><span class="num">03</span>流水线一览</h2>
     <p class="sub">
-      <code class="inline">/hx go</code> 会按下列节点推进，遇到 <code class="inline">check</code> 自动开子 agent 做评审，未通过则不进入下一步。
+      <code class="inline">/hx go</code> 会按下列节点推进，遇到 <code class="inline">review</code> 自动开子 agent 做评审，未通过则不进入下一步。
     </p>
 
     <div class="pipeline">
@@ -411,7 +411,7 @@
       <span class="arrow">→</span>
       <span class="node">run</span>
       <span class="arrow">→</span>
-      <span class="node gate">check</span>
+      <span class="node gate">review</span>
       <span class="arrow">→</span>
       <span class="node">mr</span>
     </div>
@@ -469,10 +469,10 @@
             <td><code class="inline">/hx run &lt;feature&gt;</code></td>
             <td>Phase 04</td>
             <td>按批次执行 task，完成后回写 progress</td>
-            <td><code class="inline">check</code></td>
+            <td><code class="inline">review</code></td>
           </tr>
           <tr>
-            <td><code class="inline">/hx check &lt;feature&gt;</code></td>
+            <td><code class="inline">/hx review &lt;feature&gt;</code></td>
             <td>Phase 06</td>
             <td>质量门、审查、工程卫生检查</td>
             <td><code class="inline">mr</code></td>
@@ -486,7 +486,7 @@
           <tr>
             <td><code class="inline">/hx go &lt;feature&gt;</code></td>
             <td>全流程</td>
-            <td>串联 <code class="inline">doc → plan → run → check → mr</code></td>
+            <td>串联 <code class="inline">doc → plan → run → review → mr</code></td>
             <td>自动</td>
           </tr>
           <tr>

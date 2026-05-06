@@ -51,9 +51,9 @@ steps:
   - id: run
     name: 执行需求
     command: run
-  - id: check
-    name: 核心检查
-    command: check
+  - id: review
+    name: 质量评审
+    command: review
   - id: mr
     name: MR 描述
     command: mr
@@ -100,7 +100,7 @@ describe('hx-go script', () => {
     expect(parsed.steps[0]).toMatchObject({ id: 'doc', status: 'pending', preHooks: ['.hx/hooks/pre_doc.md'] })
   })
 
-  it('next subcommand with --from plan returns check step when doc/plan/run are done', () => {
+  it('next subcommand with --from plan returns review step when doc/plan/run are done', () => {
     const projectRoot = createProject()
     writeRequirementDoc(projectRoot)
     // Pre-create plan + progress with all tasks done (simulates AI having completed these steps)
@@ -150,14 +150,14 @@ describe('hx-go script', () => {
     expect(summary.toolScript).toBe('scripts/tools/plan.ts')
     expect(summary.preHooks).toEqual([])
 
-    // steps reflects doc/plan/run done, check/mr rerun
+    // steps reflects doc/plan/run done, review/mr rerun
     const stateMap = Object.fromEntries(
       summary.steps.map((s: { id: string; status: string }) => [s.id, s.status]),
     )
     expect(stateMap.doc).toBe('done')
     expect(stateMap.plan).toBe('done')
     expect(stateMap.run).toBe('done')
-    expect(stateMap.check).toBe('rerun')
+    expect(stateMap.review).toBe('rerun')
     expect(stateMap.mr).toBe('rerun')
   })
 

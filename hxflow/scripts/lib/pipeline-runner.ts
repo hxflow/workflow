@@ -12,7 +12,7 @@ import { parse as parseYaml } from 'yaml'
 
 import { getActiveProgressFilePath, getArchiveDirPath, getRequirementDocPath } from './file-paths.ts'
 import { resolveCommandHooks } from './hook-resolver.ts'
-import { readRuntimeConfig } from './runtime-config.ts'
+import { formatRuntimeCommandNames, isValidRuntimeCommandName, readRuntimeConfig } from './runtime-config.ts'
 import { validateProgressData } from './progress-schema.ts'
 
 // ── Types ───────────────────────────────────────────────────
@@ -107,8 +107,8 @@ export function loadPipeline(pipelineName: string, projectRoot: string): Pipelin
  */
 export function commandToToolScript(command: string): string {
   const name = command.trim()
-  if (!/^[a-z][a-z0-9-]*$/.test(name) || name.startsWith('hx-')) {
-    throw new Error(`pipeline command "${command}" 无效，请使用 doc/plan/run/check/mr 这类命令名`)
+  if (!isValidRuntimeCommandName(name)) {
+    throw new Error(`pipeline command "${command}" 无效，请使用 ${formatRuntimeCommandNames()} 这类命令名`)
   }
   return `scripts/tools/${name}.ts`
 }

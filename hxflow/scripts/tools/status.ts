@@ -58,7 +58,7 @@ function printFeatureStatus(filePath: string) {
 
   console.log()
   if (data.completedAt) {
-    console.log('  → 下一步：hx check 或 hx mr')
+    console.log('  → 下一步：hx review 或 hx mr')
   } else if (inProgress > 0) {
     console.log(`  → 下一步：hx run ${data.feature}（恢复进行中任务）`)
   } else if (pending > 0) {

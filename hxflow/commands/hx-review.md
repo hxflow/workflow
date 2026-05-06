@@ -1,8 +1,8 @@
-# 核心检查入口
+# 质量评审入口
 
 ## 执行步骤
 
-1. 执行 `bun scripts/tools/check.ts [<feature>] [--scope <scope>]`，读取检查结果。
+1. 执行 `bun scripts/tools/review.ts [<feature>] [--scope <scope>]`，读取评审结果。
 2. 根据返回的 `scope` 和 `needsAiReview` 决定只报告问题，或只判断是否通过。
 3. 未通过时停止，输出结论和问题。
 

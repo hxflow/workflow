@@ -30,6 +30,25 @@ export interface PathsConfig {
 export const GATE_ORDER = ['lint', 'build', 'type', 'test'] as const
 export type GateName = (typeof GATE_ORDER)[number]
 export type GatesConfig = Partial<Record<GateName, string>>
+export const VALID_RUNTIME_COMMAND_NAMES = [
+  'doc',
+  'plan',
+  'run',
+  'review',
+  'mr',
+  'go',
+  'init',
+  'status',
+  'reset',
+] as const
+
+export function formatRuntimeCommandNames(): string {
+  return VALID_RUNTIME_COMMAND_NAMES.join('/')
+}
+
+export function isValidRuntimeCommandName(command: string): boolean {
+  return (VALID_RUNTIME_COMMAND_NAMES as readonly string[]).includes(command)
+}
 
 function getRuntimeConfigPath(projectRoot: string): string | null {
   const projectConfigPath = resolve(projectRoot, '.hx', 'config.yaml')
@@ -115,7 +134,7 @@ function parseHooks(raw: unknown): Record<string, RuntimeHookEntry> {
   const hooks: Record<string, RuntimeHookEntry> = {}
   for (const [command, value] of Object.entries(raw as Record<string, unknown>)) {
     if (!isValidRuntimeCommandName(command)) {
-      throw new Error(`runtime.hooks.${command} 无效，请使用 doc/plan/run/check/mr 这类命令名`)
+      throw new Error(`runtime.hooks.${command} 无效，请使用 ${formatRuntimeCommandNames()} 这类命令名`)
     }
     if (typeof value !== 'object' || value === null) continue
     const entry = value as Record<string, unknown>
@@ -160,8 +179,4 @@ function parseGates(raw: unknown): GatesConfig {
 function toStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return []
   return value.filter((v): v is string => typeof v === 'string')
-}
-
-function isValidRuntimeCommandName(command: string): boolean {
-  return /^[a-z][a-z0-9-]*$/.test(command) && !command.startsWith('hx-')
 }
