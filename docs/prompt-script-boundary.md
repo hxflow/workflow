@@ -46,7 +46,7 @@
 - 具体的验证规则（字段名、顺序、格式）
 - 数据结构定义（task 状态、pipeline step）
 - 算法实现细节（任务调度、依赖计算）
-- 配置项枚举（gate 名称、scope 列表）
+- 配置项枚举（gate 名称、命令列表）
 
 ### 脚本（scripts/tools/*.ts 和 scripts/lib/*.ts）职责
 
@@ -184,7 +184,7 @@ AI 调用脚本更新状态（如 progress.ts）
 
 ```markdown
 ## 约束
-- scope 可以是 review、clean、qa 之一
+- gate 可以是 lint、build、type、test 之一
 ```
 
 **问题**：配置变更时需要同步更新提示词
@@ -192,7 +192,7 @@ AI 调用脚本更新状态（如 progress.ts）
 **修正**：引用脚本或配置
 ```markdown
 ## 约束
-- 检查范围由脚本返回的 `scope` 字段和 `.hx/config.yaml` 定义
+- 可用 gate 由 `.hx/config.yaml` 的 `gates` 字段定义
 ```
 
 ### ❌ 反模式 2：脚本包含主观判断
@@ -257,8 +257,8 @@ return {
    - 在提示词中引用 Schema URL 而非描述字段
 
 2. **事实 vs 语义标记**
-   - 在脚本输出中明确标记哪些是确定性事实（`facts`）
-   - 哪些需要 AI 判断（`needsAiReview`、`needsInterpretation`）
+   - 在脚本输出中明确标记哪些需要 AI 判断（`needsAiReview`、`needsInterpretation`）
+   - 确定性事实（gate 结果、diff、文件列表）直接输出，不加主观判断
 
 3. **运行时契约验证**
    - 添加 `--verify-contract` 选项检查输出格式

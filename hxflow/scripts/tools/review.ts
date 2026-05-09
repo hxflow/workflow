@@ -2,7 +2,7 @@
  * hx-review.ts — 质量评审 orchestrator
  *
  * 确定性工作：加载 gates、执行 qa、收集 diff 与规则文件、汇总结果。
- * AI 工作：review / clean 的语义判断。
+ * AI 工作：review 的语义判断。
  */
 
 import { spawnSync } from 'child_process'
@@ -20,9 +20,6 @@ import { getWorkspaceProjects } from '../lib/file-paths.ts'
 import { loadFeatureProgress } from '../lib/progress-context.ts'
 import { extractTaskSection, readTaskField } from '../lib/plan-utils.ts'
 
-const VALID_SCOPES = ['review', 'qa', 'clean', 'all', 'facts'] as const
-type ReviewScope = (typeof VALID_SCOPES)[number]
-
 interface GateResult {
   name: GateName
   command: string
@@ -35,95 +32,56 @@ interface GateResult {
   stderr: string
 }
 
-interface ScopeResult {
+interface QaResult {
   enabled: boolean
   ok: boolean
-  summary?: string
+  summary: string
   reason?: string
   needsAiReview?: boolean
   context?: Record<string, unknown>
+  gates: GateResult[]
+  branchCheck: BranchCheckResult | null
 }
 
-const { positional, options, projectRoot } = createSimpleContext()
+interface ReviewResult {
+  enabled: boolean
+  ok: boolean
+  needsAiReview: boolean
+  summary?: string
+  context?: Record<string, unknown>
+}
+
+const { positional, projectRoot } = createSimpleContext()
 const [feature] = positional
-const scope = options.scope ?? 'all'
-
-if (!VALID_SCOPES.includes(scope as ReviewScope)) {
-  console.error(`❌ --scope "${scope}" 无效，有效值: ${VALID_SCOPES.join(', ')}`)
-  process.exit(1)
-}
 
 const executionConfigs = resolveReviewExecutionConfigs(projectRoot, feature)
 const diffStat = runGit(projectRoot, 'diff', '--stat', 'HEAD') ?? ''
 const changedFiles = splitLines(runGit(projectRoot, 'diff', '--name-only', 'HEAD') ?? '')
 
-const selectedScope = scope as ReviewScope
+const qa = runQa(projectRoot, executionConfigs)
+const review: ReviewResult = qa.ok
+  ? {
+      enabled: true,
+      ok: true,
+      needsAiReview: true,
+      context: {
+        kind: 'review',
+        feature: feature ?? null,
+        projectRoot,
+        diffStat,
+        changedFiles,
+        qaSummary: qa.summary,
+      },
+    }
+  : { enabled: false, ok: true, needsAiReview: false, summary: 'qa 未通过，未执行 review' }
 
-// ── facts 子命令：只返回确定性事实，不触发 AI ─────────────────────────────────
-if (selectedScope === ('facts' as ReviewScope)) {
-  const activeGates = executionConfigs.flatMap((execution) => GATE_ORDER
-    .filter((gate) => execution.gates[gate])
-    .map((gate) => ({
-      name: gate,
-      command: execution.gates[gate],
-      projectRoot: execution.root,
-      cwd: execution.cwd,
-      source: execution.gateSources[gate],
-    })))
+const ok = qa.ok && !review.needsAiReview
 
-  console.log(JSON.stringify({
-    ok: true,
-    feature: feature ?? null,
-    scope: 'facts',
-    gates: activeGates,
-    branchCheck: checkBranchName(projectRoot),
-    diffStat,
-    changedFiles,
-  }, null, 2))
-  process.exit(0)
-}
-
-const doReview = selectedScope === 'review' || selectedScope === 'all'
-const doQa = selectedScope === 'qa' || selectedScope === 'all'
-const doClean = selectedScope === 'clean' || selectedScope === 'all'
-
-const qa = doQa ? runQa(projectRoot, executionConfigs) : { enabled: false, ok: true, summary: '未执行 qa', gates: [], branchCheck: null }
-const review = doReview
-  ? runSemanticScope('review', feature, {
-      projectRoot,
-      diffStat,
-      changedFiles,
-      qaSummary: qa.summary ?? '',
-    })
-  : { enabled: false, ok: true, summary: '未执行 review' }
-const clean = doClean
-  ? runSemanticScope('clean', feature, {
-      projectRoot,
-      diffStat,
-      changedFiles,
-      qaSummary: qa.summary ?? '',
-    })
-  : { enabled: false, ok: true, summary: '未执行 clean' }
-
-// qa 失败 → pipeline 阻塞
-const qaFailed = !qa.ok
-// review/clean 提供上下文供 AI 分析
-const needsAi = (review.needsAiReview || clean.needsAiReview) && qa.ok
-
-const ok = !qaFailed && !needsAi
-
-printSummary({
-  ok,
-  feature: feature ?? null,
-  scope: selectedScope,
-  qa,
-  review,
-  clean,
-})
+printSummary({ ok, feature: feature ?? null, qa, review })
 
 process.exit(ok ? 0 : 1)
 
-function runQa(projectRootPath: string, executions: ExecutionConfig[]) {
+function runQa(projectRootPath: string, executions: ExecutionConfig[]): QaResult {
   const activeGates = executions.flatMap((execution) => GATE_ORDER
     .filter((gate) => execution.gates[gate])
     .map((gate) => ({ gate, execution, command: execution.gates[gate] as string })))
@@ -133,8 +91,11 @@ function runQa(projectRootPath: string, executions: ExecutionConfig[]) {
   if (activeGates.length === 0) {
     return {
       enabled: true,
-      ok: true,
-      summary: '未配置任何 qa gate，已跳过',
+      ok: false,
+      summary: '未配置任何 qa gate',
+      reason: '需要先分析项目并配置 .hx 的 gates，再重新执行 review',
+      needsAiReview: true,
+      context: buildQaGateConfigContext(projectRootPath, executions),
       gates: results,
       branchCheck,
     }
@@ -183,6 +144,27 @@ function runQa(projectRootPath: string, executions: ExecutionConfig[]) {
   }
 }
 
+function buildQaGateConfigContext(projectRootPath: string, executions: ExecutionConfig[]) {
+  return {
+    kind: 'qa-gates',
+    projectRoot: projectRootPath,
+    gateOrder: GATE_ORDER,
+    configTargets: executions.map((execution) => ({
+      projectRoot: execution.root,
+      cwd: execution.cwd,
+      src: execution.src,
+      source: execution.source,
+      configPath: execution.cwd ? resolve(execution.root, '.hx', 'config.yaml') : resolve(projectRootPath, '.hx', 'config.yaml'),
+      configuredGates: GATE_ORDER.filter((gate) => execution.gates[gate]),
+    })),
+    instructions: [
+      '分析项目脚本、包管理器和现有测试命令',
+      '只把可执行且适合当前项目的命令写入 gates',
+      '至少配置一个 qa gate 后重新执行 review',
+    ],
+  }
+}
+
 function resolveReviewExecutionConfigs(root: string, featureValue: string | undefined): ExecutionConfig[] {
   const workspaceProjects = getWorkspaceProjects(root)
   if (workspaceProjects.length === 0) {
@@ -216,68 +198,33 @@ function readTaskCwd(planContent: string, taskId: string): string {
   return readTaskField(extractTaskSection(planContent, taskId), '执行目录')
 }
 
-function runSemanticScope(
-  kind: 'review' | 'clean',
-  featureValue: string | undefined,
-  payload: {
-    projectRoot: string
-    diffStat: string
-    changedFiles: string[]
-    qaSummary: string
-  },
-): ScopeResult {
-  return {
-    enabled: true,
-    ok: true,
-    needsAiReview: true,
-    context: {
-      kind,
-      feature: featureValue ?? null,
-      projectRoot: payload.projectRoot,
-      diffStat: payload.diffStat,
-      changedFiles: payload.changedFiles,
-      qaSummary: payload.qaSummary,
-    },
-  }
-}
-
 function printSummary(summary: {
   ok: boolean
   feature: string | null
-  scope: ReviewScope
-  qa: ScopeResult & { gates?: GateResult[]; branchCheck?: BranchCheckResult | null }
-  review: ScopeResult
-  clean: ScopeResult
+  qa: QaResult
+  review: ReviewResult
 }) {
   console.log(
     JSON.stringify(
       {
         ok: summary.ok,
         feature: summary.feature,
-        scope: summary.scope,
         qa: {
           enabled: summary.qa.enabled,
           ok: summary.qa.ok,
-          summary: summary.qa.summary ?? null,
+          summary: summary.qa.summary,
           reason: summary.qa.reason ?? null,
-          gates: summary.qa.gates ?? [],
-          branchCheck: summary.qa.branchCheck ?? null,
+          needsAiReview: summary.qa.needsAiReview ?? false,
+          context: summary.qa.context ?? null,
+          gates: summary.qa.gates,
+          branchCheck: summary.qa.branchCheck,
         },
         review: {
           enabled: summary.review.enabled,
           ok: summary.review.ok,
-          needsAiReview: summary.review.needsAiReview ?? false,
+          needsAiReview: summary.review.needsAiReview,
           context: summary.review.context ?? null,
           summary: summary.review.summary ?? null,
-          reason: summary.review.reason ?? null,
-        },
-        clean: {
-          enabled: summary.clean.enabled,
-          ok: summary.clean.ok,
-          needsAiReview: summary.clean.needsAiReview ?? false,
-          context: summary.clean.context ?? null,
-          summary: summary.clean.summary ?? null,
-          reason: summary.clean.reason ?? null,
         },
       },
       null,

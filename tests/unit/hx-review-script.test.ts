@@ -31,6 +31,27 @@ gates:
   return projectRoot
 }
 
+function setupProjectWithoutGates() {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'hx-review-no-gates-'))
+  tempDirs.push(projectRoot)
+
+  mkdirSync(join(projectRoot, '.hx', 'rules'), { recursive: true })
+  writeFileSync(
+    join(projectRoot, '.hx', 'config.yaml'),
+    `paths:
+  src: src
+gates:
+  lint:
+  build:
+  type:
+  test:
+`,
+    'utf8',
+  )
+
+  return projectRoot
+}
+
 function writeHxConfig(projectRoot: string, testGateCommand: string) {
   mkdirSync(join(projectRoot, '.hx', 'rules'), { recursive: true })
   writeFileSync(
@@ -49,7 +70,6 @@ function setupGitProject(branch: string, testGateCommand = 'echo qa-pass') {
   const projectRoot = mkdtempSync(join(tmpdir(), 'hx-review-branch-'))
   tempDirs.push(projectRoot)
 
-  // init a real git repo on the desired branch
   spawnSync('git', ['init', '-b', branch], { cwd: projectRoot, encoding: 'utf8' })
   spawnSync('git', ['config', 'user.name', 'hx-review-test'], { cwd: projectRoot, encoding: 'utf8' })
   spawnSync('git', ['config', 'user.email', 'hx-review-test@example.com'], { cwd: projectRoot, encoding: 'utf8' })
@@ -183,7 +203,7 @@ gates:
   return projectRoot
 }
 
-describe('checkBranchName via hx-review --scope qa', () => {
+describe('checkBranchName via hx-review', () => {
   it.each([
     ['feat/my-feature', true],
     ['fix/issue-42', true],
@@ -198,7 +218,7 @@ describe('checkBranchName via hx-review --scope qa', () => {
     ['develop', true],
   ])('branch "%s" should pass branchCheck (ok: %s)', (branch, expectedOk) => {
     const projectRoot = setupGitProject(branch)
-    const result = spawnSync('bun', [SCRIPT_PATH, '--scope', 'qa'], {
+    const result = spawnSync('bun', [SCRIPT_PATH], {
       cwd: projectRoot,
       encoding: 'utf8',
     })
@@ -214,13 +234,11 @@ describe('checkBranchName via hx-review --scope qa', () => {
     'feature/my-feature',
   ])('non-compliant branch "%s" should fail branchCheck but not fail qa', (branch) => {
     const projectRoot = setupGitProject(branch)
-    const result = spawnSync('bun', [SCRIPT_PATH, '--scope', 'qa'], {
+    const result = spawnSync('bun', [SCRIPT_PATH], {
       cwd: projectRoot,
       encoding: 'utf8',
     })
-    expect(result.status).toBe(0) // qa.ok still true
     const summary = JSON.parse(result.stdout)
-    expect(summary.ok).toBe(true)
     expect(summary.qa.ok).toBe(true)
     expect(summary.qa.branchCheck.ok).toBe(false)
     expect(typeof summary.qa.branchCheck.reason).toBe('string')
@@ -230,11 +248,10 @@ describe('checkBranchName via hx-review --scope qa', () => {
   it('detects branch name for unborn branch repositories', () => {
     const branch = 'feat/unborn'
     const projectRoot = setupUnbornGitProject(branch)
-    const result = spawnSync('bun', [SCRIPT_PATH, '--scope', 'qa'], {
+    const result = spawnSync('bun', [SCRIPT_PATH], {
       cwd: projectRoot,
       encoding: 'utf8',
     })
-    expect(result.status).toBe(0)
     const summary = JSON.parse(result.stdout)
     expect(summary.qa.branchCheck.ok).toBe(true)
     expect(summary.qa.branchCheck.branch).toBe(branch)
@@ -243,65 +260,95 @@ describe('checkBranchName via hx-review --scope qa', () => {
 })
 
 describe('hx-review script', () => {
-  it('runs qa gates directly and returns a structured summary', () => {
+  it('runs qa gates and returns a structured summary', () => {
     const projectRoot = setupProject('echo qa-pass')
-    const result = spawnSync('bun', [SCRIPT_PATH, 'AUTH-001', '--scope', 'qa'], {
+    const result = spawnSync('bun', [SCRIPT_PATH, 'AUTH-001'], {
       cwd: projectRoot,
       encoding: 'utf8',
     })
 
-    expect(result.status).toBe(0)
-    expect(JSON.parse(result.stdout)).toEqual({
+    expect(result.status).toBe(1)
+    const summary = JSON.parse(result.stdout)
+    expect(summary.ok).toBe(false)
+    expect(summary.feature).toBe('AUTH-001')
+    expect(summary.qa).toMatchObject({
+      enabled: true,
       ok: true,
-      feature: 'AUTH-001',
-      scope: 'qa',
-      qa: {
-        enabled: true,
-        ok: true,
-        summary: 'test 全部通过',
-        reason: null,
-        gates: [
-          {
-            name: 'test',
-            command: 'echo qa-pass',
-            projectRoot: expect.stringContaining('hx-review-script-'),
-            cwd: '',
-            source: 'project',
-            ok: true,
-            exitCode: 0,
-            stdout: 'qa-pass',
-            stderr: '',
-          },
-        ],
-        branchCheck: { ok: true, branch: '(unknown)', reason: null },
-      },
-      review: {
-        enabled: false,
-        ok: true,
-        needsAiReview: false,
-        context: null,
-        summary: '未执行 review',
-        reason: null,
-      },
-      clean: {
-        enabled: false,
-        ok: true,
-        needsAiReview: false,
-        context: null,
-        summary: '未执行 clean',
-        reason: null,
-      },
+      summary: 'test 全部通过',
+      reason: null,
+      needsAiReview: false,
+      context: null,
+      gates: [
+        {
+          name: 'test',
+          command: 'echo qa-pass',
+          projectRoot: expect.stringContaining('hx-review-script-'),
+          cwd: '',
+          source: 'project',
+          ok: true,
+          exitCode: 0,
+          stdout: 'qa-pass',
+          stderr: '',
+        },
+      ],
+      branchCheck: { ok: true, branch: '(unknown)', reason: null },
+    })
+    expect(summary.review).toMatchObject({
+      enabled: true,
+      ok: true,
+      needsAiReview: true,
+    })
+    expect(summary.review.context.kind).toBe('review')
+  })
+
+  it('returns AI config context when no qa gates configured', () => {
+    const projectRoot = setupProjectWithoutGates()
+    const result = spawnSync('bun', [SCRIPT_PATH, 'AUTH-001'], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).toBe(1)
+    const summary = JSON.parse(result.stdout)
+    expect(summary.ok).toBe(false)
+    expect(summary.qa).toMatchObject({
+      enabled: true,
+      ok: false,
+      summary: '未配置任何 qa gate',
+      reason: '需要先分析项目并配置 .hx 的 gates，再重新执行 review',
+      needsAiReview: true,
+      gates: [],
+    })
+    expect(summary.qa.context).toMatchObject({
+      kind: 'qa-gates',
+      projectRoot: expect.stringContaining('hx-review-no-gates-'),
+      gateOrder: ['lint', 'build', 'type', 'test'],
+      configTargets: [
+        {
+          projectRoot: expect.stringContaining('hx-review-no-gates-'),
+          cwd: '',
+          src: 'src',
+          source: 'project',
+          configPath: expect.stringContaining('/.hx/config.yaml'),
+          configuredGates: [],
+        },
+      ],
+    })
+    expect(summary.review).toMatchObject({
+      enabled: false,
+      ok: true,
+      needsAiReview: false,
+      summary: 'qa 未通过，未执行 review',
     })
   })
 
   it('runs workspace feature gates in each task execution project', () => {
     const projectRoot = setupWorkspaceProject()
-    const result = spawnSync('bun', [SCRIPT_PATH, 'AUTH-001', '--scope', 'qa'], {
+    const result = spawnSync('bun', [SCRIPT_PATH, 'AUTH-001'], {
       cwd: projectRoot,
       encoding: 'utf8',
     })
 
-    expect(result.status).toBe(0)
     const summary = JSON.parse(result.stdout)
     expect(summary.qa.gates).toMatchObject([
       {
@@ -331,9 +378,9 @@ describe('hx-review script', () => {
     ])
   })
 
-  it('outputs needsAiReview context for review and clean scopes', () => {
+  it('outputs needsAiReview context when qa passes', () => {
     const projectRoot = setupProject('echo qa-pass')
-    const result = spawnSync('bun', [SCRIPT_PATH, 'AUTH-001', '--scope', 'all'], {
+    const result = spawnSync('bun', [SCRIPT_PATH, 'AUTH-001'], {
       cwd: projectRoot,
       encoding: 'utf8',
     })
@@ -342,21 +389,13 @@ describe('hx-review script', () => {
     const summary = JSON.parse(result.stdout)
     expect(summary.ok).toBe(false)
     expect(summary.feature).toBe('AUTH-001')
-    expect(summary.scope).toBe('all')
     expect(summary.qa.ok).toBe(true)
     expect(summary.review).toMatchObject({
       enabled: true,
       ok: true,
       needsAiReview: true,
     })
-    expect(summary.clean).toMatchObject({
-      enabled: true,
-      ok: true,
-      needsAiReview: true,
-    })
     expect(summary.review.context).toBeDefined()
     expect(summary.review.context.kind).toBe('review')
-    expect(summary.clean.context).toBeDefined()
-    expect(summary.clean.context.kind).toBe('clean')
   })
 })
