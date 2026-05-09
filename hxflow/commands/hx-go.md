@@ -2,7 +2,7 @@
 
 ## 执行步骤
 
-1. 执行 `bun scripts/tools/go.ts next <feature>`，读取当前 step 的 `toolScript`、`preHooks`、`postHooks`。
+1. 执行 `hx-go next <feature>`，读取当前 step 的 `toolScript`、`preHooks`、`postHooks`。
 2. 按顺序执行：读取 `preHooks` → 运行 `toolScript` → 读取 `postHooks`。
 3. 遇到 `checkpoint.message` 时启动子 agent 评审，按结论继续或重跑当前 step。
 4. 重复直到 `allDone` 或明确阻断。

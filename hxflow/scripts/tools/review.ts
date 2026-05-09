@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
  * hx-review.ts — 质量评审 orchestrator
  *

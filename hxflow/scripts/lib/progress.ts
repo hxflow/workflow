@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
  * hx-progress.js — progress.json 操作命令集
  *

@@ -9,11 +9,33 @@
   "license": "MIT",
   "packageManager": "bun@1.3.11",
   "type": "module",
+  "keywords": [
+    "pi-package"
+  ],
   "files": [
     "hxflow/**/*",
     "README.md",
     "AGENTS.md"
   ],
+  "exports": {},
+  "bin": {
+    "hx-hook": "hxflow/scripts/lib/hook.ts",
+    "hx-progress": "hxflow/scripts/lib/progress.ts",
+    "hx-doc": "hxflow/scripts/tools/doc.ts",
+    "hx-plan": "hxflow/scripts/tools/plan.ts",
+    "hx-run": "hxflow/scripts/tools/run.ts",
+    "hx-review": "hxflow/scripts/tools/review.ts",
+    "hx-mr": "hxflow/scripts/tools/mr.ts",
+    "hx-go": "hxflow/scripts/tools/go.ts",
+    "hx-status": "hxflow/scripts/tools/status.ts",
+    "hx-reset": "hxflow/scripts/tools/reset.ts",
+    "hx-init": "hxflow/scripts/tools/init.ts"
+  },
+  "pi": {
+    "skills": [
+      "hxflow"
+    ]
+  },
   "scripts": {
     "pack:dry-run": "bun pm pack --dry-run",
     "release:pack": "bun pm pack",
@@ -37,6 +59,7 @@
     "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
+    "@hxflow/shared": "file:../shared",
     "yaml": "^2.8.3"
   }
 }

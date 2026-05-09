@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
  * hx-status.js — 查看 feature 进度摘要
  *

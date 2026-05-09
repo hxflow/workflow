@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
  * hx-plan.ts — 执行计划事实工具
  *

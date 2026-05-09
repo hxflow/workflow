@@ -1,25 +1,5 @@
-# IDE
-.vscode/
-.idea/
-
-# System
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-scripts/auto-fix.log
-
-# Dependencies
 node_modules/
-
-# Build
 dist/
-build/
-
-# Trae
-.trae/
-
-# Local settings (may contain sensitive tokens)
-.claude/settings.local.json
-**/settings.local.json
+*.local
+.env
+.DS_Store

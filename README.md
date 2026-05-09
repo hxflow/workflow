@@ -2,6 +2,8 @@
 
 Harness Workflow — Agent Skill for requirement-to-delivery pipeline.
 
+> **类型定义**已迁移至 [`@hxflow/shared`](../shared)，请从 `@hxflow/shared/types` 导入。
+
 [中文文档](README.zh.md)
 
 ---

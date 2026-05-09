@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
  * hx-mr.ts — MR 事实工具
  *

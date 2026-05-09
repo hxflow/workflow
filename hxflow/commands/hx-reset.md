@@ -2,7 +2,7 @@
 
 ## 执行步骤
 
-1. 执行 `bun scripts/tools/reset.ts <feature> [plan|doc|code]`，删除或回退目标 feature 的对应产物。
+1. 执行 `hx-reset <feature> [plan|doc|code]`，删除或回退目标 feature 的对应产物。
 2. 根据脚本返回的结果确认重置范围；未指定参数时按同时重置 `code`、`plan` 和 `doc` 处理。
 
 ## 约束

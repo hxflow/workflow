@@ -2,7 +2,7 @@
 
 ## 执行步骤
 
-1. 执行 `bun scripts/tools/init.ts`，完成当前目录或指定目录的初始化。
+1. 执行 `hx-init`，完成当前目录或指定目录的初始化。
 
 生成产物：`.hx/config.yaml`（或 `workspace.yaml`）、`.hx/rules/*.md`、`.hx/pipelines/default.yaml`。
 

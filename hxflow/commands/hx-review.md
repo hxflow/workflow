@@ -2,7 +2,7 @@
 
 ## 执行步骤
 
-1. 执行 `bun scripts/tools/review.ts [<feature>]`，读取评审结果。
+1. 执行 `hx-review [<feature>]`，读取评审结果。
 2. 若 `qa.needsAiReview` 为真，根据 `qa.context` 分析项目并配置 gates，再重新执行。
 3. 若 `review.needsAiReview` 为真，根据 `review.context` 做代码评审，报告问题。
 4. 未通过时停止，输出结论和问题。

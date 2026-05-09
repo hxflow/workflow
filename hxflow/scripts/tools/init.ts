@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
  * hx-init.ts — 项目初始化 orchestrator
  *

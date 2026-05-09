@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
  * go.ts — 流水线事实工具
  *

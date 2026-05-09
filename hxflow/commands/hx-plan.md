@@ -2,7 +2,7 @@
 
 ## 执行步骤
 
-1. 执行 `bun scripts/tools/plan.ts context <feature>`，读取需求文档、计划模板和进度文件。
+1. 执行 `hx-plan context <feature>`，读取需求文档、计划模板和进度文件。
 2. 生成或续接 `planDoc`，让运行时初始化或校验 `progressFile`。
 
 ## 下一步

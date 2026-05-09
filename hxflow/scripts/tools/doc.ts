@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
  * hx-doc.ts — 需求文档事实工具
  *

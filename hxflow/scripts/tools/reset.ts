@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
  * hx-reset.ts — 重置 feature 的需求/计划/代码产物
  *

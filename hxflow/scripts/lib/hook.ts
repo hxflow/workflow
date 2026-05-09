@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 import { resolveCommandHooks } from './hook-resolver.ts'
 import { exitWithJsonError as err, printJson as out } from './json-cli.ts'

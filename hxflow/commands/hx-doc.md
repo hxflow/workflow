@@ -2,9 +2,9 @@
 
 ## 执行步骤
 
-1. 执行 `bun scripts/tools/doc.ts context <feature>`，读取需求来源、模板和现有文档事实。
+1. 执行 `hx-doc context <feature>`，读取需求来源、模板和现有文档事实。
 2. 在 workspace 多项目目录中扫描可能受影响的服务，确认协调层、执行服务和关联服务。
-3. 生成或续接 `docs/requirement/{feature}.md`，再执行 `bun scripts/tools/doc.ts validate <feature>`。
+3. 生成或续接 `docs/requirement/{feature}.md`，再执行 `hx-doc validate <feature>`。
 4. 校验失败时只修正文档本身。
 
 ## 下一步

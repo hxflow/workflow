@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
  * hx-run.ts — 任务执行事实工具
  *

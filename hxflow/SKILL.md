@@ -1,5 +1,5 @@
 ---
-name: hx
+name: hxflow
 description: "Harness Workflow — 需求到交付的全自动流水线框架。当用户说 /hx、hx doc、hx plan、hx run、hx go 等触发词时使用。支持需求获取、计划生成、任务执行、质量检查、MR 创建的完整工作流。"
 compatibility: "Requires Bun, or Node.js with npx tsx fallback"
 metadata:
@@ -11,7 +11,7 @@ metadata:
 
 ## 路由
 
-根据 `$ARGUMENTS` 的第一个词匹配命令，先执行 `bun scripts/lib/hook.ts resolve <command> --cwd <用户工作目录>` 获取 hooks，再按顺序执行：**preHooks → 命令文件 → postHooks**（剩余参数原样透传）。
+根据 `$ARGUMENTS` 的第一个词匹配命令，先执行 `hx-hook resolve <command> --cwd <用户工作目录>` 获取 hooks，再按顺序执行：**preHooks → 命令文件 → postHooks**（剩余参数原样透传）。
 
 | 命令 | 文件 | 说明 |
 |------|------|------|
@@ -29,7 +29,7 @@ metadata:
 
 ## 全局规则
 
-- `bun scripts/...` 为运行时脚本入口；**必须从本 SKILL.md 所在目录执行，并通过 `--cwd <用户工作目录>` 传入用户原始工作目录**；未安装 bun 时全局改用 `npx tsx scripts/...`
+- `hx-*` 系列 npm bin 为运行时脚本入口；通过 `--cwd <用户工作目录>` 传入用户原始工作目录，在任意 CWD 下均可调用
 - hook 解析、脚本路由和运行时回退只在这里定义，各命令文件不重复
 - 命令文件只保留 AI 仍可能做错的语义边界，不重复脚本已固化的事实
 - 先想清楚再执行：有前提假设就显式写出；存在多种合理解释时，不要静默选一种
