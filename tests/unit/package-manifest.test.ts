@@ -14,19 +14,31 @@ describe('package manifest', () => {
     expect(pkg.files).not.toContain('SKILL.md')
   })
 
-  it('does not expose CLI bin entry', () => {
+  it('exposes internal workflow bins for the agent skill runtime', () => {
     const pkg = JSON.parse(readFileSync(PACKAGE_JSON_PATH, 'utf8'))
 
-    expect(pkg.bin).toBeUndefined()
+    expect(pkg.bin).toEqual({
+      'hx-hook': 'hxflow/scripts/lib/hook.ts',
+      'hx-progress': 'hxflow/scripts/lib/progress.ts',
+      'hx-doc': 'hxflow/scripts/tools/doc.ts',
+      'hx-plan': 'hxflow/scripts/tools/plan.ts',
+      'hx-run': 'hxflow/scripts/tools/run.ts',
+      'hx-review': 'hxflow/scripts/tools/review.ts',
+      'hx-mr': 'hxflow/scripts/tools/mr.ts',
+      'hx-go': 'hxflow/scripts/tools/go.ts',
+      'hx-status': 'hxflow/scripts/tools/status.ts',
+      'hx-reset': 'hxflow/scripts/tools/reset.ts',
+      'hx-init': 'hxflow/scripts/tools/init.ts',
+    })
     expect(existsSync(resolve(ROOT, 'bin/hx.js'))).toBe(false)
   })
 
   it('has hxflow/SKILL.md as skill entry point', () => {
     expect(existsSync(resolve(ROOT, 'hxflow', 'SKILL.md'))).toBe(true)
     const content = readFileSync(resolve(ROOT, 'hxflow', 'SKILL.md'), 'utf8')
-    expect(content).toContain('name: hx')
-    expect(content).toContain('bun scripts/lib/hook.ts resolve <command>')
-    expect(content).toContain('npx tsx scripts/...')
+    expect(content).toContain('name: hxflow')
+    expect(content).toContain('hx-hook resolve <command>')
+    expect(content).toContain('hx-*')
     expect(content).toContain('全局规则')
   })
 

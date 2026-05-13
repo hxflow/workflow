@@ -56,10 +56,11 @@ describe('command contracts', () => {
     }
   })
 
-  it('routes execution steps to scripts and keeps next steps as hx commands', () => {
+  it('routes execution steps to internal bins and keeps next steps as hx commands', () => {
     for (const file of commandFiles) {
       const content = readFileSync(resolve(COMMANDS_DIR, file), 'utf8')
-      expect(content).toContain('bun scripts/tools/')
+      const command = file.replace(/\.md$/, '')
+      expect(content).toContain(command)
       expect(content).not.toContain('npx tsx scripts/')
       if (content.includes('## 下一步')) {
         expect(content).toContain('hx ')
@@ -94,13 +95,13 @@ describe('command contracts', () => {
     const readme = readFileSync(resolve(process.cwd(), 'README.md'), 'utf8')
 
     expect(hxDoc).not.toContain('--task <task-id>')
-    expect(hxDoc).toContain('bun scripts/tools/doc.ts context <feature>')
+    expect(hxDoc).toContain('hx-doc context <feature>')
     expect(hxDoc).not.toContain('npx tsx')
     expect(hxDoc).toContain('先复用后生成')
     expect(hxDoc).toContain('## 下一步')
     expect(hxDoc).toContain('`hx plan <feature>`')
 
-    expect(hxPlan).toContain('bun scripts/tools/plan.ts context <feature>')
+    expect(hxPlan).toContain('hx-plan context <feature>')
     expect(hxPlan).not.toContain('npx tsx')
     expect(hxPlan).toContain('不重算')
     expect(hxPlan).toContain('每个 task 保持独立可实现、可验证')
@@ -111,7 +112,7 @@ describe('command contracts', () => {
     expect(hxPlanScript).not.toContain('progressSchemaPath')
     expect(hxPlanScript).not.toContain('progressTemplate')
 
-    expect(hxReview).toContain('bun scripts/tools/review.ts')
+    expect(hxReview).toContain('hx-review')
     expect(hxReview).not.toContain('npx tsx')
     expect(hxReview).toContain('qa')
     expect(hxReview).toContain('qa.needsAiReview')
@@ -127,8 +128,8 @@ describe('command contracts', () => {
     expect(hxReviewScript).toContain("kind: 'review'")
 
     expect(hxRun).not.toContain('--task <task-id>')
-    expect(hxRun).toContain('bun scripts/tools/run.ts next <feature>')
-    expect(hxRun).toContain('bun scripts/lib/progress.ts')
+    expect(hxRun).toContain('hx-run next <feature>')
+    expect(hxRun).toContain('hx-progress done')
     expect(hxRun).not.toContain('npx tsx')
     expect(hxRun).toContain('继续读取下一批并执行')
     expect(hxRun).toContain('不得中途等待确认')
@@ -143,7 +144,7 @@ describe('command contracts', () => {
     expect(hxRunScript).toContain("if (batch.mode === 'done')")
 
     expect(hxGo).not.toContain('--task <task-id>')
-    expect(hxGo).toContain('bun scripts/tools/go.ts next <feature>')
+    expect(hxGo).toContain('hx-go next <feature>')
     expect(hxGo).not.toContain('npx tsx')
     expect(hxGo).toContain('不得跳过最早未完成')
     expect(hxGo).not.toContain('## 下一步')
@@ -154,7 +155,7 @@ describe('command contracts', () => {
     expect(hxGoScript).toContain("case 'next'")
     expect(hxGoScript).toContain("case 'state'")
 
-    expect(hxInit).toContain('bun scripts/tools/init.ts')
+    expect(hxInit).toContain('hx-init')
     expect(hxInit).not.toContain('npx tsx')
     expect(hxInit).toContain('完成当前目录或指定目录的初始化')
     expect(hxInit).toContain('多项目根目录初始化为 workspace')
@@ -173,7 +174,7 @@ describe('command contracts', () => {
     expect(hxMr).toContain('MR 创建成功后')
     expect(hxMr).toContain('创建失败不归档')
     expect(hxMr).toContain('已提交变更')
-    expect(hxMr).toContain('bun scripts/tools/mr.ts archive <feature>')
+    expect(hxMr).toContain('hx-mr archive <feature>')
     expect(hxMr).not.toContain('npx tsx')
     expect(hxMr).not.toContain('## 下一步')
     const hxMrScript = readFileSync(resolve(TOOLS_DIR, 'mr.ts'), 'utf8')
@@ -181,12 +182,12 @@ describe('command contracts', () => {
     expect(hxMrScript).not.toContain("case 'context'")
 
     const hxStatus = readFileSync(resolve(COMMANDS_DIR, 'hx-status.md'), 'utf8')
-    expect(hxStatus).toContain('bun scripts/tools/status.ts [<feature>]')
+    expect(hxStatus).toContain('hx-status [<feature>]')
     expect(hxStatus).not.toContain('## 下一步')
     expect(hxStatus).toContain('不推测未记录状态')
 
     const hxReset = readFileSync(resolve(COMMANDS_DIR, 'hx-reset.md'), 'utf8')
-    expect(hxReset).toContain('bun scripts/tools/reset.ts <feature> [plan|doc|code]')
+    expect(hxReset).toContain('hx-reset <feature> [plan|doc|code]')
     expect(hxReset).not.toContain('## 下一步')
     expect(hxReset).toContain('plan')
     expect(hxReset).toContain('doc')
@@ -195,7 +196,7 @@ describe('command contracts', () => {
     expect(hxReset).toContain('归档产物')
 
     const skill = readFileSync(resolve(process.cwd(), 'hxflow', 'SKILL.md'), 'utf8')
-    expect(skill).toContain('npx tsx scripts/')
+    expect(skill).toContain('hx-hook resolve <command>')
     expect(skill).toContain('全局规则')
     expect(skill).toContain('命令文件只保留')
 

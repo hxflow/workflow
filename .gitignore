@@ -1,5 +1,6 @@
 node_modules/
 dist/
 *.local
+.claude/settings.local.json
 .env
 .DS_Store
