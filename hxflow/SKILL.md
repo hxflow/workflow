@@ -4,7 +4,7 @@ description: "Harness Workflow — 需求到交付的全自动流水线框架。
 compatibility: "Requires Bun, or Node.js with npx tsx fallback"
 metadata:
   generator: hxflow
-  version: "4.0.0"
+  version: "4.0.2"
 ---
 
 # Harness Workflow
@@ -19,11 +19,13 @@ metadata:
 | plan | [commands/hx-plan.md](commands/hx-plan.md) | 生成执行计划 |
 | run | [commands/hx-run.md](commands/hx-run.md) | 执行需求 |
 | review | [commands/hx-review.md](commands/hx-review.md) | 质量评审 |
+| test | [commands/hx-test.md](commands/hx-test.md) | 端到端集成测试 |
 | mr | [commands/hx-mr.md](commands/hx-mr.md) | 创建 Merge Request |
 | go | [commands/hx-go.md](commands/hx-go.md) | 全自动流水线 |
 | init | [commands/hx-init.md](commands/hx-init.md) | 初始化项目 |
 | status | [commands/hx-status.md](commands/hx-status.md) | 查看任务进度 |
 | reset | [commands/hx-reset.md](commands/hx-reset.md) | 重置需求或计划产物 |
+| server | [commands/hx-server.md](commands/hx-server.md) | 启动项目服务 |
 
 无参数时默认执行 `go`。未匹配到命令时提示可用命令列表。
 
@@ -39,4 +41,4 @@ metadata:
 
 ## 典型流程
 
-`init` → `doc` → `plan` → `run` → `review` → `mr`
+`init` → `doc` → `plan` → `run` → `review` → `test` → `mr`

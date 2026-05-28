@@ -18,7 +18,9 @@ const ALL_COMMANDS = [
   'hx-reset',
   'hx-review',
   'hx-run',
+  'hx-server',
   'hx-status',
+  'hx-test',
 ]
 
 describe('command contracts', () => {
@@ -91,6 +93,7 @@ describe('command contracts', () => {
     const hxInit = readFileSync(resolve(COMMANDS_DIR, 'hx-init.md'), 'utf8')
     const hxRun = readFileSync(resolve(COMMANDS_DIR, 'hx-run.md'), 'utf8')
     const hxPlan = readFileSync(resolve(COMMANDS_DIR, 'hx-plan.md'), 'utf8')
+    const hxTest = readFileSync(resolve(COMMANDS_DIR, 'hx-test.md'), 'utf8')
     const hxMr = readFileSync(resolve(COMMANDS_DIR, 'hx-mr.md'), 'utf8')
     const readme = readFileSync(resolve(process.cwd(), 'README.md'), 'utf8')
 
@@ -126,6 +129,18 @@ describe('command contracts', () => {
     expect(hxReviewScript).toContain('resolveWorkspaceExecutionConfigs')
     expect(hxReviewScript).toContain('GATE_ORDER')
     expect(hxReviewScript).toContain("kind: 'review'")
+
+    expect(hxTest).toContain('hx-test <feature>')
+    expect(hxTest).toContain('test.needsSubagent')
+    expect(hxTest).toContain('干净上下文')
+    expect(hxTest).toContain('真实端到端')
+    expect(hxTest).toContain('`hx mr <feature>`')
+    expect(hxTest).not.toContain('npx tsx')
+    const hxTestScript = readFileSync(resolve(TOOLS_DIR, 'test.ts'), 'utf8')
+    expect(hxTestScript).toContain("kind: 'e2e-integration-test'")
+    expect(hxTestScript).toContain('needsSubagent: true')
+    expect(hxTestScript).toContain('resolveWorkspaceExecutionConfigs')
+    expect(hxTestScript).not.toContain('instructions: [')
 
     expect(hxRun).not.toContain('--task <task-id>')
     expect(hxRun).toContain('hx-run next <feature>')
@@ -195,10 +210,20 @@ describe('command contracts', () => {
     expect(hxReset).toContain('全量重置')
     expect(hxReset).toContain('归档产物')
 
+    const hxServer = readFileSync(resolve(COMMANDS_DIR, 'hx-server.md'), 'utf8')
+    expect(hxServer).toContain('hx-server [<target>]')
+    expect(hxServer).toContain('hx-server save <id>')
+    expect(hxServer).toContain('后台 shell')
+    expect(hxServer).toContain('前端服务')
+    expect(hxServer).toContain('后端服务')
+    expect(hxServer).toContain('已经真实启动成功')
+    expect(hxServer).not.toContain('## 下一步')
+
     const skill = readFileSync(resolve(process.cwd(), 'hxflow', 'SKILL.md'), 'utf8')
     expect(skill).toContain('hx-hook resolve <command>')
     expect(skill).toContain('全局规则')
     expect(skill).toContain('命令文件只保留')
+    expect(skill).toContain('review` → `test` → `mr')
 
     expect(readme).toContain('hx')
     expect(readme).not.toContain('| `fix` |')

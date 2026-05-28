@@ -35,11 +35,13 @@ export const VALID_RUNTIME_COMMAND_NAMES = [
   'plan',
   'run',
   'review',
+  'test',
   'mr',
   'go',
   'init',
   'status',
   'reset',
+  'server',
 ] as const
 
 export function formatRuntimeCommandNames(): string {

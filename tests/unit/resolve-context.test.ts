@@ -45,6 +45,17 @@ describe('resolve-context', () => {
     expect(findProjectRoot(standalone)).toBe(standalone)
   })
 
+  it('detects workspace config as a project root marker', () => {
+    const root = createTempDir('hx-workspace-root-')
+    const nested = resolve(root, 'apps', 'web')
+
+    mkdirSync(resolve(root, '.hx'), { recursive: true })
+    mkdirSync(nested, { recursive: true })
+    writeFileSync(resolve(root, '.hx', 'workspace.yaml'), 'version: 1\nprojects: []\n')
+
+    expect(findProjectRoot(nested)).toBe(root)
+  })
+
   it('rejects a directory that is both workspace and project', () => {
     const root = createTempDir('hx-conflict-root-')
     const nested = resolve(root, 'src')

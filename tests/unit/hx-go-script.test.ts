@@ -54,6 +54,9 @@ steps:
   - id: review
     name: 质量评审
     command: review
+  - id: test
+    name: 端到端测试
+    command: test
   - id: mr
     name: MR 描述
     command: mr
@@ -150,7 +153,7 @@ describe('hx-go script', () => {
     expect(summary.toolScript).toBe('scripts/tools/plan.ts')
     expect(summary.preHooks).toEqual([])
 
-    // steps reflects doc/plan/run done, review/mr rerun
+    // steps reflects doc/plan/run done, review/test/mr rerun
     const stateMap = Object.fromEntries(
       summary.steps.map((s: { id: string; status: string }) => [s.id, s.status]),
     )
@@ -158,6 +161,7 @@ describe('hx-go script', () => {
     expect(stateMap.plan).toBe('done')
     expect(stateMap.run).toBe('done')
     expect(stateMap.review).toBe('rerun')
+    expect(stateMap.test).toBe('rerun')
     expect(stateMap.mr).toBe('rerun')
   })
 
@@ -177,7 +181,7 @@ describe('hx-go script', () => {
     expect(summary.allDone).toBe(false)
     expect(summary.nextStep).toBe('plan')
     expect(Array.isArray(summary.steps)).toBe(true)
-    expect(summary.steps).toHaveLength(5)
+    expect(summary.steps).toHaveLength(6)
     expect(summary.steps[0]).toMatchObject({ id: 'doc', status: 'done', preHooks: ['.hx/hooks/pre_doc.md'] })
     expect(summary.steps[1]).toMatchObject({ id: 'plan', status: 'pending', preHooks: [] })
   })

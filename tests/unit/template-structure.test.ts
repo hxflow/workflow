@@ -17,6 +17,7 @@ describe('template structure', () => {
     expect(configTemplate).toContain('progressFile: docs/plans/{feature}-progress.json')
     expect(configTemplate).toContain('lint:')
     expect(configTemplate).toContain('test:')
+    expect(configTemplate).toContain('servers: []')
 
   })
 
@@ -70,6 +71,7 @@ describe('template structure', () => {
     expect(pipelineTemplate).toContain('command: plan')
     expect(pipelineTemplate).toContain('command: run')
     expect(pipelineTemplate).toContain('command: review')
+    expect(pipelineTemplate).toContain('command: test')
     expect(pipelineTemplate).toContain('command: mr')
     expect(pipelineTemplate).not.toContain('command: hx-')
   })

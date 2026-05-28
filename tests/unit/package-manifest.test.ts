@@ -24,11 +24,13 @@ describe('package manifest', () => {
       'hx-plan': 'hxflow/scripts/tools/plan.ts',
       'hx-run': 'hxflow/scripts/tools/run.ts',
       'hx-review': 'hxflow/scripts/tools/review.ts',
+      'hx-test': 'hxflow/scripts/tools/test.ts',
       'hx-mr': 'hxflow/scripts/tools/mr.ts',
       'hx-go': 'hxflow/scripts/tools/go.ts',
       'hx-status': 'hxflow/scripts/tools/status.ts',
       'hx-reset': 'hxflow/scripts/tools/reset.ts',
       'hx-init': 'hxflow/scripts/tools/init.ts',
+      'hx-server': 'hxflow/scripts/tools/server.ts',
     })
     expect(existsSync(resolve(ROOT, 'bin/hx.js'))).toBe(false)
   })

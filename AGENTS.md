@@ -26,7 +26,7 @@
 
 ## 测试要求
 
-测试框架为 Vitest，Node 环境运行。新增逻辑优先补对应单元测试；涉及安装、命令解析或目录写入的改动，再补集成测试。覆盖率由 `vitest.config.ts` 控制，其中 `src/service` 目录阈值为 statements/functions/lines 80%、branches 75%；即使当前目录未出现，也不要降低该基线。
+测试框架为 Bun test（`bun test`），Bun 运行时执行；不要再用 Vitest 配置或 API。新增逻辑优先补对应单元测试（`tests/unit/*.test.ts`）；涉及安装、命令解析或目录写入的改动，再补集成测试（`tests/integration/*.test.ts`）。
 
 ## 提交与 Pull Request 规范
 

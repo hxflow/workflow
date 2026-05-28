@@ -12,6 +12,9 @@ steps:
   - id: review
     name: 质量评审
     command: review
+  - id: test
+    name: 端到端测试
+    command: test
   - id: mr
     name: MR 描述
     command: mr

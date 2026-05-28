@@ -22,6 +22,9 @@ gates:
   # 测试命令。
   test:
 
+# 已验证的服务启动命令。hx server 优先使用这里的记录。
+servers: []
+
 # 运行时注册。
 runtime:
   # 命令级 hook。pre 在命令执行前注入，post 在命令执行后注入。

@@ -25,11 +25,13 @@
     "hx-plan": "hxflow/scripts/tools/plan.ts",
     "hx-run": "hxflow/scripts/tools/run.ts",
     "hx-review": "hxflow/scripts/tools/review.ts",
+    "hx-test": "hxflow/scripts/tools/test.ts",
     "hx-mr": "hxflow/scripts/tools/mr.ts",
     "hx-go": "hxflow/scripts/tools/go.ts",
     "hx-status": "hxflow/scripts/tools/status.ts",
     "hx-reset": "hxflow/scripts/tools/reset.ts",
-    "hx-init": "hxflow/scripts/tools/init.ts"
+    "hx-init": "hxflow/scripts/tools/init.ts",
+    "hx-server": "hxflow/scripts/tools/server.ts"
   },
   "pi": {
     "skills": [
@@ -59,7 +61,6 @@
     "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
-    "@hxflow/shared": "file:../shared",
     "yaml": "^2.8.3"
   }
 }

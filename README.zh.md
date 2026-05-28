@@ -37,7 +37,8 @@ npx skills add hxflow/workflow
 /hx doc feature-name       # 获取需求
 /hx plan feature-name      # 生成计划
 /hx run feature-name       # 执行需求
-/hx check feature-name     # 质量检查
+/hx review feature-name    # 质量评审
+/hx test feature-name      # 真实端到端集成测试
 /hx mr feature-name        # 创建 MR
 /hx reset feature-name [plan|doc|code]
 ```
@@ -48,11 +49,12 @@ npx skills add hxflow/workflow
 
 | 命令 | 说明 |
 |------|------|
-| `go` | 全自动流水线，串联 `doc → plan → run → check → mr` |
+| `go` | 全自动流水线，串联 `doc → plan → run → review → test → mr` |
 | `doc` | 获取需求并创建需求文档 |
 | `plan` | 生成执行计划与 `progress.json` |
 | `run` | 执行需求任务 |
-| `check` | 质量检查（审查、质量门、工程卫生） |
+| `review` | 质量评审（审查、质量门、工程卫生） |
+| `test` | 使用干净子 agent 做真实端到端集成测试 |
 | `mr` | 创建 Merge Request |
 | `init` | 生成配置、规则模板与默认 pipeline |
 | `status` | 查看任务进度 |
