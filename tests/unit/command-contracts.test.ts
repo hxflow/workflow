@@ -98,7 +98,7 @@ describe('command contracts', () => {
     const readme = readFileSync(resolve(process.cwd(), 'README.md'), 'utf8')
 
     expect(hxDoc).not.toContain('--task <task-id>')
-    expect(hxDoc).toContain('hx-doc context <feature>')
+    expect(hxDoc).toContain('hx-doc context <feature-or-source>')
     expect(hxDoc).not.toContain('npx tsx')
     expect(hxDoc).toContain('先复用后生成')
     expect(hxDoc).toContain('## 下一步')

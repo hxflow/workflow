@@ -131,8 +131,24 @@ describe('hx-run script', () => {
     expect(summary.feature).toBe('AUTH-001')
     expect(summary.mode).toBe('run')
     expect(summary.tasks).toEqual([
-      { id: 'TASK-1', name: '实现登录接口', status: 'pending', dependsOn: ['TASK-0'] },
+      {
+        id: 'TASK-1',
+        name: '实现登录接口',
+        status: 'pending',
+        dependsOn: ['TASK-0'],
+        audit: {
+          attempts: 0,
+          evidence: [],
+          riskClass: 'write',
+          verification: { status: 'pending', summary: '' },
+        },
+      },
     ])
+    expect(summary.audit).toMatchObject({
+      budget: { maxStepAttempts: null, maxReworkCycles: null },
+      stopReason: null,
+      reworkCycles: 0,
+    })
     expect(summary.tasksContext).toBeDefined()
     expect(Array.isArray(summary.tasksContext)).toBe(true)
     expect(summary.tasksContext.length).toBe(1)

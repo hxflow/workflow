@@ -6,6 +6,7 @@ import { getWorkspaceProjects, type WorkspaceProject } from './file-paths.ts'
 import { extractTaskSection, readTaskField } from './plan-utils.ts'
 import { summarizeRequirement } from './requirement-summary.ts'
 import { GATE_ORDER, type GateName } from './runtime-config.ts'
+import { buildTaskAuditState, type RiskClass } from './audit-state.ts'
 import type { ProgressData, ProgressTask } from './types.ts'
 
 export interface TaskDependencyContext {
@@ -32,6 +33,15 @@ export interface TaskContextPayload {
     acceptance: string[]
     verification: string[]
     rawPlanSection: string
+    audit: {
+      attempts: number
+      riskClass: RiskClass
+      evidence: string[]
+      verification: {
+        status: string
+        summary: string
+      }
+    }
   }
   requirement: {
     summary: string
@@ -104,6 +114,7 @@ export function buildTaskContext(input: BuildTaskContextInput): TaskContextPaylo
       acceptance,
       verification,
       rawPlanSection: planSection,
+      audit: buildTaskAuditState(input.progressData, task),
     },
     requirement: {
       summary: requirementSummary,

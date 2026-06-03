@@ -13,6 +13,11 @@ export interface RuntimeConfig {
   pipelines: Record<string, string>
 }
 
+export interface RuntimeBudgetConfig {
+  maxStepAttempts: number | null
+  maxReworkCycles: number | null
+}
+
 export interface RuleTemplateConfig {
   requirement?: string
   plan?: string
@@ -71,6 +76,12 @@ export function readGatesConfig(projectRoot: string): GatesConfig {
   return parseConfigSections(readFileSync(configPath, 'utf8')).gates
 }
 
+export function readBudgetConfig(projectRoot: string): RuntimeBudgetConfig {
+  const configPath = getRuntimeConfigPath(projectRoot)
+  if (!configPath) return { maxStepAttempts: null, maxReworkCycles: null }
+  return parseConfigSections(readFileSync(configPath, 'utf8')).budget
+}
+
 export function readRuntimeConfig(projectRoot: string): RuntimeConfig {
   const configPath = getRuntimeConfigPath(projectRoot)
   if (!configPath) {
@@ -94,6 +105,7 @@ interface ParsedConfigSections {
   ruleTemplates: RuleTemplateConfig
   gates: GatesConfig
   paths: PathsConfig
+  budget: RuntimeBudgetConfig
 }
 
 export function readPathsConfig(projectRoot: string): PathsConfig {
@@ -109,6 +121,7 @@ function parseConfigSections(content: string): ParsedConfigSections {
     runtime: parseRuntime(doc.runtime),
     ruleTemplates: parseRuleTemplates(doc.rules),
     gates: parseGates(doc.gates),
+    budget: parseBudget(doc.runtime),
   }
 }
 
@@ -128,6 +141,22 @@ function parseRuntime(raw: unknown): RuntimeConfig {
   return {
     hooks: parseHooks(obj.hooks),
     pipelines: parsePipelines(obj.pipelines),
+  }
+}
+
+function parseBudget(raw: unknown): RuntimeBudgetConfig {
+  if (typeof raw !== 'object' || raw === null) {
+    return { maxStepAttempts: null, maxReworkCycles: null }
+  }
+
+  const obj = raw as Record<string, unknown>
+  const budget = typeof obj.budget === 'object' && obj.budget !== null
+    ? obj.budget as Record<string, unknown>
+    : {}
+
+  return {
+    maxStepAttempts: parsePositiveInteger(budget.maxStepAttempts),
+    maxReworkCycles: parsePositiveInteger(budget.maxReworkCycles),
   }
 }
 
@@ -181,4 +210,11 @@ function parseGates(raw: unknown): GatesConfig {
 function toStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return []
   return value.filter((v): v is string => typeof v === 'string')
+}
+
+function parsePositiveInteger(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value <= 0) {
+    return null
+  }
+  return value
 }

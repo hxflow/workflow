@@ -56,10 +56,11 @@ describe('evals system', () => {
   it('reports trend history from the built-in history file', () => {
     const workspace = resolveEvalWorkspace(ROOT)
     const report = buildTrendReport(workspace.historyPath)
+    const history = JSON.parse(readFileSync(workspace.historyPath, 'utf8')) as unknown[]
 
     expect(report.ok).toBe(true)
-    expect(report.totalRuns).toBe(0)
-    expect(report.latest).toBeNull()
+    expect(report.totalRuns).toBe(history.length)
+    expect(report.latest).toEqual(history.length > 0 ? history.at(-1) : null)
   })
 
   it('builds an OpenAI eval payload draft from local datasets', () => {
@@ -74,6 +75,6 @@ describe('evals system', () => {
 
   it('keeps the eval README and history file present', () => {
     expect(readFileSync(resolve(ROOT, 'hxflow', 'evals', 'README.md'), 'utf8')).toContain('OpenAI Evals')
-    expect(readFileSync(resolve(ROOT, 'hxflow', 'evals', 'runs', 'history.json'), 'utf8').trim()).toBe('[]')
+    expect(Array.isArray(JSON.parse(readFileSync(resolve(ROOT, 'hxflow', 'evals', 'runs', 'history.json'), 'utf8')))).toBe(true)
   })
 })

@@ -15,6 +15,7 @@ import { loadFeatureProgress } from '../lib/progress-context.ts'
 import { resolveFeatureArtifactRoot } from '../lib/file-paths.ts'
 import { exitWithJsonError as err, printJson as out } from '../lib/json-cli.ts'
 import { createToolContext } from '../lib/tool-cli.ts'
+import { buildTaskAuditState, buildWorkflowAuditState } from '../lib/audit-state.ts'
 import type { ProgressData, ScheduledBatch } from '../lib/types.ts'
 
 const { sub, positional, options, projectRoot: initialProjectRoot } = createToolContext()
@@ -52,7 +53,8 @@ switch (sub) {
         feature,
         progressFile: filePath,
         restored,
-        tasks: progressData.tasks.map((t) => ({ id: t.id, name: t.name, status: t.status })),
+        audit: buildWorkflowAuditState(projectRoot, progressData),
+        tasks: progressData.tasks.map((t) => ({ id: t.id, name: t.name, status: t.status, audit: buildTaskAuditState(progressData, t) })),
       })
       break
     }
@@ -73,7 +75,8 @@ switch (sub) {
       restored,
       mode: batch.mode,
       parallel: batch.parallel,
-      tasks: batch.tasks.map((t) => ({ id: t.id, name: t.name, status: t.status, dependsOn: t.dependsOn })),
+      audit: buildWorkflowAuditState(projectRoot, progressData),
+      tasks: batch.tasks.map((t) => ({ id: t.id, name: t.name, status: t.status, dependsOn: t.dependsOn, audit: buildTaskAuditState(progressData, t) })),
       tasksContext,
     })
     break
@@ -103,7 +106,8 @@ switch (sub) {
       done,
       total: data.tasks.length,
       completedAt: data.completedAt,
-      tasks: data.tasks.map((t) => ({ id: t.id, name: t.name, status: t.status })),
+      audit: buildWorkflowAuditState(projectRoot, data),
+      tasks: data.tasks.map((t) => ({ id: t.id, name: t.name, status: t.status, audit: buildTaskAuditState(data, t) })),
     })
     break
   }

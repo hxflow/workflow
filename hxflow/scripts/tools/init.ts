@@ -24,10 +24,15 @@ const configPath = resolve(hxDir, 'config.yaml')
 const workspacePath = resolve(hxDir, 'workspace.yaml')
 const rulesDir = resolve(hxDir, 'rules')
 const pipelinesDir = resolve(hxDir, 'pipelines')
+const hooksDir = resolve(hxDir, 'hooks')
 const frameworkRulesDir = resolve(FRAMEWORK_ROOT, 'templates', 'rules')
 const frameworkPipelinesDir = resolve(FRAMEWORK_ROOT, 'templates', 'pipelines')
 const frameworkConfigTemplate = resolve(FRAMEWORK_ROOT, 'templates', 'config.yaml')
 const DEFAULT_PIPELINE_REGISTRATION = 'default: .hx/pipelines/default.yaml'
+const REQUIRED_AGENT_HOOK_FILES = [
+  'hxflow-guard-write-claude.ts',
+  'hxflow-guard-write-codex.ts',
+]
 
 if (initTarget.mode === 'workspace') {
   initWorkspace()
@@ -97,6 +102,8 @@ for (const file of REQUIRED_PIPELINE_FILES) {
   }
 }
 
+installAgentHooks(projectRoot, written)
+
 console.log(JSON.stringify({
   ok: true,
   status: written.length > 0 ? 'initialized' : 'complete',
@@ -129,6 +136,13 @@ function detectInitStatus(): InitStatus {
   for (const pf of REQUIRED_PIPELINE_FILES) {
     if (!existsSync(resolve(pipelinesDir, pf))) missing.push(`pipelines/${pf}`)
   }
+
+  for (const hookFile of REQUIRED_AGENT_HOOK_FILES) {
+    if (!existsSync(resolve(hooksDir, hookFile))) missing.push(`hooks/${hookFile}`)
+  }
+
+  if (!existsSync(resolve(projectRoot, '.claude', 'settings.json'))) missing.push('.claude/settings.json')
+  if (!existsSync(resolve(projectRoot, '.codex', 'hooks.json'))) missing.push('.codex/hooks.json')
 
   return { complete: missing.length === 0, missing }
 }
@@ -168,7 +182,11 @@ function addDefaultPipelineRegistration(content: string): string {
   const doc = parseDocument(content)
 
   if (!doc.has('runtime')) {
-    doc.set('runtime', { hooks: {}, pipelines: { default: '.hx/pipelines/default.yaml' } })
+    doc.set('runtime', {
+      budget: { maxStepAttempts: 3, maxReworkCycles: 2 },
+      hooks: {},
+      pipelines: { default: '.hx/pipelines/default.yaml' },
+    })
   } else {
     const pipelines = doc.getIn(['runtime', 'pipelines'])
     if (pipelines === null || pipelines === undefined) {
@@ -214,6 +232,8 @@ function initWorkspace(): void {
     }
   }
 
+  installAgentHooks(projectRoot, written)
+
   console.log(JSON.stringify({
     ok: true,
     status: written.length > 0 ? 'initialized' : 'complete',
@@ -250,6 +270,10 @@ function buildWorkspaceYaml(candidates: InitCandidate[]): string {
     '  test:',
     '',
     'runtime:',
+    '  # 自动流水线预算。留空表示不启用该停止条件。',
+    '  budget:',
+    '    maxStepAttempts: 3',
+    '    maxReworkCycles: 2',
     '  # 命令级 hook。pre 在命令执行前注入，post 在命令执行后注入。',
     '  # 示例：',
     '  #   hooks:',
@@ -273,4 +297,135 @@ function buildWorkspaceYaml(candidates: InitCandidate[]): string {
     ...(candidates.length > 0 ? projectLines : []),
     '',
   ].join('\n')
+}
+
+function installAgentHooks(root: string, written: string[]): void {
+  const targetHooksDir = resolve(root, '.hx', 'hooks')
+  mkdirSync(targetHooksDir, { recursive: true })
+
+  writeIfMissing(resolve(targetHooksDir, 'hxflow-guard-write-claude.ts'), buildClaudeGuardHook(), written)
+  writeIfMissing(resolve(targetHooksDir, 'hxflow-guard-write-codex.ts'), buildCodexGuardHook(), written)
+
+  const claudeDir = resolve(root, '.claude')
+  mkdirSync(claudeDir, { recursive: true })
+  writeIfMissing(resolve(claudeDir, 'settings.json'), buildClaudeSettings(), written)
+
+  const codexDir = resolve(root, '.codex')
+  mkdirSync(codexDir, { recursive: true })
+  writeIfMissing(resolve(codexDir, 'hooks.json'), buildCodexHooks(), written)
+}
+
+function writeIfMissing(filePath: string, content: string, written: string[]): void {
+  if (existsSync(filePath)) return
+  writeFileSync(filePath, content, 'utf8')
+  written.push(filePath)
+}
+
+function buildClaudeGuardHook(): string {
+  return `#!/usr/bin/env bun
+
+import { spawnSync } from 'node:child_process'
+
+const payload = await new Response(Bun.stdin).text()
+const input = payload ? JSON.parse(payload) as Record<string, unknown> : {}
+const toolName = typeof input.tool_name === 'string' ? input.tool_name : ''
+
+if (!['Edit', 'Write', 'MultiEdit'].includes(toolName)) process.exit(0)
+
+const toolInput = typeof input.tool_input === 'object' && input.tool_input !== null
+  ? input.tool_input as Record<string, unknown>
+  : {}
+const filePath = typeof toolInput.file_path === 'string' ? toolInput.file_path : ''
+
+if (!filePath) process.exit(0)
+
+const result = spawnSync('hx-hook', ['guard-write', filePath], {
+  cwd: process.env.CLAUDE_PROJECT_DIR || process.cwd(),
+  encoding: 'utf8',
+  env: process.env,
+})
+
+if (result.status === 0) process.exit(0)
+
+process.stderr.write(result.stderr || result.stdout || 'hxflow guard-write failed\\n')
+process.exit(2)
+`
+}
+
+function buildCodexGuardHook(): string {
+  return `#!/usr/bin/env bun
+
+import { spawnSync } from 'node:child_process'
+
+const payload = await new Response(Bun.stdin).text()
+const input = payload ? JSON.parse(payload) as Record<string, unknown> : {}
+const toolName = typeof input.tool_name === 'string' ? input.tool_name : ''
+
+if (toolName !== 'apply_patch') process.exit(0)
+
+const toolInput = typeof input.tool_input === 'object' && input.tool_input !== null
+  ? input.tool_input as Record<string, unknown>
+  : {}
+const patch = typeof toolInput.command === 'string'
+  ? toolInput.command
+  : typeof toolInput.patch === 'string'
+    ? toolInput.patch
+    : ''
+
+const paths = patch
+  .split('\\n')
+  .map((line) => line.match(/^\\*\\*\\* (?:Add|Update|Delete) File: (.+)$/)?.[1] ?? line.match(/^\\*\\*\\* Move to: (.+)$/)?.[1] ?? '')
+  .filter((path) => path.length > 0)
+
+if (paths.length === 0) process.exit(0)
+
+const result = spawnSync('hx-hook', ['guard-write', ...paths], {
+  cwd: process.cwd(),
+  encoding: 'utf8',
+  env: process.env,
+})
+
+if (result.status === 0) process.exit(0)
+
+process.stderr.write(result.stderr || result.stdout || 'hxflow guard-write failed\\n')
+process.exit(2)
+`
+}
+
+function buildClaudeSettings(): string {
+  return `${JSON.stringify({
+    hooks: {
+      PreToolUse: [
+        {
+          matcher: 'Edit|Write|MultiEdit',
+          hooks: [
+            {
+              type: 'command',
+              command: 'bun "$CLAUDE_PROJECT_DIR/.hx/hooks/hxflow-guard-write-claude.ts"',
+            },
+          ],
+        },
+      ],
+    },
+  }, null, 2)}
+`
+}
+
+function buildCodexHooks(): string {
+  return `${JSON.stringify({
+    hooks: {
+      PreToolUse: [
+        {
+          matcher: 'apply_patch',
+          hooks: [
+            {
+              type: 'command',
+              command: 'bun .hx/hooks/hxflow-guard-write-codex.ts',
+            },
+          ],
+        },
+      ],
+    },
+  }, null, 2)}
+`
 }

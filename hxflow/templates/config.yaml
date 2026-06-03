@@ -27,6 +27,10 @@ servers: []
 
 # 运行时注册。
 runtime:
+  # 自动流水线预算。留空表示不启用该停止条件。
+  budget:
+    maxStepAttempts: 3
+    maxReworkCycles: 2
   # 命令级 hook。pre 在命令执行前注入，post 在命令执行后注入。
   # 每个条目为 Markdown 文件路径，AI 会在对应阶段读取其内容。
   # 示例：

@@ -122,13 +122,14 @@ export function buildRequirementHeader(
   feature: string,
   docType: RequirementDocType,
   existingHeader: Record<string, string> | null,
+  defaults: Partial<Record<keyof RequirementHeaderFields, string>> = {},
 ): string {
   const fields: RequirementHeaderFields = {
-    Feature: existingHeader?.Feature ?? feature,
-    'Display Name': existingHeader?.['Display Name'] ?? '',
-    'Source ID': existingHeader?.['Source ID'] ?? '',
-    'Source Fingerprint': existingHeader?.['Source Fingerprint'] ?? '',
-    Type: ((existingHeader?.Type ?? docType) as RequirementDocType),
+    Feature: existingHeader?.Feature ?? defaults.Feature ?? feature,
+    'Display Name': existingHeader?.['Display Name'] ?? defaults['Display Name'] ?? '',
+    'Source ID': existingHeader?.['Source ID'] ?? defaults['Source ID'] ?? '',
+    'Source Fingerprint': existingHeader?.['Source Fingerprint'] ?? defaults['Source Fingerprint'] ?? '',
+    Type: ((existingHeader?.Type ?? defaults.Type ?? docType) as RequirementDocType),
   }
 
   return [

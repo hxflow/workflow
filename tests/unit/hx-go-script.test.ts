@@ -28,6 +28,9 @@ function createProject() {
 gates:
   test: echo qa-pass
 runtime:
+  budget:
+    maxStepAttempts: 3
+    maxReworkCycles: 2
   hooks:
     doc:
       pre:
@@ -99,6 +102,11 @@ describe('hx-go script', () => {
     expect(parsed.nextStep).toBe('doc')
     expect(parsed.toolScript).toBe('scripts/tools/doc.ts')
     expect(parsed.preHooks).toEqual(['.hx/hooks/pre_doc.md'])
+    expect(parsed.audit).toEqual({
+      budget: { maxStepAttempts: 3, maxReworkCycles: 2 },
+      stopReason: null,
+      reworkCycles: 0,
+    })
     expect(Array.isArray(parsed.steps)).toBe(true)
     expect(parsed.steps[0]).toMatchObject({ id: 'doc', status: 'pending', preHooks: ['.hx/hooks/pre_doc.md'] })
   })

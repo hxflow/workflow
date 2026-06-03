@@ -5,8 +5,9 @@
 1. 执行 `hx-test <feature>`，读取 `test.context`。
 2. 若 `test.needsSubagent` 为真，启动干净上下文的子 agent，并把 `test.context` 作为唯一任务上下文交给它。
 3. 子 agent 必须根据目标类型做真实端到端验证：前端启动浏览器操作页面，服务端启动服务后真实调用接口并检查请求与返回。
-4. 若发现错误，主 agent 按子 agent 给出的复现与日志修复，再重新执行 `hx test <feature>`。
-5. 测试通过后继续 `hx mr <feature>`。
+4. 子 agent 输出必须区分已验证、失败、未覆盖、复现步骤和证据。
+5. 若发现错误，主 agent 按子 agent 给出的复现与日志修复，再重新执行 `hx test <feature>`。
+6. 测试通过后继续 `hx mr <feature>`。
 
 ## 下一步
 

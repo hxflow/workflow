@@ -56,6 +56,9 @@ describe('template structure', () => {
     const configTemplate = readFileSync(resolve(ROOT, 'hxflow', 'templates/config.yaml'), 'utf8')
 
     expect(configTemplate).toContain('runtime:')
+    expect(configTemplate).toContain('budget:')
+    expect(configTemplate).toContain('maxStepAttempts: 3')
+    expect(configTemplate).toContain('maxReworkCycles: 2')
     expect(configTemplate).toContain('hooks:')
     expect(configTemplate).toContain('pipelines:')
     expect(configTemplate).toContain('default: .hx/pipelines/default.yaml')

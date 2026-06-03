@@ -2,7 +2,7 @@
 
 ## 执行步骤
 
-1. 执行 `hx-doc context <feature>`，读取需求来源、模板和现有文档事实。
+1. 执行 `hx-doc context <feature-or-source>`，读取需求来源、模板和现有文档事实；若返回 `feature` 与入参不同，以返回值为准。
 2. 在 workspace 多项目目录中扫描可能受影响的服务，确认协调层、执行服务和关联服务。
 3. 生成或续接 `docs/requirement/{feature}.md`，再执行 `hx-doc validate <feature>`。
 4. 校验失败时只修正文档本身。
@@ -13,6 +13,8 @@
 
 ## 约束
 
+- source-first：能解析到 source file 时，`feature` 必须取 source file basename；解析不到唯一 source file 时不要生成文档
+- 以当前对话上下文生成文档时，先从上下文推理明确的 featureName，再用 `hx-doc context <featureName> --from-context` 进入；不要把 source-file 缺失当成上下文模式
 - 先复用后生成，已有 `displayName`、`sourceId`、`sourceFingerprint`、`Type` 优先沿用
 - workspace 根目录只维护协调文档，具体改动在 task 中落到各服务
 - workspace 的 docs、runtime 和 rules 优先级最高，子项目只覆盖执行目录、源码路径和质量门

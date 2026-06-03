@@ -14,6 +14,8 @@ import { exitWithJsonError as err, printJson as out } from '../lib/json-cli.ts'
 import { resolveFeatureArtifactRoot } from '../lib/file-paths.ts'
 import { getPipelineFullState, resolveStartStep } from '../lib/pipeline-runner.ts'
 import { createToolContext } from '../lib/tool-cli.ts'
+import { buildWorkflowAuditState } from '../lib/audit-state.ts'
+import { loadFeatureProgress } from '../lib/progress-context.ts'
 
 const { sub, positional, options, projectRoot: initialProjectRoot } = createToolContext()
 const [feature] = positional
@@ -33,6 +35,7 @@ switch (sub) {
     }
 
     const state = getPipelineFullState(projectRoot, feature)
+    const progress = tryLoadProgress(projectRoot, feature)
 
     out({
       ok: true,
@@ -42,6 +45,7 @@ switch (sub) {
       preHooks: result.preHooks,
       postHooks: result.postHooks,
       pipeline: result.pipeline,
+      audit: buildWorkflowAuditState(projectRoot, progress),
       steps: state?.steps.map((s) => ({
         id: s.id,
         name: s.name,
@@ -61,10 +65,18 @@ switch (sub) {
     const state = getPipelineFullState(projectRoot, feature)
     if (!state) err('Pipeline "default" 未找到')
 
-    out({ ok: true, ...state })
+    out({ ok: true, audit: buildWorkflowAuditState(projectRoot, tryLoadProgress(projectRoot, feature)), ...state })
     break
   }
 
   default:
     err(`未知子命令 "${sub ?? ''}"，可用：next / state`)
+}
+
+function tryLoadProgress(projectRoot: string, feature: string) {
+  try {
+    return loadFeatureProgress(projectRoot, feature).data
+  } catch {
+    return null
+  }
 }

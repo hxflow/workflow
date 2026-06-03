@@ -49,8 +49,30 @@ describe('hx-init script', () => {
     expect(existsSync(join(rulesDir, 'plan-template.md'))).toBe(true)
     expect(existsSync(join(rulesDir, 'bugfix-requirement-template.md'))).toBe(true)
     expect(existsSync(join(rulesDir, 'bugfix-plan-template.md'))).toBe(true)
-    expect(existsSync(join(projectRoot, '.hx', 'hooks'))).toBe(false)
+    expect(existsSync(join(projectRoot, '.hx', 'hooks', 'hxflow-guard-write-claude.ts'))).toBe(true)
+    expect(existsSync(join(projectRoot, '.hx', 'hooks', 'hxflow-guard-write-codex.ts'))).toBe(true)
+    expect(existsSync(join(projectRoot, '.claude', 'settings.json'))).toBe(true)
+    expect(existsSync(join(projectRoot, '.codex', 'hooks.json'))).toBe(true)
     expect(existsSync(join(projectRoot, '.hx', 'pipelines', 'default.yaml'))).toBe(true)
+  })
+
+  it('keeps existing agent hook configs untouched while installing adapters', () => {
+    const projectRoot = createProject()
+    mkdirSync(join(projectRoot, '.claude'), { recursive: true })
+    mkdirSync(join(projectRoot, '.codex'), { recursive: true })
+    writeFileSync(join(projectRoot, '.claude', 'settings.json'), '{"custom":true}\n', 'utf8')
+    writeFileSync(join(projectRoot, '.codex', 'hooks.json'), '{"custom":true}\n', 'utf8')
+
+    const result = spawnSync('bun', [SCRIPT_PATH], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).toBe(0)
+    expect(readFileSync(join(projectRoot, '.claude', 'settings.json'), 'utf8')).toBe('{"custom":true}\n')
+    expect(readFileSync(join(projectRoot, '.codex', 'hooks.json'), 'utf8')).toBe('{"custom":true}\n')
+    expect(existsSync(join(projectRoot, '.hx', 'hooks', 'hxflow-guard-write-claude.ts'))).toBe(true)
+    expect(existsSync(join(projectRoot, '.hx', 'hooks', 'hxflow-guard-write-codex.ts'))).toBe(true)
   })
 
   it('keeps existing customized template content untouched', () => {
@@ -145,6 +167,8 @@ runtime:
     expect(existsSync(join(workspaceRoot, '.hx', 'config.yaml'))).toBe(false)
     expect(existsSync(join(workspaceRoot, '.hx', 'rules', 'requirement-template.md'))).toBe(true)
     expect(existsSync(join(workspaceRoot, '.hx', 'pipelines', 'default.yaml'))).toBe(true)
+    expect(existsSync(join(workspaceRoot, '.hx', 'hooks', 'hxflow-guard-write-claude.ts'))).toBe(true)
+    expect(existsSync(join(workspaceRoot, '.claude', 'settings.json'))).toBe(true)
     expect(summary.projects.map((project: { id: string }) => project.id)).toEqual(['admin-web', 'order-service'])
 
     const workspaceYaml = readFileSync(join(workspaceRoot, '.hx', 'workspace.yaml'), 'utf8')
