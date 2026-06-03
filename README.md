@@ -117,7 +117,7 @@ Use `hx-hook guard-write` from an editor or agent pre-write hook to block source
 hx-hook guard-write --feature AUTH-001 src/api/auth.ts
 ```
 
-The guard only applies to paths under `paths.src`. By default it enforces hxflow only when a feature is explicit (`--feature` or `HX_FEATURE`) or when a single complete active feature artifact group can be inferred from `docs/requirement/{feature}.md`, `docs/plans/{feature}.md`, and `docs/plans/{feature}-progress.json`. When active, it requires `.hx` config, valid feature artifacts, and a runnable or recoverable task. When the plan declares task scope, the edited source path must match that scope. Set `HXFLOW_GUARD_MODE=strict` to require hxflow for every source edit, or `HXFLOW_GUARD_BYPASS=1` for an explicit bypass.
+The guard only applies to paths under `paths.src`. By default it enforces hxflow only when a feature is explicit (`--feature` or `HX_FEATURE`) or when a single complete active feature artifact group can be inferred from `docs/requirement/{feature}.md`, `docs/plans/{feature}.md`, and `docs/plans/{feature}-progress.json`. When active, it requires `.hx` config, valid feature artifacts, and a runnable or recoverable task. When the plan declares task scope, the edited source path must match that scope. Set `HXFLOW_GUARD_MODE=strict` to require hxflow for every source edit.
 
 `hx init` installs project-local Claude Code and Codex hook adapters by default. Existing `.claude/settings.json` or `.codex/hooks.json` files are left untouched; merge the generated `.hx/hooks/*` command into those configs if you already maintain custom agent hooks.
 

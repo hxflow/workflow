@@ -35,10 +35,6 @@ interface FeatureCandidate {
 }
 
 export function guardWrite(input: WriteGuardInput): WriteGuardResult {
-  if (input.env?.HXFLOW_GUARD_BYPASS === '1') {
-    return buildResult(input.projectRoot, null, [], [], [], [], false)
-  }
-
   const sourcePaths = filterSourcePaths(input.projectRoot, input.paths)
   if (input.paths.length > 0 && sourcePaths.length === 0) {
     return buildResult(input.projectRoot, null, sourcePaths, [], [], [], false)

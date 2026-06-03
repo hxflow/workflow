@@ -113,7 +113,7 @@ runtime:
 hx-hook guard-write --feature AUTH-001 src/api/auth.ts
 ```
 
-该 guard 只检查 `paths.src` 下的路径。默认只在明确处于 hxflow 上下文时强制：显式传入 `--feature`、设置 `HX_FEATURE`，或能从唯一完整且活跃的 feature 文档组推断 feature。文档组必须包含 `docs/requirement/{feature}.md`、`docs/plans/{feature}.md` 和 `docs/plans/{feature}-progress.json`。启用后，它要求 `.hx` 配置、有效 feature 产物和可执行或可恢复的任务都存在；当 plan 声明了任务修改范围时，源码路径必须落在该范围内。设置 `HXFLOW_GUARD_MODE=strict` 可强制所有源码修改都走 hxflow；设置 `HXFLOW_GUARD_BYPASS=1` 可显式绕过。
+该 guard 只检查 `paths.src` 下的路径。默认只在明确处于 hxflow 上下文时强制：显式传入 `--feature`、设置 `HX_FEATURE`，或能从唯一完整且活跃的 feature 文档组推断 feature。文档组必须包含 `docs/requirement/{feature}.md`、`docs/plans/{feature}.md` 和 `docs/plans/{feature}-progress.json`。启用后，它要求 `.hx` 配置、有效 feature 产物和可执行或可恢复的任务都存在；当 plan 声明了任务修改范围时，源码路径必须落在该范围内。设置 `HXFLOW_GUARD_MODE=strict` 可强制所有源码修改都走 hxflow。
 
 `hx init` 默认安装 Claude Code 和 Codex 的项目级 hook adapter。已有 `.claude/settings.json` 或 `.codex/hooks.json` 不会被覆盖；如果你已经维护自定义 agent hook，需要把 `.hx/hooks/*` 中的命令合并到现有配置。
 
