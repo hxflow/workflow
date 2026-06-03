@@ -1,5 +1,17 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun .agents/hooks/docs-sync-agent-hook.ts",
+            "statusMessage": "检查 hxflow 文档同步..."
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [

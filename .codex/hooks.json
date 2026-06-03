@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "functions.exec_command|exec_command|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun .agents/hooks/docs-sync-agent-hook.ts"
+          }
+        ]
+      }
+    ]
+  }
+}

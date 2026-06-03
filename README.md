@@ -121,6 +121,8 @@ The guard only applies to paths under `paths.src`. By default it enforces hxflow
 
 `hx init` installs project-local Claude Code and Codex hook adapters by default. Existing `.claude/settings.json` or `.codex/hooks.json` files are left untouched; merge the generated `.hx/hooks/*` command into those configs if you already maintain custom agent hooks.
 
+This repository also registers an agent pre-commit hook: before an agent runs `git commit`, `.agents/hooks/docs-sync-agent-hook.ts` checks staged files. If `hxflow/**` changed without staged `docs/**` updates, the hook stops the commit and instructs the agent to update and stage the docs first.
+
 ---
 
 ## Multi-project Workspace

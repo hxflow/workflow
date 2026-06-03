@@ -117,6 +117,8 @@ hx-hook guard-write --feature AUTH-001 src/api/auth.ts
 
 `hx init` 默认安装 Claude Code 和 Codex 的项目级 hook adapter。已有 `.claude/settings.json` 或 `.codex/hooks.json` 不会被覆盖；如果你已经维护自定义 agent hook，需要把 `.hx/hooks/*` 中的命令合并到现有配置。
 
+本仓库还注册了 agent 提交前 hook：agent 执行 `git commit` 前，`.agents/hooks/docs-sync-agent-hook.ts` 会检查 staged 文件。若 `hxflow/**` 已更新但没有 stage `docs/**` 文档更新，hook 会阻断提交并要求 agent 先同步和 stage 文档。
+
 ---
 
 ## Workspace 多项目
