@@ -1,0 +1,4 @@
+interface:
+  display_name: "HXFlow 工作流迭代"
+  short_description: "基于真实案例迭代 hxflow workflow"
+  default_prompt: "使用 $hxflow-workflow-iteration 基于真实 case 改进 hxflow workflow 行为。"
