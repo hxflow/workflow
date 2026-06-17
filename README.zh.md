@@ -131,6 +131,12 @@ hx-hook guard-write --feature AUTH-001 src/api/auth.ts
 
 ---
 
+## Agent 会话
+
+长任务会在后台 agent 或 shell 会话中持续执行。用 `list_agents` 和 `read_agent` 查看 agent 输出，仅在 idle 且明确等待输入时使用 `write_agent`。shell 会话使用 `list_bash`、`read_bash`、`write_bash`；不要混用两类接口。
+
+---
+
 ## 环境要求
 
 - Bun >= 1.0.0；未安装 Bun 时可通过 `npx tsx` 执行脚本
@@ -140,9 +146,9 @@ hx-hook guard-write --feature AUTH-001 src/api/auth.ts
 ## 测试
 
 ```bash
-bun run hx:test              # 全量回归
-bun run hx:test:unit         # 单元测试
-bun run hx:test:integration  # 集成测试
+npm run hx:test              # 全量回归
+npm run hx:test:unit         # 单元测试
+npm run hx:test:integration  # 集成测试
 ```
 
 ---
