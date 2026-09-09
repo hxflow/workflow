@@ -150,9 +150,9 @@ Long-running work continues in background agent or shell sessions. Use `list_age
 ## Testing
 
 ```bash
-bun run hx:test              # full regression
-bun run hx:test:unit         # unit tests
-bun run hx:test:integration  # integration tests
+npm run hx:test              # full regression
+npm run hx:test:unit         # unit tests
+npm run hx:test:integration  # integration tests
 ```
 
 ---
